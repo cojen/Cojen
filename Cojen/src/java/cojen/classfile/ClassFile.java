@@ -50,6 +50,255 @@ import cojen.classfile.attr.SyntheticAttr;
 public class ClassFile {
     private static final int MAGIC = 0xCAFEBABE;
 
+    /**
+     * Reads a ClassFile from the given InputStream. With this method, inner
+     * classes cannot be loaded, and custom attributes cannot be defined.
+     *
+     * @param in source of class file data
+     * @throws IOException for I/O error or if classfile is invalid.
+     * @throws ArrayIndexOutOfBoundsException if a constant pool index is out
+     * of range.
+     * @throws ClassCastException if a constant pool index references the
+     * wrong type.
+     */
+    public static ClassFile readFrom(InputStream in) throws IOException {
+        return readFrom(in, null, null);
+    }
+
+    /**
+     * Reads a ClassFile from the given DataInput. With this method, inner
+     * classes cannot be loaded, and custom attributes cannot be defined.
+     *
+     * @param din source of class file data
+     * @throws IOException for I/O error or if classfile is invalid.
+     * @throws ArrayIndexOutOfBoundsException if a constant pool index is out
+     * of range.
+     * @throws ClassCastException if a constant pool index references the
+     * wrong type.
+     */
+    public static ClassFile readFrom(DataInput din) throws IOException {
+        return readFrom(din, null, null);
+    }
+
+    /**
+     * Reads a ClassFile from the given InputStream. A
+     * {@link ClassFileDataLoader} may be provided, which allows inner class
+     * definitions to be loaded. Also, an {@link AttributeFactory} may be
+     * provided, which allows non-standard attributes to be read. All
+     * remaining unknown attribute types are captured, but are not decoded.
+     *
+     * @param in source of class file data
+     * @param loader optional loader for reading inner class definitions
+     * @param attrFactory optional factory for reading custom attributes
+     * @throws IOException for I/O error or if classfile is invalid.
+     * @throws ArrayIndexOutOfBoundsException if a constant pool index is out
+     * of range.
+     * @throws ClassCastException if a constant pool index references the
+     * wrong type.
+     */
+    public static ClassFile readFrom(InputStream in,
+                                     ClassFileDataLoader loader,
+                                     AttributeFactory attrFactory)
+        throws IOException
+    {
+        if (!(in instanceof DataInput)) {
+            in = new DataInputStream(in);
+        }
+        return readFrom((DataInput)in, loader, attrFactory);
+    }
+
+    /**
+     * Reads a ClassFile from the given DataInput. A
+     * {@link ClassFileDataLoader} may be provided, which allows inner class
+     * definitions to be loaded. Also, an {@link AttributeFactory} may be
+     * provided, which allows non-standard attributes to be read. All
+     * remaining unknown attribute types are captured, but are not decoded.
+     *
+     * @param din source of class file data
+     * @param loader optional loader for reading inner class definitions
+     * @param attrFactory optional factory for reading custom attributes
+     * @throws IOException for I/O error or if classfile is invalid.
+     * @throws ArrayIndexOutOfBoundsException if a constant pool index is out
+     * of range.
+     * @throws ClassCastException if a constant pool index references the
+     * wrong type.
+     */
+    public static ClassFile readFrom(DataInput din,
+                                     ClassFileDataLoader loader,
+                                     AttributeFactory attrFactory)
+        throws IOException
+    {
+        return readFrom(din, loader, attrFactory, new HashMap(11), null);
+    }
+
+    /**
+     * @param loadedClassFiles Maps name to ClassFiles for classes already
+     * loaded. This prevents infinite loop: inner loads outer loads inner...
+     */
+    private static ClassFile readFrom(DataInput din,
+                                      ClassFileDataLoader loader,
+                                      AttributeFactory attrFactory,
+                                      Map loadedClassFiles,
+                                      ClassFile outerClass)
+        throws IOException
+    {
+        int magic = din.readInt();
+        if (magic != MAGIC) {
+            throw new IOException("Incorrect magic number: 0x" + 
+                                  Integer.toHexString(magic));
+        }
+
+        short minor = din.readShort();
+        short major = din.readShort();
+
+        ConstantPool cp = ConstantPool.readFrom(din);
+        Modifiers modifiers = new Modifiers(din.readUnsignedShort());
+        modifiers.setSynchronized(false);
+
+        int index = din.readUnsignedShort();
+        ConstantClassInfo thisClass = (ConstantClassInfo)cp.getConstant(index);
+
+        index = din.readUnsignedShort();
+        ConstantClassInfo superClass = null;
+        if (index > 0) {
+            superClass = (ConstantClassInfo)cp.getConstant(index);
+        }
+
+        ClassFile cf =
+            new ClassFile(cp, modifiers, thisClass, superClass, outerClass);
+        cf.setVersion(major, minor);
+        loadedClassFiles.put(cf.getClassName(), cf);
+
+        // Read interfaces.
+        int size = din.readUnsignedShort();
+        for (int i=0; i<size; i++) {
+            index = din.readUnsignedShort();
+            ConstantClassInfo info = (ConstantClassInfo)cp.getConstant(index);
+            cf.addInterface(info.getType().getRootName());
+        }
+        
+        // Read fields.
+        size = din.readUnsignedShort();
+        for (int i=0; i<size; i++) {
+            cf.mFields.add(FieldInfo.readFrom(cf, din, attrFactory));
+        }
+        
+        // Read methods.
+        size = din.readUnsignedShort();
+        for (int i=0; i<size; i++) {
+            cf.mMethods.add(MethodInfo.readFrom(cf, din, attrFactory));
+        }
+
+        // Read attributes.
+        size = din.readUnsignedShort();
+        for (int i=0; i<size; i++) {
+            Attribute attr = Attribute.readFrom(cp, din, attrFactory);
+            cf.addAttribute(attr);
+            if (attr instanceof InnerClassesAttr) {
+                cf.mInnerClassesAttr = (InnerClassesAttr)attr;
+            }
+        }
+
+        // Load inner and outer classes.
+        if (cf.mInnerClassesAttr != null && loader != null) {
+            InnerClassesAttr.Info[] infos =
+                cf.mInnerClassesAttr.getInnerClassesInfo();
+            for (int i=0; i<infos.length; i++) {
+                InnerClassesAttr.Info info = infos[i];
+
+                if (thisClass.equals(info.getInnerClass())) {
+                    // This class is an inner class.
+                    if (info.getInnerClassName() != null) {
+                        cf.mInnerClassName = info.getInnerClassName();
+                    }
+                    ConstantClassInfo outer = info.getOuterClass();
+                    if (cf.mOuterClass == null && outer != null) {
+                        cf.mOuterClass = readOuterClass
+                            (outer, loader, attrFactory, loadedClassFiles);
+                    }
+                    Modifiers innerFlags = info.getModifiers();
+                    modifiers.setStatic(innerFlags.isStatic());
+                    modifiers.setPrivate(innerFlags.isPrivate());
+                    modifiers.setProtected(innerFlags.isProtected());
+                    modifiers.setPublic(innerFlags.isPublic());
+                } else if (thisClass.equals(info.getOuterClass())) {
+                    // This class is an outer class.
+                    ConstantClassInfo inner = info.getInnerClass();
+                    if (inner != null) {
+                        ClassFile innerClass = readInnerClass
+                            (inner, loader, attrFactory, loadedClassFiles, cf);
+                        
+                        if (innerClass != null) {
+                            if (innerClass.getInnerClassName() == null) {
+                                innerClass.mInnerClassName =
+                                    info.getInnerClassName();
+                            }
+                            if (cf.mInnerClasses == null) {
+                                cf.mInnerClasses = new ArrayList();
+                            }
+                            cf.mInnerClasses.add(innerClass);
+                        }
+                    }
+                }
+            }
+        }
+
+        return cf;
+    }
+
+    private static ClassFile readOuterClass(ConstantClassInfo outer,
+                                            ClassFileDataLoader loader,
+                                            AttributeFactory attrFactory,
+                                            Map loadedClassFiles)
+        throws IOException
+    {
+        String name = outer.getType().getRootName();
+
+        ClassFile outerClass = (ClassFile)loadedClassFiles.get(name);
+        if (outerClass != null) {
+            return outerClass;
+        }
+
+        InputStream in = loader.getClassData(name);
+        if (in == null) {
+            return null;
+        }
+
+        if (!(in instanceof DataInput)) {
+            in = new DataInputStream(in);
+        }
+
+        return readFrom
+            ((DataInput)in, loader, attrFactory, loadedClassFiles, null);
+    }
+
+    private static ClassFile readInnerClass(ConstantClassInfo inner,
+                                            ClassFileDataLoader loader,
+                                            AttributeFactory attrFactory,
+                                            Map loadedClassFiles,
+                                            ClassFile outerClass)
+        throws IOException
+    {
+        String name = inner.getType().getRootName();
+
+        ClassFile innerClass = (ClassFile)loadedClassFiles.get(name);
+        if (innerClass != null) {
+            return innerClass;
+        }
+
+        InputStream in = loader.getClassData(name);
+        if (in == null) {
+            return null;
+        }
+
+        if (!(in instanceof DataInput)) {
+            in = new DataInputStream(in);
+        }
+
+        return readFrom
+            ((DataInput)in, loader, attrFactory, loadedClassFiles, outerClass);
+    }
+
     private int mVersion;
     private String mTarget;
     {
@@ -355,6 +604,7 @@ public class ClassFile {
      * Returns the signature attribute of this classfile, or null if none is
      * defined.
      */
+    // TODO: Eventually remove this method
     public SignatureAttr getSignatureAttr() {
         for (int i = mAttributes.size(); --i >= 0; ) {
             Object obj = mAttributes.get(i);
@@ -702,17 +952,13 @@ public class ClassFile {
     }
 
     /**
-     * Writes the ClassFile to the given OutputStream. When finished, the
-     * stream is flushed, but not closed.
+     * Writes the ClassFile to the given OutputStream.
      */
     public void writeTo(OutputStream out) throws IOException {
         if (!(out instanceof DataOutput)) {
             out = new DataOutputStream(out);
         }
-
         writeTo((DataOutput)out);
-        
-        out.flush();
     }
 
     /**
@@ -779,252 +1025,7 @@ public class ClassFile {
         }
     }
 
-    /**
-     * Reads a ClassFile from the given InputStream. With this method, inner
-     * classes cannot be loaded, and custom attributes cannot be defined.
-     *
-     * @param in source of class file data
-     * @throws IOException for I/O error or if classfile is invalid.
-     * @throws ArrayIndexOutOfBoundsException if a constant pool index is out
-     * of range.
-     * @throws ClassCastException if a constant pool index references the
-     * wrong type.
-     */
-    public static ClassFile readFrom(InputStream in) throws IOException {
-        return readFrom(in, null, null);
-    }
+    // TODO: Add a toString method that dumps the descriptor like MethodInfo
+    // and FieldInfo
 
-    /**
-     * Reads a ClassFile from the given DataInput. With this method, inner
-     * classes cannot be loaded, and custom attributes cannot be defined.
-     *
-     * @param din source of class file data
-     * @throws IOException for I/O error or if classfile is invalid.
-     * @throws ArrayIndexOutOfBoundsException if a constant pool index is out
-     * of range.
-     * @throws ClassCastException if a constant pool index references the
-     * wrong type.
-     */
-    public static ClassFile readFrom(DataInput din) throws IOException {
-        return readFrom(din, null, null);
-    }
-
-    /**
-     * Reads a ClassFile from the given InputStream. A
-     * {@link ClassFileDataLoader} may be provided, which allows inner class
-     * definitions to be loaded. Also, an {@link AttributeFactory} may be
-     * provided, which allows non-standard attributes to be read. All
-     * remaining unknown attribute types are captured, but are not decoded.
-     *
-     * @param in source of class file data
-     * @param loader optional loader for reading inner class definitions
-     * @param attrFactory optional factory for reading custom attributes
-     * @throws IOException for I/O error or if classfile is invalid.
-     * @throws ArrayIndexOutOfBoundsException if a constant pool index is out
-     * of range.
-     * @throws ClassCastException if a constant pool index references the
-     * wrong type.
-     */
-    public static ClassFile readFrom(InputStream in,
-                                     ClassFileDataLoader loader,
-                                     AttributeFactory attrFactory)
-        throws IOException
-    {
-        if (!(in instanceof DataInput)) {
-            in = new DataInputStream(in);
-        }
-        return readFrom((DataInput)in, loader, attrFactory);
-    }
-
-    /**
-     * Reads a ClassFile from the given DataInput. A
-     * {@link ClassFileDataLoader} may be provided, which allows inner class
-     * definitions to be loaded. Also, an {@link AttributeFactory} may be
-     * provided, which allows non-standard attributes to be read. All
-     * remaining unknown attribute types are captured, but are not decoded.
-     *
-     * @param din source of class file data
-     * @param loader optional loader for reading inner class definitions
-     * @param attrFactory optional factory for reading custom attributes
-     * @throws IOException for I/O error or if classfile is invalid.
-     * @throws ArrayIndexOutOfBoundsException if a constant pool index is out
-     * of range.
-     * @throws ClassCastException if a constant pool index references the
-     * wrong type.
-     */
-    public static ClassFile readFrom(DataInput din,
-                                     ClassFileDataLoader loader,
-                                     AttributeFactory attrFactory)
-        throws IOException
-    {
-        return readFrom(din, loader, attrFactory, new HashMap(11), null);
-    }
-
-    /**
-     * @param loadedClassFiles Maps name to ClassFiles for classes already
-     * loaded. This prevents infinite loop: inner loads outer loads inner...
-     */
-    private static ClassFile readFrom(DataInput din,
-                                      ClassFileDataLoader loader,
-                                      AttributeFactory attrFactory,
-                                      Map loadedClassFiles,
-                                      ClassFile outerClass)
-        throws IOException
-    {
-        int magic = din.readInt();
-        if (magic != MAGIC) {
-            throw new IOException("Incorrect magic number: 0x" + 
-                                  Integer.toHexString(magic));
-        }
-
-        short minor = din.readShort();
-        short major = din.readShort();
-
-        ConstantPool cp = ConstantPool.readFrom(din);
-        Modifiers modifiers = new Modifiers(din.readUnsignedShort());
-        modifiers.setSynchronized(false);
-
-        int index = din.readUnsignedShort();
-        ConstantClassInfo thisClass = (ConstantClassInfo)cp.getConstant(index);
-
-        index = din.readUnsignedShort();
-        ConstantClassInfo superClass = null;
-        if (index > 0) {
-            superClass = (ConstantClassInfo)cp.getConstant(index);
-        }
-
-        ClassFile cf =
-            new ClassFile(cp, modifiers, thisClass, superClass, outerClass);
-        cf.setVersion(major, minor);
-        loadedClassFiles.put(cf.getClassName(), cf);
-
-        // Read interfaces.
-        int size = din.readUnsignedShort();
-        for (int i=0; i<size; i++) {
-            index = din.readUnsignedShort();
-            ConstantClassInfo info = (ConstantClassInfo)cp.getConstant(index);
-            cf.addInterface(info.getType().getRootName());
-        }
-        
-        // Read fields.
-        size = din.readUnsignedShort();
-        for (int i=0; i<size; i++) {
-            cf.mFields.add(FieldInfo.readFrom(cf, din, attrFactory));
-        }
-        
-        // Read methods.
-        size = din.readUnsignedShort();
-        for (int i=0; i<size; i++) {
-            cf.mMethods.add(MethodInfo.readFrom(cf, din, attrFactory));
-        }
-
-        // Read attributes.
-        size = din.readUnsignedShort();
-        for (int i=0; i<size; i++) {
-            Attribute attr = Attribute.readFrom(cp, din, attrFactory);
-            cf.addAttribute(attr);
-            if (attr instanceof InnerClassesAttr) {
-                cf.mInnerClassesAttr = (InnerClassesAttr)attr;
-            }
-        }
-
-        // Load inner and outer classes.
-        if (cf.mInnerClassesAttr != null && loader != null) {
-            InnerClassesAttr.Info[] infos =
-                cf.mInnerClassesAttr.getInnerClassesInfo();
-            for (int i=0; i<infos.length; i++) {
-                InnerClassesAttr.Info info = infos[i];
-
-                if (thisClass.equals(info.getInnerClass())) {
-                    // This class is an inner class.
-                    if (info.getInnerClassName() != null) {
-                        cf.mInnerClassName = info.getInnerClassName();
-                    }
-                    ConstantClassInfo outer = info.getOuterClass();
-                    if (cf.mOuterClass == null && outer != null) {
-                        cf.mOuterClass = readOuterClass
-                            (outer, loader, attrFactory, loadedClassFiles);
-                    }
-                    Modifiers innerFlags = info.getModifiers();
-                    modifiers.setStatic(innerFlags.isStatic());
-                    modifiers.setPrivate(innerFlags.isPrivate());
-                    modifiers.setProtected(innerFlags.isProtected());
-                    modifiers.setPublic(innerFlags.isPublic());
-                } else if (thisClass.equals(info.getOuterClass())) {
-                    // This class is an outer class.
-                    ConstantClassInfo inner = info.getInnerClass();
-                    if (inner != null) {
-                        ClassFile innerClass = readInnerClass
-                            (inner, loader, attrFactory, loadedClassFiles, cf);
-                        
-                        if (innerClass != null) {
-                            if (innerClass.getInnerClassName() == null) {
-                                innerClass.mInnerClassName =
-                                    info.getInnerClassName();
-                            }
-                            if (cf.mInnerClasses == null) {
-                                cf.mInnerClasses = new ArrayList();
-                            }
-                            cf.mInnerClasses.add(innerClass);
-                        }
-                    }
-                }
-            }
-        }
-
-        return cf;
-    }
-
-    private static ClassFile readOuterClass(ConstantClassInfo outer,
-                                            ClassFileDataLoader loader,
-                                            AttributeFactory attrFactory,
-                                            Map loadedClassFiles)
-        throws IOException
-    {
-        String name = outer.getType().getRootName();
-
-        ClassFile outerClass = (ClassFile)loadedClassFiles.get(name);
-        if (outerClass != null) {
-            return outerClass;
-        }
-
-        InputStream in = loader.getClassData(name);
-        if (in == null) {
-            return null;
-        }
-
-        if (!(in instanceof DataInput)) {
-            in = new DataInputStream(in);
-        }
-
-        return readFrom
-            ((DataInput)in, loader, attrFactory, loadedClassFiles, null);
-    }
-
-    private static ClassFile readInnerClass(ConstantClassInfo inner,
-                                            ClassFileDataLoader loader,
-                                            AttributeFactory attrFactory,
-                                            Map loadedClassFiles,
-                                            ClassFile outerClass)
-        throws IOException
-    {
-        String name = inner.getType().getRootName();
-
-        ClassFile innerClass = (ClassFile)loadedClassFiles.get(name);
-        if (innerClass != null) {
-            return innerClass;
-        }
-
-        InputStream in = loader.getClassData(name);
-        if (in == null) {
-            return null;
-        }
-
-        if (!(in instanceof DataInput)) {
-            in = new DataInputStream(in);
-        }
-
-        return readFrom
-            ((DataInput)in, loader, attrFactory, loadedClassFiles, outerClass);
-    }
 }
