@@ -66,8 +66,16 @@ public class DelegatedCodeAssembler implements CodeAssembler {
         mAssembler.inline(code);
     }
 
+    public void loadNull() {
+        mAssembler.loadNull();
+    }
+
     public void loadConstant(String value) {
         mAssembler.loadConstant(value);
+    }
+
+    public void loadConstant(TypeDesc type) {
+        mAssembler.loadConstant(type);
     }
 
     public void loadConstant(boolean value) {

@@ -233,9 +233,13 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
 
     // load-constant-to-stack style instructions
 
+    public void loadNull() {
+        addCode(1, Opcode.ACONST_NULL);
+    }
+
     public void loadConstant(String value) {
         if (value == null) {
-            addCode(1, Opcode.ACONST_NULL);
+            loadNull();
             return;
         }
 
@@ -271,7 +275,12 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
 
         // Break string up into chunks and construct in a StringBuffer.
 
-        TypeDesc stringBufferDesc = TypeDesc.forClass(StringBuffer.class);
+        TypeDesc stringBufferDesc;
+        if (mTarget >= 0x00010005) {
+            stringBufferDesc = TypeDesc.forClass("java.lang.StringBuilder");
+        } else {
+            stringBufferDesc = TypeDesc.forClass(StringBuffer.class);
+        }
         
         TypeDesc intDesc = TypeDesc.INT;
         TypeDesc stringDesc = TypeDesc.STRING;
@@ -320,8 +329,30 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
         invokeVirtual("java.lang.StringBuffer", "toString", stringDesc, null);
     }
 
+    public void loadConstant(TypeDesc type) throws IllegalStateException {
+        if (type == null) {
+            loadNull();
+            return;
+        }
+
+        if (type.isPrimitive()) {
+            if (mTarget < 0x00010001) {
+                throw new IllegalStateException
+                    ("Loading constant primitive classes not supported below target version 1.1");
+            }
+            loadStaticField(type.toObjectType(), "TYPE", TypeDesc.forClass(Class.class));
+        } else {
+            if (mTarget < 0x00010005) {
+                throw new IllegalStateException
+                    ("Loading constant object classes not supported below target version 1.5");
+            }
+            ConstantInfo info = ConstantClassInfo.make(mCp, type);
+            mInstructions.new LoadConstantInstruction(1, info);
+        }
+    }
+
     public void loadConstant(boolean value) {
-        loadConstant(value?1:0);
+        loadConstant(value ? 1 : 0);
     }
 
     public void loadConstant(int value) {
