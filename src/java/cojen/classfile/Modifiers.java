@@ -172,9 +172,20 @@ public class Modifiers {
         }
     }
 
+    private static int toBridge(int bitmask, boolean b) {
+        // Bridge re-uses the Modifier.VOLATILE modifier, which used to only
+        // apply to fields.
+        if (b) {
+            return (bitmask | Modifier.VOLATILE) &
+                (~Modifier.NATIVE & ~Modifier.INTERFACE & ~Modifier.ABSTRACT);
+        } else {
+            return bitmask & ~Modifier.VOLATILE;
+        }
+    }
+
     private static int toEnum(int bitmask, boolean b) {
-        // Enum re-uses the Modifier.NATIVE modifier, which used to only apply to
-        // methods.
+        // Enum re-uses the Modifier.NATIVE modifier, which used to only apply
+        // to methods.
         if (b) {
             return (bitmask | Modifier.NATIVE) &
                 (~Modifier.ABSTRACT & ~Modifier.INTERFACE &
@@ -185,8 +196,8 @@ public class Modifiers {
     }
 
     private static int toVarArgs(int bitmask, boolean b) {
-        // Enum re-uses the TRANSIENT modifier, which used to only apply to
-        // fields.
+        // Enum re-uses the Modifier.TRANSIENT modifier, which used to only
+        // apply to fields.
         if (b) {
             return (bitmask | Modifier.TRANSIENT) &
                 (~Modifier.INTERFACE & ~Modifier.VOLATILE);
@@ -254,6 +265,10 @@ public class Modifiers {
 
     public boolean isStrict() {
         return Modifier.isStrict(mBitmask);
+    }
+
+    public boolean isBridge() {
+        return Modifier.isVolatile(mBitmask);
     }
 
     public boolean isEnum() {
@@ -370,6 +385,15 @@ public class Modifiers {
      */
     public Modifiers toStrict(boolean b) {
         return convert(toStrict(mBitmask, b));
+    }
+
+    /**
+     * Used to identify if a method is a bridge method.
+     *
+     * @param b true to set bridge, false otherwise
+     */
+    public Modifiers toBridge(boolean b) {
+        return convert(toBridge(mBitmask, b));
     }
 
     /**
