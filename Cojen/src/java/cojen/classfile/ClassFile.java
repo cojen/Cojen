@@ -780,18 +780,9 @@ public class ClassFile {
                                    String superClassName) {
         if (fullInnerClassName == null) {
             if (innerClassName == null) {
-                char sep = getMajorVersion() < 49 ? '$' : '+';
-                fullInnerClassName = mClassName + sep + (++mAnonymousInnerClassCount);
+                fullInnerClassName = mClassName + '$' + (++mAnonymousInnerClassCount);
             } else {
                 fullInnerClassName = mClassName + '$' + innerClassName;
-            }
-        } else {
-            if (innerClassName == null) {
-                if (getMajorVersion() < 49) {
-                    fullInnerClassName = fullInnerClassName.replace('+', '$');
-                } else {
-                    fullInnerClassName = fullInnerClassName.replace('$', '+');
-                }
             }
         }
 
