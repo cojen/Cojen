@@ -234,7 +234,7 @@ public class MethodDesc extends Descriptor implements Serializable {
     }
 
     private static String generateDescriptor(TypeDesc ret, TypeDesc[] params) {
-        int length = ret.toString().length() + 2;
+        int length = ret.getDescriptor().length() + 2;
         int paramsLength = params.length;
         for (int i=paramsLength; --i >=0; ) {
             length += params[i].getDescriptor().length();

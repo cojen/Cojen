@@ -19,17 +19,19 @@ package cojen.classfile;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import cojen.classfile.attr.CodeAttr;
-import cojen.classfile.attr.ConstantValueAttr;
-import cojen.classfile.attr.DeprecatedAttr;
-import cojen.classfile.attr.ExceptionsAttr;
-import cojen.classfile.attr.InnerClassesAttr;
-import cojen.classfile.attr.LineNumberTableAttr;
-import cojen.classfile.attr.LocalVariableTableAttr;
-import cojen.classfile.attr.SignatureAttr;
-import cojen.classfile.attr.SourceFileAttr;
-import cojen.classfile.attr.SyntheticAttr;
-import cojen.classfile.attr.UnknownAttr;
+import cojen.classfile.attribute.CodeAttr;
+import cojen.classfile.attribute.ConstantValueAttr;
+import cojen.classfile.attribute.DeprecatedAttr;
+import cojen.classfile.attribute.EnclosingMethodAttr;
+import cojen.classfile.attribute.ExceptionsAttr;
+import cojen.classfile.attribute.InnerClassesAttr;
+import cojen.classfile.attribute.LineNumberTableAttr;
+import cojen.classfile.attribute.LocalVariableTableAttr;
+import cojen.classfile.attribute.SignatureAttr;
+import cojen.classfile.attribute.SourceFileAttr;
+import cojen.classfile.attribute.SyntheticAttr;
+import cojen.classfile.attribute.UnknownAttr;
+import cojen.classfile.constant.ConstantUTFInfo;
 
 /**
  * This class corresponds to the attribute_info structure defined in section
@@ -51,6 +53,7 @@ public abstract class Attribute {
     public static final String SOURCE_FILE = "SourceFile";
     public static final String SYNTHETIC = "Synthetic";
     public static final String SIGNATURE = "Signature";
+    public static final String ENCLOSING_METHOD = "EnclosingMethod";
 
     /** The ConstantPool that this attribute is defined against. */
     private final ConstantPool mCp;
@@ -61,7 +64,7 @@ public abstract class Attribute {
     protected Attribute(ConstantPool cp, String name) {
         mCp = cp;
         mName = name;
-        mNameConstant = ConstantUTFInfo.make(cp, name);
+        mNameConstant = cp.addConstantUTF(name);
     }
 
     /**
@@ -139,31 +142,53 @@ public abstract class Attribute {
                                          String name,
                                          int length,
                                          DataInput din) throws IOException {
-            if (name.equals(CODE)) {
-                return new CodeAttr(cp, name, length, din, mAttrFactory);
-            } else if (name.equals(CONSTANT_VALUE)) {
-                return new ConstantValueAttr(cp, name, length, din);
-            } else if (name.equals(DEPRECATED)) {
-                return new DeprecatedAttr(cp, name, length, din);
-            } else if (name.equals(EXCEPTIONS)) {
-                return new ExceptionsAttr(cp, name, length, din);
-            } else if (name.equals(INNER_CLASSES)) {
-                return new InnerClassesAttr(cp, name, length, din);
-            } else if (name.equals(LINE_NUMBER_TABLE)) {
-                return new LineNumberTableAttr(cp, name, length, din);
-            } else if (name.equals(LOCAL_VARIABLE_TABLE)) {
-                return new LocalVariableTableAttr(cp, name, length, din);
-            } else if (name.equals(SOURCE_FILE)) {
-                return new SourceFileAttr(cp, name, length, din);
-            } else if (name.equals(SYNTHETIC)) {
-                return new SyntheticAttr(cp, name, length, din);
-            } else if (name.equals(SIGNATURE)) {
-                return new SignatureAttr(cp, name, length, din);
+            if (name.length() > 0) {
+                switch (name.charAt(0)) {
+                case 'C':
+                    if (name.equals(CODE)) {
+                        return new CodeAttr(cp, name, length, din, mAttrFactory);
+                    } else if (name.equals(CONSTANT_VALUE)) {
+                        return new ConstantValueAttr(cp, name, length, din);
+                    }
+                    break;
+                case 'D':
+                    if (name.equals(DEPRECATED)) {
+                        return new DeprecatedAttr(cp, name, length, din);
+                    }
+                    break;
+                case 'E':
+                    if (name.equals(EXCEPTIONS)) {
+                        return new ExceptionsAttr(cp, name, length, din);
+                    } else if (name.equals(ENCLOSING_METHOD)) {
+                        return new EnclosingMethodAttr(cp, name, length, din);
+                    }
+                    break;
+                case 'I':
+                    if (name.equals(INNER_CLASSES)) {
+                        return new InnerClassesAttr(cp, name, length, din);
+                    }
+                    break;
+                case 'L':
+                    if (name.equals(LINE_NUMBER_TABLE)) {
+                        return new LineNumberTableAttr(cp, name, length, din);
+                    } else if (name.equals(LOCAL_VARIABLE_TABLE)) {
+                        return new LocalVariableTableAttr(cp, name, length, din);
+                    }
+                    break;
+                case 'S':
+                    if (name.equals(SOURCE_FILE)) {
+                        return new SourceFileAttr(cp, name, length, din);
+                    } else if (name.equals(SYNTHETIC)) {
+                        return new SyntheticAttr(cp, name, length, din);
+                    } else if (name.equals(SIGNATURE)) {
+                        return new SignatureAttr(cp, name, length, din);
+                    }
+                    break;
+                }
             }
 
             if (mAttrFactory != null) {
-                Attribute attr =
-                    mAttrFactory.createAttribute(cp, name, length, din);
+                Attribute attr = mAttrFactory.createAttribute(cp, name, length, din);
                 if (attr != null) {
                     return attr;
                 }

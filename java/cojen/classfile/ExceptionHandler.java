@@ -19,6 +19,7 @@ package cojen.classfile;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import cojen.classfile.constant.ConstantClassInfo;
 
 /**
  * This class corresponds to the exception_table structure as defined in

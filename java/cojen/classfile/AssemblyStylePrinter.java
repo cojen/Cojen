@@ -25,8 +25,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import cojen.classfile.attr.CodeAttr;
-import cojen.classfile.attr.SignatureAttr;
+import cojen.classfile.attribute.CodeAttr;
+import cojen.classfile.attribute.SignatureAttr;
+import cojen.classfile.constant.ConstantClassInfo;
+import cojen.classfile.constant.ConstantDoubleInfo;
+import cojen.classfile.constant.ConstantFieldInfo;
+import cojen.classfile.constant.ConstantFloatInfo;
+import cojen.classfile.constant.ConstantIntegerInfo;
+import cojen.classfile.constant.ConstantInterfaceMethodInfo;
+import cojen.classfile.constant.ConstantLongInfo;
+import cojen.classfile.constant.ConstantMethodInfo;
+import cojen.classfile.constant.ConstantNameAndTypeInfo;
+import cojen.classfile.constant.ConstantStringInfo;
 
 /**
  * Disassembles a ClassFile into a pseudo Java assembly language format.
@@ -274,7 +284,7 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
 
         CodeAttr code = method.getCodeAttr();
 
-        String[] exceptions = method.getExceptions();
+        TypeDesc[] exceptions = method.getExceptions();
         if (exceptions.length == 0) {
             if (code == null) {
                 println(";");

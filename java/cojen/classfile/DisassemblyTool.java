@@ -31,8 +31,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import cojen.classfile.attr.CodeAttr;
-import cojen.classfile.attr.SignatureAttr;
+import cojen.classfile.attribute.CodeAttr;
+import cojen.classfile.attribute.SignatureAttr;
 
 /**
  * Disassembles a class file, sending the results to standard out. The class

@@ -16,7 +16,9 @@
 
 package cojen.classfile;
 
-import cojen.classfile.attr.CodeAttr;
+import cojen.classfile.attribute.CodeAttr;
+import cojen.classfile.constant.ConstantClassInfo;
+import cojen.classfile.constant.ConstantFieldInfo;
 
 /**
  * This class is used as an aid in generating code for a method.
@@ -215,7 +217,7 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
         if (catchClassName == null) {
             catchClass = null;
         } else {
-            catchClass = ConstantClassInfo.make(mCp, catchClassName);
+            catchClass = mCp.addConstantClass(catchClassName);
         }
 
         ExceptionHandler handler = 
@@ -247,7 +249,7 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
 
         if (strlen <= (65535 / 3)) {
             // Guaranteed to fit in a Java UTF encoded string.
-            ConstantInfo info = ConstantStringInfo.make(mCp, value);
+            ConstantInfo info = mCp.addConstantString(value);
             mInstructions.new LoadConstantInstruction(1, info);
             return;
         }
@@ -268,7 +270,7 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
         }
 
         if (utflen <= 65535) {
-            ConstantInfo info = ConstantStringInfo.make(mCp, value);
+            ConstantInfo info = mCp.addConstantString(value);
             mInstructions.new LoadConstantInstruction(1, info);
             return;
         }
@@ -289,7 +291,7 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
         newObject(stringBufferDesc);
         dup();
         loadConstant(strlen);
-        invokeConstructor("java.lang.StringBuffer", new TypeDesc[] {intDesc});
+        invokeConstructor(stringBufferDesc, new TypeDesc[] {intDesc});
         
         int beginIndex;
         int endIndex = 0;
@@ -319,14 +321,14 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
 
             String substr = value.substring(beginIndex, endIndex);
 
-            ConstantInfo info = ConstantStringInfo.make(mCp, substr);
+            ConstantInfo info = mCp.addConstantString(substr);
             mInstructions.new LoadConstantInstruction(1, info);
 
-            invokeVirtual("java.lang.StringBuffer", "append",
+            invokeVirtual(stringBufferDesc, "append",
                           stringBufferDesc, stringParam);
         }
         
-        invokeVirtual("java.lang.StringBuffer", "toString", stringDesc, null);
+        invokeVirtual(stringBufferDesc, "toString", stringDesc, null);
     }
 
     public void loadConstant(TypeDesc type) throws IllegalStateException {
@@ -346,7 +348,7 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
                 throw new IllegalStateException
                     ("Loading constant object classes not supported below target version 1.5");
             }
-            ConstantInfo info = ConstantClassInfo.make(mCp, type);
+            ConstantInfo info = mCp.addConstantClass(type);
             mInstructions.new LoadConstantInstruction(1, info);
         }
     }
@@ -391,7 +393,7 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
         } else if (-32768 <= value && value <= 32767) {
             addCode(1, Opcode.SIPUSH, (short)value);
         } else {
-            ConstantInfo info = ConstantIntegerInfo.make(mCp, value);
+            ConstantInfo info = mCp.addConstantInteger(value);
             mInstructions.new LoadConstantInstruction(1, info);
         }
     }
@@ -402,7 +404,7 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
         } else if (value == 1) {
             addCode(2, Opcode.LCONST_1);
         } else {
-            ConstantInfo info = ConstantLongInfo.make(mCp, value);
+            ConstantInfo info = mCp.addConstantLong(value);
             mInstructions.new LoadConstantInstruction(2, info, true);
         }
     }
@@ -415,7 +417,7 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
         } else if (value == 2) {
             addCode(1, Opcode.FCONST_2);
         } else {
-            ConstantInfo info = ConstantFloatInfo.make(mCp, value);
+            ConstantInfo info = mCp.addConstantFloat(value);
             mInstructions.new LoadConstantInstruction(1, info);
         }
     }
@@ -426,7 +428,7 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
         } else if (value == 1) {
             addCode(2, Opcode.DCONST_1);
         } else {
-            ConstantInfo info = ConstantDoubleInfo.make(mCp, value);
+            ConstantInfo info = mCp.addConstantDouble(value);
             mInstructions.new LoadConstantInstruction(2, info, true);
         }
     }
