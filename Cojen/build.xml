@@ -1,0 +1,140 @@
+<project name="cojen" default="compile" basedir=".">
+
+<!-- Cojen ANT script -->
+
+
+<!-- ========== Properties ================================================ -->
+
+  <property file="build.properties"/>
+  <property name="junit.jar"               value="lib/junit.jar"/>
+
+
+<!-- ========== Component Declarations ==================================== -->
+
+
+  <!-- The name of this component -->
+  <property name="component.name"          value="cojen"/>
+
+  <!-- The primary package name of this component -->
+  <property name="component.package"       value="cojen"/>
+
+  <!-- The title of this component -->
+  <property name="component.title"         value="Cojen"/>
+
+  <!-- The current version number of this component -->
+  <property name="component.version"       value="0.1"/>
+
+  <!-- The current version number of this component -->
+  <property name="component.fullname"      value="${component.name}-${component.version}"/>
+  
+  <!-- The directory of source files -->
+  <property name="source"                  value="src"/>
+  <property name="source.home"             value="${source}/java"/>
+
+  <!-- The base directory for compilation targets -->
+  <property name="build"                   value="build"/>
+  <property name="build.classes"           value="${build}/classes"/>
+  <property name="build.docs"              value="${build}/docs"/>
+  <property name="build.dist"              value="${build}/dist"/>
+  <property name="build.fullname"          value="${build}/${component.fullname}"/>
+  <property name="build.dist.fullname"     value="${build.dist}/${component.fullname}"/>
+
+
+<!-- ========== Compiler Defaults ========================================= -->
+
+  <!-- Should Java compilations set the 'debug' compiler option? -->
+  <property name="compile.debug"           value="true"/>
+
+  <!-- Should Java compilations set the 'deprecation' compiler option? -->
+  <property name="compile.deprecation"     value="true"/>
+
+  <!-- Should Java compilations set the 'optimize' compiler option? -->
+  <property name="compile.optimize"        value="true"/>
+
+  <!-- Construct compile classpath -->
+  <path id="compile.classpath">
+    <pathelement location="${build.classes}"/>
+  </path>
+
+
+<!-- ====================================================================== -->
+<!-- ========== Executable Targets ======================================== -->
+<!-- ====================================================================== -->
+
+  <target name="clean"
+          description="Clean build and distribution directories">
+    <delete dir="${build}"/>
+  </target>
+
+<!-- ====================================================================== -->
+
+  <target name="init"
+          description="Initialize and evaluate conditionals">
+    <echo message="-------- ${component.name} ${component.version} --------"/>
+    <filter token="name"                  value="${component.name}"/>
+    <filter token="package"               value="${component.package}"/>
+    <filter token="version"               value="${component.version}"/>
+  </target>
+
+<!-- ====================================================================== -->
+
+  <target name="prepare" depends="init"
+          description="Prepare build directory">
+    <mkdir dir="${build}"/>
+    <mkdir dir="${build.classes}"/>
+    <mkdir dir="${build.docs}"/>
+  </target>
+
+<!-- ====================================================================== -->
+
+  <target name="compile" depends="prepare"
+          description="Compile Cojen">
+    <javac  source="1.4"
+            srcdir="${source.home}"
+           destdir="${build.classes}"
+             debug="${compile.debug}"
+       deprecation="${compile.deprecation}"
+          optimize="${compile.optimize}">
+      <classpath refid="compile.classpath"/>
+    </javac>
+  </target>
+
+<!-- ====================================================================== -->
+
+  <target name="all" depends="clean,compile"
+          description="Clean and compile all components"/>
+
+<!-- ====================================================================== -->
+
+  <target name="javadoc" depends="compile"
+          description="Create component Javadoc documentation">
+    <mkdir      dir="${build.docs}"/>
+    <javadoc     source="1.4"
+             sourcepath="${source.home}"
+                destdir="${build.docs}"
+           packagenames="cojen.*"
+                 author="true"
+                private="false"
+                package="false"
+                version="true"
+                    use="yes"
+             splitindex="yes"
+               doctitle="&lt;h1&gt;${component.title}&lt;/h1&gt;"
+            windowtitle="${component.title} (Version ${component.version})">
+      <classpath refid="compile.classpath"/>
+    </javadoc>
+  </target>
+
+<!-- ====================================================================== -->
+
+  <target name="jar" depends="compile"
+          description="Create jar">
+    <mkdir      dir="${build.classes}/META-INF"/>
+    <copy      file="LICENSE.txt"
+             tofile="${build.classes}/META-INF/LICENSE.txt"/>
+    <jar    jarfile="${build.fullname}.jar"
+            basedir="${build.classes}"/>
+           <!-- manifest="${build.conf}/MANIFEST.MF"/ -->
+  </target>
+
+</project>
