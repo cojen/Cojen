@@ -19,6 +19,7 @@ package cojen.classfile.attribute;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -116,62 +117,75 @@ public class Annotation {
     }
 
     /**
-     * Returns a modifiable map of member names (String) to MemberValue
+     * Returns an unmodifiable map of member names (String) to MemberValue
      * objects.
      */
     public Map getMemberValues() {
-        return mMemberValues;
+        return Collections.unmodifiableMap(mMemberValues);
     }
     
     public void putMemberValue(String name, MemberValue mv) {
+        mCp.addConstantUTF(name);
         mMemberValues.put(name, mv);
     }
 
     public void putMemberValue(String name, boolean value) {
+        mCp.addConstantUTF(name);
         mMemberValues.put(name, makeMemberValue(value));
     }
 
     public void putMemberValue(String name, byte value) {
+        mCp.addConstantUTF(name);
         mMemberValues.put(name, makeMemberValue(value));
     }
     
     public void putMemberValue(String name, short value) {
+        mCp.addConstantUTF(name);
         mMemberValues.put(name, makeMemberValue(value));
     }
 
     public void putMemberValue(String name, char value) {
+        mCp.addConstantUTF(name);
         mMemberValues.put(name, makeMemberValue(value));
     }
 
     public void putMemberValue(String name, int value) {
+        mCp.addConstantUTF(name);
         mMemberValues.put(name, makeMemberValue(value));
     }
 
     public void putMemberValue(String name, long value) {
+        mCp.addConstantUTF(name);
         mMemberValues.put(name, makeMemberValue(value));
     }
 
     public void putMemberValue(String name, float value) {
+        mCp.addConstantUTF(name);
         mMemberValues.put(name, makeMemberValue(value));
     }
 
     public void putMemberValue(String name, double value) {
+        mCp.addConstantUTF(name);
         mMemberValues.put(name, makeMemberValue(value));
     }
 
     public void putMemberValue(String name, String value) {
+        mCp.addConstantUTF(name);
         mMemberValues.put(name, makeMemberValue(value));
     }
 
     public void putMemberValue(String name, TypeDesc value) {
+        mCp.addConstantUTF(name);
         mMemberValues.put(name, makeMemberValue(value));
     }
 
     public void putMemberValue(String name, MemberValue[] value) {
+        mCp.addConstantUTF(name);
         mMemberValues.put(name, makeMemberValue(value));
     }
 
     public void putMemberValue(String name, TypeDesc enumType, String enumName) {
+        mCp.addConstantUTF(name);
         mMemberValues.put(name, makeMemberValue(enumType, enumName));
     }
 
@@ -179,6 +193,7 @@ public class Annotation {
      * @see #makeAnnotation
      */
     public void putMemberValue(String name, Annotation value) {
+        mCp.addConstantUTF(name);
         mMemberValues.put(name, makeMemberValue(value));
     }
 
@@ -247,7 +262,7 @@ public class Annotation {
         int length = 4;
         Iterator it = mMemberValues.values().iterator();
         while (it.hasNext()) {
-            length += ((MemberValue)it.next()).getLength();
+            length += 2 + ((MemberValue)it.next()).getLength();
         }
         return length;
     }
@@ -256,9 +271,13 @@ public class Annotation {
         dout.writeShort(mType.getIndex());
         int memberCount = mMemberValues.size();
         dout.writeShort(memberCount);
-        Iterator it = mMemberValues.values().iterator();
+        Iterator it = mMemberValues.entrySet().iterator();
         while (it.hasNext()) {
-            ((MemberValue)it.next()).writeTo(dout);
+            Map.Entry entry = (Map.Entry)it.next();
+            String name = (String)entry.getKey();
+            MemberValue value = (MemberValue)entry.getValue();
+            dout.writeShort(mCp.addConstantUTF(name).getIndex());
+            value.writeTo(dout);
         }
     }
 
@@ -399,7 +418,7 @@ public class Annotation {
         public int getLength() {
             switch (mTag) {
             default:
-                return 0;
+                return 1;
 
             case MEMBER_TAG_BOOLEAN:
             case MEMBER_TAG_BYTE:
@@ -411,22 +430,22 @@ public class Annotation {
             case MEMBER_TAG_DOUBLE:
             case MEMBER_TAG_CLASS:
             case MEMBER_TAG_STRING:
-                return 2;
+                return 3;
                 
             case MEMBER_TAG_ENUM:
-                return ((EnumConstValue)mValue).getLength();
+                return 1 + ((EnumConstValue)mValue).getLength();
                 
             case MEMBER_TAG_ARRAY: {
                 MemberValue[] values = (MemberValue[])mValue;
-                int length = 2;
-                for (int i=0; i<length; i++) {
+                int length = 3;
+                for (int i=0; i<values.length; i++) {
                     length += values[i].getLength();
                 }
                 return length;
             }
                 
             case MEMBER_TAG_ANNOTATION:
-                return ((Annotation)mValue).getLength();
+                return 1 + ((Annotation)mValue).getLength();
             }
         }
         
@@ -444,7 +463,7 @@ public class Annotation {
             case MEMBER_TAG_DOUBLE:
             case MEMBER_TAG_CLASS:
             case MEMBER_TAG_STRING:
-                ((ConstantInfo)mValue).writeTo(dout);
+                dout.writeShort(((ConstantInfo)mValue).getIndex());
                 break;
                 
             case MEMBER_TAG_ENUM:
@@ -493,8 +512,8 @@ public class Annotation {
         }
         
         public void writeTo(DataOutput dout) throws IOException {
-            mTypeName.writeTo(dout);
-            mConstName.writeTo(dout);
+            dout.writeShort(mTypeName.getIndex());
+            dout.writeShort(mConstName.getIndex());
         }
     }
 }
