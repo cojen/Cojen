@@ -61,6 +61,13 @@ public class DisassemblyTool {
      * The format style may be "assembly" (the default) or "builder".
      */
     public static void main(String[] args) throws Exception {
+        if (args.length == 0) {
+            System.out.println("DisassemblyTool [-f <format style>] <file or class name>");
+            System.out.println();
+            System.out.println("The format style may be \"assembly\" (the default) or \"builder\"");
+            return;
+        }
+
         String style;
         String name;
 
