@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.lang.reflect.Modifier;
 import cojen.classfile.attribute.CodeAttr;
 import cojen.classfile.attribute.DeprecatedAttr;
+import cojen.classfile.attribute.EnclosingMethodAttr;
 import cojen.classfile.attribute.ExceptionsAttr;
 import cojen.classfile.attribute.SignatureAttr;
 import cojen.classfile.attribute.SourceFileAttr;
@@ -57,6 +58,8 @@ public class MethodInfo {
 
     private CodeAttr mCode;
     private ExceptionsAttr mExceptions;
+
+    private int mAnonymousInnerClassCount = 0;
 
     MethodInfo(ClassFile parent,
                Modifiers modifiers,
@@ -207,6 +210,50 @@ public class MethodInfo {
 
         ConstantClassInfo cci = mCp.addConstantClass(className);
         mExceptions.addException(cci);
+    }
+
+    /**
+     * Add an inner class to this method.
+     *
+     * @param innerClassName Optional short inner class name.
+     */
+    public ClassFile addInnerClass(String innerClassName) {
+        return addInnerClass(innerClassName, (String)null);
+    }
+
+    /**
+     * Add an inner class to this method.
+     *
+     * @param innerClassName Optional short inner class name.
+     * @param superClass Super class.
+     */
+    public ClassFile addInnerClass(String innerClassName, Class superClass) {
+        return addInnerClass(innerClassName, superClass.getName());
+    }
+
+    /**
+     * Add an inner class to this method.
+     *
+     * @param innerClassName Optional short inner class name.
+     * @param superClassName Full super class name.
+     */
+    public ClassFile addInnerClass(String innerClassName, String superClassName) {
+        ClassFile inner;
+        if (innerClassName == null) {
+            inner = mParent.addInnerClass(null, null, superClassName);
+        } else {
+            String fullInnerClassName = mParent.getClassName() + '$' +
+                (++mAnonymousInnerClassCount) + innerClassName;
+            inner = mParent.addInnerClass(fullInnerClassName, innerClassName, superClassName);
+        }
+
+        if (mParent.getMajorVersion() >= 49) {
+            inner.addAttribute(new EnclosingMethodAttr
+                               (mCp, mCp.addConstantClass(mParent.getClassName()),
+                                mCp.addConstantNameAndType(mNameConstant, mDescriptorConstant)));
+        }
+
+        return inner;
     }
 
     /**
