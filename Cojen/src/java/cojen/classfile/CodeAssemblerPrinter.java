@@ -19,7 +19,7 @@ package cojen.classfile;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.SortedSet;
+import java.util.Set;
 import java.io.PrintWriter;
 
 /**
@@ -790,7 +790,7 @@ public class CodeAssemblerPrinter implements CodeAssembler {
             return null;
         }
 
-        public SortedSet getLocationRangeSet() {
+        public Set getLocationRangeSet() {
             return null;
         }
     }
