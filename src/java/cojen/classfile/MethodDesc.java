@@ -25,7 +25,7 @@ import java.io.ObjectStreamException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.ArrayList;
-import cojen.util.WeakFlyweightSet;
+import cojen.util.WeakCanonicalSet;
 
 /**
  * This class is used to build method descriptor strings as 
@@ -38,7 +38,7 @@ public class MethodDesc extends Descriptor implements Serializable {
     private static final TypeDesc[] EMPTY_PARAMS = new TypeDesc[0];
 
     // MethodDesc and TypeDesc can share the same instance cache.
-    private final static WeakFlyweightSet mInstances = TypeDesc.cInstances;
+    private final static WeakCanonicalSet mInstances = TypeDesc.cInstances;
 
     static MethodDesc intern(MethodDesc desc) {
         return (MethodDesc)mInstances.put(desc);
