@@ -24,14 +24,18 @@ package cojen.classfile;
  */
 public interface CodeAssembler {
     /**
-     * Returns LocalVariable references for all the parameters passed into
-     * the method being assembled, not including any "this" reference.
-     * Returns a zero-length array if there are no passed in parameters.
-     * <p>
-     * The names of the LocalVariables returned by this method are initially
-     * set to null. It is encouraged that a name be provided.
+     * Returns the amount of parameters that are accepted by the method being
+     * built, not including any "this" reference.
      */
-    LocalVariable[] getParameters();
+    int getParameterCount();
+
+    /**
+     * Returns a specific parameter, whose index lies within 0 to
+     * getParameterCount() - 1. The names of the LocalVariables returned by
+     * this method are initially set to null. It is encouraged that a name be
+     * provided.
+     */
+    LocalVariable getParameter(int index) throws IndexOutOfBoundsException;
 
     /**
      * Creates a LocalVariable reference from a name and type. Although name
@@ -144,7 +148,7 @@ public interface CodeAssembler {
      * considered local variables, as well as any that were created.
      *
      * @param local The local variable reference
-     * @see #getParameters
+     * @see #getParameter
      * @see #createLocalVariable
      */
     void storeLocal(LocalVariable local);

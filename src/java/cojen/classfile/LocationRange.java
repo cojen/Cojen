@@ -20,6 +20,7 @@ package cojen.classfile;
  *
  * @author Brian S O'Neill
  */
+// TODO: remove this
 public interface LocationRange extends Comparable {
     /**
      * Returns the start of this location range, inclusive.

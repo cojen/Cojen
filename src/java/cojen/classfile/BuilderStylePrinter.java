@@ -37,6 +37,7 @@ class BuilderStylePrinter implements DisassemblyTool.Printer {
         mOut = out;
 
         println("import java.io.BufferedOutputStream;");
+        println("import java.io.File;");
         println("import java.io.FileOutputStream;");
         println("import java.io.OutputStream;");
         println();
@@ -50,32 +51,84 @@ class BuilderStylePrinter implements DisassemblyTool.Printer {
         println("import cojen.classfile.Opcode;");
         println("import cojen.classfile.TypeDesc;");
 
+        disassemble(cf, (String)null);
+    }
+    
+    private void disassemble(ClassFile cf, String innerClassSuffix) {
         println();
-        println("/**");
-        println(" * @author auto-generated");
-        println(" */");
-        println("public class ClassFileBuilder {");
+        if (innerClassSuffix == null) {
+            println("/**");
+            println(" * Builds ClassFile for " + cf.getClassName());
+            println(" *");
+            println(" * @author auto-generated");
+            println(" */");
+            println("public class ClassFileBuilder {");
+        } else {
+            println("/**");
+            println(" * Builds ClassFile for " + cf.getClassName());
+            println(" */");
+            println("private static class InnerBuilder" + innerClassSuffix + " {");
+        }
         mIndent += 4;
-        
-        println("public static void main(String[] args) throws Exception {");
-        mIndent += 4;
-        println("ClassFile cf = createClassFile();");
-        println("if (args.length > 0) {");
-        mIndent += 4;
-        println("OutputStream out = new BufferedOutputStream(new FileOutputStream(args[0]));");
-        println("cf.writeTo(out);");
-        println("out.close();");
-        mIndent -= 4;
-        println("}");
-        mIndent -= 4;
-        println("}");
 
-        println();
+        if (innerClassSuffix == null) {
+            println("public static void main(String[] args) throws Exception {");
+            mIndent += 4;
+            println("// " + cf);
+            println("ClassFile cf = createClassFile();");
 
-        println("private static ClassFile createClassFile() {");
-        mIndent += 4;
-        println("ClassFile cf = new ClassFile(\"" + escape(cf.getClassName())
-                + "\", \"" + escape(cf.getSuperClassName()) + "\");");
+            println();
+            println("if (args.length > 0) {");
+            mIndent += 4;
+            println("File file = new File(args[0]);");
+            println("if (file.isDirectory()) {");
+            mIndent += 4;
+            println("writeClassFiles(cf, file);");
+            mIndent -= 4;
+            println("} else {");
+            mIndent += 4;
+            println("OutputStream out = new BufferedOutputStream(new FileOutputStream(file));");
+            println("cf.writeTo(out);");
+            println("out.close();");
+            mIndent -= 4;
+            println("}");
+            mIndent -= 4;
+            println("}");
+            mIndent -= 4;
+            println("}");
+
+            println();
+            println("private static void writeClassFiles(ClassFile cf, File dir) throws Exception {");
+            mIndent += 4;
+            println("File file = new File(dir, cf.getClassName().replace('.', '/') + \".class\");");
+            println("file.getParentFile().mkdirs();");
+            println("OutputStream out = new BufferedOutputStream(new FileOutputStream(file));");
+            println("cf.writeTo(out);");
+            println("out.close();");
+
+            println();
+            println("ClassFile[] innerClasses = cf.getInnerClasses();");
+            println("for (int i=0; i<innerClasses.length; i++) {");
+            mIndent += 4;
+            println("writeClassFiles(innerClasses[i], dir);");
+            mIndent -= 4;
+            println("}");
+            mIndent -= 4;
+            println("}");
+
+            println();
+        }
+
+        if (innerClassSuffix == null) {
+            println("public static ClassFile createClassFile() {");
+            mIndent += 4;
+            println("ClassFile cf = new ClassFile(\"" + escape(cf.getClassName())
+                    + "\", \"" + escape(cf.getSuperClassName()) + "\");");
+        } else {
+            println("static ClassFile createClassFile(ClassFile cf) {");
+            mIndent += 4;
+        }
+
         println("cf.setSourceFile(\"" + escape(cf.getSourceFile()) + "\");");
 
         if (cf.isSynthetic()) {
@@ -205,22 +258,50 @@ class BuilderStylePrinter implements DisassemblyTool.Printer {
             println("createMethod_" + (i + 1) + "(cf);");
         }
 
-        // TODO: Inner classes
-        /*
-        ClassFile[] innerClasses = cf.getInnerClasses();
-        println("innerClasses: ");
-        mIndent += 4;
+        final ClassFile[] innerClasses = cf.getInnerClasses();
+
         for (int i=0; i<innerClasses.length; i++) {
-            disassemble(innerClasses[i], mOut);
+            if (i == 0) {
+                println();
+                println("//");
+                println("// Create inner classes");
+                println("//");
+            }
+
+            println();
+            println("// " + innerClasses[i]);
+            
+            if (i == 0) {
+                print("ClassFile ");
+            }
+            print("innerClass = ");
+            String name = innerClasses[i].getInnerClassName();
+            if (name != null) {
+                name = '"' + escape(name) + '"';
+            }
+            println("cf.addInnerClass(" + name + ", \"" +
+                    innerClasses[i].getSuperClassName() + "\");");
+            String suffix = "_" + (i + 1);
+            if (innerClassSuffix != null) {
+                suffix = innerClassSuffix + suffix;
+            }
+            println("InnerBuilder" + suffix + ".createClassFile(innerClass);");
         }
-        mIndent -= 4;
-        */
 
         println();
         println("return cf;");
 
         mIndent -= 4;
         println("}");
+
+        if (cf.getInitializer() != null) {
+            println();
+            println("private static void createStaticInitializer(ClassFile cf) {");
+            mIndent += 4;
+            disassemble(cf.getInitializer());
+            mIndent -= 4;
+            println("}");
+        }
 
         methods = cf.getConstructors();
         for (int i=0; i<methods.length; i++) {
@@ -244,6 +325,14 @@ class BuilderStylePrinter implements DisassemblyTool.Printer {
             println("}");
         }
 
+        for (int i=0; i<innerClasses.length; i++) {
+            String suffix = "_" + (i + 1);
+            if (innerClassSuffix != null) {
+                suffix = innerClassSuffix + suffix;
+            }
+            disassemble(innerClasses[i], suffix);
+        }
+
         mIndent -= 4;
         println("}");
     }
@@ -251,7 +340,9 @@ class BuilderStylePrinter implements DisassemblyTool.Printer {
     private void disassemble(MethodInfo mi) {
         print("MethodInfo mi = cf.add");
 
-        if (mi.getName().equals("<init>")) {
+        if (mi.getName().equals("<clinit>")) {
+            println("Initializer();");
+        } else if (mi.getName().equals("<init>")) {
             print("Constructor(");
             printModifiers(mi);
             print(", ");

@@ -22,6 +22,7 @@ import java.util.Comparator;
  * 
  * @author Brian S O'Neill
  */
+// TODO: Remove this
 class LocationRangeComparator implements Comparator {
     public final static Comparator SINGLETON = new LocationRangeComparator();
 

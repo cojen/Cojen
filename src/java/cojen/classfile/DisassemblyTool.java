@@ -35,10 +35,30 @@ import cojen.classfile.attr.CodeAttr;
 import cojen.classfile.attr.SignatureAttr;
 
 /**
- * 
+ * Disassembles a class file, sending the results to standard out. The class
+ * can be specified by name or by a file name. If the class is specified by
+ * name, it must be available in the classpath.
+ * <p>
+ * Two output formats are supported: assembly and builder. The assembly format
+ * is the default, and it produces a pseudo Java source file, where the method
+ * bodies contain JVM assembly code.
+ * <p>
+ * The builder format produces a valid Java file, which uses the Cojen
+ * classfile API. When compiled and run, it rebuilds the original class and
+ * inner classes. This format makes it easier to understand how to use the
+ * classfile API to generate new classes.
+ *
  * @author Brian S O'Neill
  */
 public class DisassemblyTool {
+    /**
+     * Disassembles a class file, sending the results to standard out. Accepts
+     * the following arguments:
+     * <pre>
+     * args[0]: name of class or file
+     * args[1]: output format, assembly (default) or builder
+     * </pre>
+     */
     public static void main(String[] args) throws Exception {
         ClassFileDataLoader loader;
         InputStream in;
