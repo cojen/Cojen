@@ -495,28 +495,27 @@ public class BeanComparator implements Comparator, Serializable {
         ClassFile cf = new ClassFile(className);
         cf.markSynthetic();
         cf.setSourceFile(BeanComparator.class.getName());
+        try {
+            cf.setTarget(System.getProperty("java.specification.version"));
+        } catch (Exception e) {
+        }
 
         cf.addInterface(Comparator.class);
         cf.addInterface(Serializable.class);
 
-        Modifiers privateAccess = new Modifiers();
-        privateAccess.setPrivate(true);
-        Modifiers publicAccess = new Modifiers();
-        publicAccess.setPublic(true);
-
         // Define fields to hold usage comparator and collator.
         TypeDesc comparatorType = TypeDesc.forClass(Comparator.class);
         TypeDesc comparatorArrayType = comparatorType.toArrayType();
-        cf.addField(privateAccess, 
+        cf.addField(Modifiers.PRIVATE,
                     "mCollators", comparatorArrayType).markSynthetic();
-        cf.addField(privateAccess, 
+        cf.addField(Modifiers.PRIVATE,
                     "mUsingComparators", comparatorArrayType).markSynthetic();
 
         // Create constructor to initialize fields.
         TypeDesc[] paramTypes = {
             comparatorArrayType, comparatorArrayType
         };
-        MethodInfo ctor = cf.addConstructor(publicAccess, paramTypes);
+        MethodInfo ctor = cf.addConstructor(Modifiers.PUBLIC, paramTypes);
         ctor.markSynthetic();
         CodeBuilder builder = new CodeBuilder(ctor);
 
@@ -671,8 +670,10 @@ public class BeanComparator implements Comparator, Serializable {
                 builder.loadField("mUsingComparators", comparatorArrayType);
                 builder.loadConstant(i);
                 builder.loadFromArray(TypeDesc.forClass(Comparator.class));
-                loadAsObject(builder, propertyClass, p1);
-                loadAsObject(builder, propertyClass, p2);
+                builder.loadLocal(p1);
+                builder.convert(propertyType, propertyType.toObjectType());
+                builder.loadLocal(p2);
+                builder.convert(propertyType, propertyType.toObjectType());
                 builder.invoke(compareMethod);
             } else {
                 // If case-sensitive is off and a collator is provided and
@@ -742,37 +743,6 @@ public class BeanComparator implements Comparator, Serializable {
         builder.returnValue(TypeDesc.INT);
 
         return cf;
-    }
-
-    private static void loadAsObject(CodeBuilder builder,
-                                     Class type, LocalVariable v)
-    {
-        if (!type.isPrimitive()) {
-            builder.loadLocal(v);
-            return;
-        }
-
-        if (type == boolean.class) {
-            TypeDesc td = TypeDesc.BOOLEAN;
-            Label falseLabel = builder.createLabel();
-            Label endLabel = builder.createLabel();
-            builder.loadLocal(v);
-            builder.ifZeroComparisonBranch(falseLabel, "==");
-            builder.loadStaticField("java.lang.Boolean", "TRUE", td);
-            builder.branch(endLabel);
-            falseLabel.setLocation();
-            builder.loadStaticField("java.lang.Boolean", "FALSE", td);
-            endLabel.setLocation();
-            return;
-        }
-
-        TypeDesc objectType = TypeDesc.forClass(type).toObjectType();
-        TypeDesc[] params = {objectType.toPrimitiveType()};
-
-        builder.newObject(objectType);
-        builder.dup();
-        builder.loadLocal(v);
-        builder.invokeConstructor(objectType.getRootName(), params);
     }
 
     private static void generatePrimitiveComparison(CodeBuilder builder,

@@ -22,10 +22,10 @@ package cojen.classfile;
  *
  * @author Brian S O'Neill
  */
-public class FilteredCodeAssembler implements CodeAssembler {
+public class DelegatedCodeAssembler implements CodeAssembler {
     protected final CodeAssembler mAssembler;
 
-    public FilteredCodeAssembler(CodeAssembler assembler) {
+    public DelegatedCodeAssembler(CodeAssembler assembler) {
         mAssembler = assembler;
     }
 
@@ -107,6 +107,12 @@ public class FilteredCodeAssembler implements CodeAssembler {
         mAssembler.loadField(className, fieldName, type);
     }
 
+    public void loadField(TypeDesc classDesc,
+                          String fieldName,
+                          TypeDesc type) {
+        mAssembler.loadField(classDesc, fieldName, type);
+    }
+
     public void loadStaticField(String fieldName,
                                 TypeDesc type) {
         mAssembler.loadStaticField(fieldName, type);
@@ -116,6 +122,12 @@ public class FilteredCodeAssembler implements CodeAssembler {
                                 String fieldName,
                                 TypeDesc type) {
         mAssembler.loadStaticField(className, fieldName, type);
+    }
+
+    public void loadStaticField(TypeDesc classDesc,
+                                String fieldName,
+                                TypeDesc type) {
+        mAssembler.loadStaticField(classDesc, fieldName, type);
     }
 
     public void storeField(String fieldName,
@@ -129,6 +141,12 @@ public class FilteredCodeAssembler implements CodeAssembler {
         mAssembler.storeField(className, fieldName, type);
     }
 
+    public void storeField(TypeDesc classDesc,
+                           String fieldName,
+                           TypeDesc type) {
+        mAssembler.storeField(classDesc, fieldName, type);
+    }
+
     public void storeStaticField(String fieldName,
                                  TypeDesc type) {
         mAssembler.storeStaticField(fieldName, type);
@@ -138,6 +156,12 @@ public class FilteredCodeAssembler implements CodeAssembler {
                                  String fieldName,
                                  TypeDesc type) {
         mAssembler.storeStaticField(className, fieldName, type);
+    }
+
+    public void storeStaticField(TypeDesc classDesc,
+                                 String fieldName,
+                                 TypeDesc type) {
+        mAssembler.storeStaticField(classDesc, fieldName, type);
     }
 
     public void returnVoid() {
@@ -165,6 +189,13 @@ public class FilteredCodeAssembler implements CodeAssembler {
         mAssembler.invokeVirtual(className, methodName, ret, params);
     }
 
+    public void invokeVirtual(TypeDesc classDesc,
+                              String methodName,
+                              TypeDesc ret,
+                              TypeDesc[] params) {
+        mAssembler.invokeVirtual(classDesc, methodName, ret, params);
+    }
+
     public void invokeStatic(String methodName,
                              TypeDesc ret,
                              TypeDesc[] params) {
@@ -178,11 +209,25 @@ public class FilteredCodeAssembler implements CodeAssembler {
         mAssembler.invokeStatic(className, methodName, ret, params);
     }
 
+    public void invokeStatic(TypeDesc classDesc,
+                             String methodName,
+                             TypeDesc ret,
+                             TypeDesc[] params) {
+        mAssembler.invokeStatic(classDesc, methodName, ret, params);
+    }
+
     public void invokeInterface(String className,
                                 String methodName,
                                 TypeDesc ret,
                                 TypeDesc[] params) {
         mAssembler.invokeInterface(className, methodName, ret, params);
+    }
+
+    public void invokeInterface(TypeDesc classDesc,
+                                String methodName,
+                                TypeDesc ret,
+                                TypeDesc[] params) {
+        mAssembler.invokeInterface(classDesc, methodName, ret, params);
     }
 
     public void invokePrivate(String methodName,
@@ -198,12 +243,23 @@ public class FilteredCodeAssembler implements CodeAssembler {
         mAssembler.invokeSuper(superClassName, methodName, ret, params);
     }
 
+    public void invokeSuper(TypeDesc superClassDesc,
+                            String methodName,
+                            TypeDesc ret,
+                            TypeDesc[] params) {
+        mAssembler.invokeSuper(superClassDesc, methodName, ret, params);
+    }
+
     public void invokeConstructor(TypeDesc[] params) {
         mAssembler.invokeConstructor(params);
     }
 
     public void invokeConstructor(String className, TypeDesc[] params) {
         mAssembler.invokeConstructor(className, params);
+    }
+
+    public void invokeConstructor(TypeDesc classDesc, TypeDesc[] params) {
+        mAssembler.invokeConstructor(classDesc, params);
     }
 
     public void invokeSuperConstructor(TypeDesc[] params) {

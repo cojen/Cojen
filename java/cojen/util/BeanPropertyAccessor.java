@@ -90,10 +90,7 @@ public abstract class BeanPropertyAccessor {
         } catch (Exception e) {
         }
 
-        Modifiers publicAccess = new Modifiers();
-        publicAccess.setPublic(true);
-
-        MethodInfo ctor = cf.addConstructor(publicAccess, null);
+        MethodInfo ctor = cf.addConstructor(Modifiers.PUBLIC, null);
         ctor.markSynthetic();
         CodeBuilder builder = new CodeBuilder(ctor);
 
@@ -112,9 +109,6 @@ public abstract class BeanPropertyAccessor {
                                        BeanProperty[] properties,
                                        boolean forRead)
     {
-        Modifiers publicAccess = new Modifiers();
-        publicAccess.setPublic(true);
-
         TypeDesc objectType = TypeDesc.OBJECT;
         TypeDesc stringType = TypeDesc.STRING;
         TypeDesc intType = TypeDesc.INT;
@@ -126,13 +120,13 @@ public abstract class BeanPropertyAccessor {
         if (forRead) {
             TypeDesc[] params = {objectType, stringType};
             mi = cf.addMethod
-                (publicAccess, "getPropertyValue", objectType, params);
+                (Modifiers.PUBLIC, "getPropertyValue", objectType, params);
         } else {
             TypeDesc[] params = new TypeDesc[] {
                 objectType, stringType, objectType
             };
             mi = cf.addMethod
-                (publicAccess, "setPropertyValue", null, params);
+                (Modifiers.PUBLIC, "setPropertyValue", null, params);
         }
 
         mi.markSynthetic();

@@ -203,6 +203,19 @@ public interface CodeAssembler {
                    TypeDesc type);
 
     /**
+     * Generates code that loads a value from a field from any class. 
+     * An object reference must be on the stack. After the generated code 
+     * has executed, the object reference is replaced by the value retrieved 
+     * from the field.
+     *
+     * @throws IllegalArgumentException if classDesc refers to an array or
+     * primitive type
+     */
+    void loadField(TypeDesc classDesc,
+                   String fieldName,
+                   TypeDesc type);
+
+    /**
      * Generates code that loads a value from a static field from this class. 
      * After the generated code has executed, the value retrieved is placed
      * on the stack.
@@ -216,6 +229,18 @@ public interface CodeAssembler {
      * on the stack.
      */
     void loadStaticField(String className,
+                         String fieldName,
+                         TypeDesc type);
+
+    /**
+     * Generates code that loads a value from a static field from any class. 
+     * After the generated code has executed, the value retrieved is placed
+     * on the stack.
+     *
+     * @throws IllegalArgumentException if classDesc refers to an array or
+     * primitive type
+     */
+    void loadStaticField(TypeDesc classDesc,
                          String fieldName,
                          TypeDesc type);
 
@@ -241,6 +266,19 @@ public interface CodeAssembler {
                     TypeDesc type);
 
     /**
+     * Generates code that stores a value into a field from any class. 
+     * An object reference and value must be on the stack. After the generated 
+     * code has executed, the object reference and value are gone from
+     * the stack.
+     *
+     * @throws IllegalArgumentException if classDesc refers to an array or
+     * primitive type
+     */
+    void storeField(TypeDesc classDesc,
+                    String fieldName,
+                    TypeDesc type);
+
+    /**
      * Generates code that stores a value into a field from this class. 
      * A value must be on the stack. After the generated 
      * code has executed, the value is gone from the stack.
@@ -254,6 +292,18 @@ public interface CodeAssembler {
      * code has executed, the value is gone from the stack.
      */
     void storeStaticField(String className,
+                          String fieldName,
+                          TypeDesc type);
+
+    /**
+     * Generates code that stores a value into a field from any class. 
+     * A value must be on the stack. After the generated 
+     * code has executed, the value is gone from the stack.
+     *
+     * @throws IllegalArgumentException if classDesc refers to an array or
+     * primitive type
+     */
+    void storeStaticField(TypeDesc classDesc,
                           String fieldName,
                           TypeDesc type);
 
@@ -320,6 +370,20 @@ public interface CodeAssembler {
                        TypeDesc[] params);
 
     /**
+     * Generates code to invoke a virtual method in any class. The object
+     * reference and the method's argument(s) must be on the stack.
+     *
+     * @param ret May be null if method returns void.
+     * @param params May be null if method takes no parameters.
+     * @throws IllegalArgumentException if classDesc refers to an array or
+     * primitive type
+     */
+    void invokeVirtual(TypeDesc classDesc,
+                       String methodName,
+                       TypeDesc ret,
+                       TypeDesc[] params);
+
+    /**
      * Generates code to invoke a static method in this class. The method's
      * argument(s) must be on the stack.
      *
@@ -343,6 +407,20 @@ public interface CodeAssembler {
                       TypeDesc[] params);
 
     /**
+     * Generates code to invoke a static method in any class. The method's
+     * argument(s) must be on the stack.
+     *
+     * @param ret May be null if method returns void.
+     * @param params May be null if method takes no parameters.
+     * @throws IllegalArgumentException if classDesc refers to an array or
+     * primitive type
+     */
+    void invokeStatic(TypeDesc classDesc,
+                      String methodName,
+                      TypeDesc ret,
+                      TypeDesc[] params);
+
+    /**
      * Generates code to invoke an interface method in any class. The object
      * reference and the method's argument(s) must be on the stack.
      *
@@ -350,6 +428,20 @@ public interface CodeAssembler {
      * @param params May be null if method takes no parameters.
      */
     void invokeInterface(String className,
+                         String methodName,
+                         TypeDesc ret,
+                         TypeDesc[] params);
+
+    /**
+     * Generates code to invoke an interface method in any class. The object
+     * reference and the method's argument(s) must be on the stack.
+     *
+     * @param ret May be null if method returns void.
+     * @param params May be null if method takes no parameters.
+     * @throws IllegalArgumentException if classDesc refers to an array or
+     * primitive type
+     */
+    void invokeInterface(TypeDesc classDesc,
                          String methodName,
                          TypeDesc ret,
                          TypeDesc[] params);
@@ -378,6 +470,20 @@ public interface CodeAssembler {
                      TypeDesc[] params);
 
     /**
+     * Generates code to invoke a method in the super class.
+     * The object reference and the method's argument(s) must be on the stack.
+     *
+     * @param ret May be null if method returns void.
+     * @param params May be null if method takes no parameters.
+     * @throws IllegalArgumentException if superClassDesc refers to an array or
+     * primitive type
+     */
+    void invokeSuper(TypeDesc superClassDesc,
+                     String methodName,
+                     TypeDesc ret,
+                     TypeDesc[] params);
+
+    /**
      * Generates code to invoke a class constructor in this class. The object 
      * reference and the constructor's argument(s) must be on the stack.
      *
@@ -392,6 +498,16 @@ public interface CodeAssembler {
      * @param params May be null if constructor takes no parameters.
      */
     void invokeConstructor(String className, TypeDesc[] params);
+
+    /**
+     * Generates code to invoke a class constructor in any class. The object 
+     * reference and the constructor's argument(s) must be on the stack.
+     *
+     * @param params May be null if constructor takes no parameters.
+     * @throws IllegalArgumentException if classDesc refers to an array or
+     * primitive type
+     */
+    void invokeConstructor(TypeDesc classDesc, TypeDesc[] params);
 
     /**
      * Generates code to invoke a super class constructor. The object 

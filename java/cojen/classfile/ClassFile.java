@@ -152,8 +152,8 @@ public class ClassFile {
         short major = din.readShort();
 
         ConstantPool cp = ConstantPool.readFrom(din);
-        Modifiers modifiers = new Modifiers(din.readUnsignedShort());
-        modifiers.setSynchronized(false);
+        Modifiers modifiers = Modifiers.getInstance(din.readUnsignedShort())
+            .toSynchronized(false);
 
         int index = din.readUnsignedShort();
         ConstantClassInfo thisClass = (ConstantClassInfo)cp.getConstant(index);
@@ -217,10 +217,11 @@ public class ClassFile {
                             (outer, loader, attrFactory, loadedClassFiles);
                     }
                     Modifiers innerFlags = info.getModifiers();
-                    modifiers.setStatic(innerFlags.isStatic());
-                    modifiers.setPrivate(innerFlags.isPrivate());
-                    modifiers.setProtected(innerFlags.isProtected());
-                    modifiers.setPublic(innerFlags.isPublic());
+                    modifiers = modifiers
+                        .toStatic(innerFlags.isStatic())
+                        .toPrivate(innerFlags.isPrivate())
+                        .toProtected(innerFlags.isProtected())
+                        .toPublic(innerFlags.isPublic());
                 } else if (thisClass.equals(info.getOuterClass())) {
                     // This class is an outer class.
                     ConstantClassInfo inner = info.getInnerClass();
@@ -381,7 +382,7 @@ public class ClassFile {
         mCp = new ConstantPool();
 
         // public, non-final, concrete class
-        mModifiers = new Modifiers(Modifier.PUBLIC);
+        mModifiers = Modifiers.PUBLIC;
 
         mThisClass = ConstantClassInfo.make(mCp, className);
         mSuperClass = ConstantClassInfo.make(mCp, superClassName);
@@ -684,8 +685,7 @@ public class ClassFile {
      * methods defined by a pre-existing interface.
      */
     public MethodInfo addMethod(Method method) {
-        Modifiers modifiers = new Modifiers(method.getModifiers());
-        modifiers.setAbstract(false);
+        Modifiers modifiers = Modifiers.getInstance(method.getModifiers()).toAbstract(false);
 
         TypeDesc ret = TypeDesc.forClass(method.getReturnType());
 
@@ -723,9 +723,7 @@ public class ClassFile {
      * Adds a public, no-arg constructor with the code buffer properly defined.
      */
     public MethodInfo addDefaultConstructor() {
-        Modifiers modifiers = new Modifiers();
-        modifiers.setPublic(true);
-        MethodInfo mi = addConstructor(modifiers, null);
+        MethodInfo mi = addConstructor(Modifiers.PUBLIC, null);
         CodeBuilder builder = new CodeBuilder(mi);
         builder.loadThis();
         builder.invokeSuperConstructor(null);
@@ -738,8 +736,7 @@ public class ClassFile {
      */
     public MethodInfo addInitializer() {
         MethodDesc md = MethodDesc.forArguments(null, null);
-        Modifiers af = new Modifiers();
-        af.setStatic(true);
+        Modifiers af = Modifiers.NONE.toStatic(true);
         MethodInfo mi = new MethodInfo(this, af, "<clinit>", md);
         mMethods.add(mi);
         return mi;
@@ -785,9 +782,7 @@ public class ClassFile {
         }
 
         ClassFile inner = new ClassFile(fullInnerClassName, superClassName);
-        Modifiers access = inner.getModifiers();
-        access.setPrivate(true);
-        access.setStatic(true);
+        Modifiers modifiers = inner.getModifiers().toPrivate(true).toStatic(true);
         inner.mInnerClassName = innerClassName;
         inner.mOuterClass = this;
 
@@ -803,12 +798,12 @@ public class ClassFile {
         }
 
         mInnerClassesAttr.addInnerClass(fullInnerClassName, mClassName, 
-                                        innerClassName, access);
+                                        innerClassName, modifiers);
 
         // Record the inner class in itself.
         inner.addAttribute(new InnerClassesAttr(inner.getConstantPool()));
         inner.mInnerClassesAttr.addInnerClass(fullInnerClassName, mClassName,
-                                              innerClassName, access);
+                                              innerClassName, modifiers);
 
         return inner;
     }
@@ -970,8 +965,7 @@ public class ClassFile {
         
         mCp.writeTo(dout);
         
-        int modifier = mModifiers.getModifier();
-        dout.writeShort(modifier | Modifier.SYNCHRONIZED);
+        dout.writeShort(mModifiers.getBitmask() | Modifier.SYNCHRONIZED);
 
         dout.writeShort(mThisClass.getIndex());
         if (mSuperClass != null) {

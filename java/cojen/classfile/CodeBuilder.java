@@ -176,6 +176,16 @@ public class CodeBuilder implements CodeBuffer, CodeAssembler {
              new byte[] {opcode, (byte)0, (byte)0}, info);
     }
 
+    private String getClassName(TypeDesc classDesc) throws IllegalArgumentException {
+        if (classDesc.isPrimitive()) {
+            throw new IllegalArgumentException("Primitive type not allowed");
+        }
+        if (classDesc.isArray()) {
+            throw new IllegalArgumentException("Array type not allowed");
+        }
+        return classDesc.getRootName();
+    }
+
     public LocalVariable[] getParameters() {
         return (LocalVariable[])mParameters.clone();
     }
@@ -511,6 +521,13 @@ public class CodeBuilder implements CodeBuffer, CodeAssembler {
                  type);
     }
 
+    public void loadField(TypeDesc classDesc,
+                          String fieldName,
+                          TypeDesc type) {
+
+        loadField(getClassName(classDesc), fieldName, type);
+    }
+
     public void loadStaticField(String fieldName,
                                 TypeDesc type) {
 
@@ -524,6 +541,13 @@ public class CodeBuilder implements CodeBuffer, CodeAssembler {
         getfield(1, Opcode.GETSTATIC,
                  mCp.addConstantField(className, fieldName, type), 
                  type);
+    }
+
+    public void loadStaticField(TypeDesc classDesc,
+                                String fieldName,
+                                TypeDesc type) {
+
+        loadStaticField(getClassName(classDesc), fieldName, type);
     }
 
     private void getfield(int stackAdjust, byte opcode, ConstantInfo info, 
@@ -557,6 +581,13 @@ public class CodeBuilder implements CodeBuffer, CodeAssembler {
                  type);
     }
 
+    public void storeField(TypeDesc classDesc,
+                           String fieldName,
+                           TypeDesc type) {
+
+        storeField(getClassName(classDesc), fieldName, type);
+    }
+
     public void storeStaticField(String fieldName,
                                  TypeDesc type) {
 
@@ -570,6 +601,13 @@ public class CodeBuilder implements CodeBuffer, CodeAssembler {
         putfield(0, Opcode.PUTSTATIC,
                  mCp.addConstantField(className, fieldName, type), 
                  type);
+    }
+
+    public void storeStaticField(TypeDesc classDesc,
+                                 String fieldName,
+                                 TypeDesc type) {
+
+        storeStaticField(getClassName(classDesc), fieldName, type);
     }
 
     private void putfield(int stackAdjust, byte opcode, ConstantInfo info, 
@@ -1034,6 +1072,14 @@ public class CodeBuilder implements CodeBuffer, CodeAssembler {
         addCode(stackAdjust, Opcode.INVOKEVIRTUAL, info);
     }
 
+    public void invokeVirtual(TypeDesc classDesc,
+                              String methodName,
+                              TypeDesc ret,
+                              TypeDesc[] params) {
+
+        invokeVirtual(getClassName(classDesc), methodName, ret, params);
+    }
+
     public void invokeStatic(String methodName,
                              TypeDesc ret,
                              TypeDesc[] params) {
@@ -1063,6 +1109,14 @@ public class CodeBuilder implements CodeBuffer, CodeAssembler {
         addCode(stackAdjust, Opcode.INVOKESTATIC, info);
     }
 
+    public void invokeStatic(TypeDesc classDesc,
+                             String methodName,
+                             TypeDesc ret,
+                             TypeDesc[] params) {
+
+        invokeStatic(getClassName(classDesc), methodName, ret, params);
+    }
+
     public void invokeInterface(String className,
                                 String methodName,
                                 TypeDesc ret,
@@ -1087,6 +1141,14 @@ public class CodeBuilder implements CodeBuffer, CodeAssembler {
         //bytes[4] = (byte)0;
 
         mInstructions.new ConstantOperandInstruction(stackAdjust, bytes, info);
+    }
+
+    public void invokeInterface(TypeDesc classDesc,
+                                String methodName,
+                                TypeDesc ret,
+                                TypeDesc[] params) {
+
+        invokeInterface(getClassName(classDesc), methodName, ret, params);
     }
 
     public void invokePrivate(String methodName,
@@ -1116,6 +1178,14 @@ public class CodeBuilder implements CodeBuffer, CodeAssembler {
         }
 
         addCode(stackAdjust, Opcode.INVOKESPECIAL, info);
+    }
+
+    public void invokeSuper(TypeDesc superClassDesc,
+                            String methodName,
+                            TypeDesc ret,
+                            TypeDesc[] params) {
+
+        invokeSuper(getClassName(superClassDesc), methodName, ret, params);
     }
 
     public void invokeSuper(Method method) {
@@ -1154,6 +1224,10 @@ public class CodeBuilder implements CodeBuffer, CodeAssembler {
         }
 
         addCode(stackAdjust, Opcode.INVOKESPECIAL, info);
+    }
+
+    public void invokeConstructor(TypeDesc classDesc, TypeDesc[] params) {
+        invokeConstructor(getClassName(classDesc), params);
     }
 
     public void invokeSuperConstructor(TypeDesc[] params) {

@@ -79,7 +79,7 @@ public class InnerClassesAttr extends Attribute {
                 innerName = (ConstantUTFInfo)cp.getConstant(name_index);
             }
 
-            mInnerClasses.add(new Info(inner, outer, innerName, af));
+            mInnerClasses.add(new Info(inner, outer, innerName, Modifiers.getInstance(af)));
         }
     }
 
@@ -109,8 +109,7 @@ public class InnerClassesAttr extends Attribute {
             nameInfo = getConstantPool().addConstantUTF(name);
         }
 
-        mInnerClasses.add(new Info(innerInfo, outerInfo, nameInfo, 
-                                   modifiers.getModifier()));
+        mInnerClasses.add(new Info(innerInfo, outerInfo, nameInfo, modifiers));
     }
 
     public Info[] getInnerClassesInfo() {
@@ -134,17 +133,17 @@ public class InnerClassesAttr extends Attribute {
         private ConstantClassInfo mInner;
         private ConstantClassInfo mOuter;
         private ConstantUTFInfo mName;
-        private int mModifier;
+        private Modifiers mModifiers;
 
         Info(ConstantClassInfo inner,
              ConstantClassInfo outer,
              ConstantUTFInfo name,
-             int modifier) {
+             Modifiers modifiers) {
 
             mInner = inner;
             mOuter = outer;
             mName = name;
-            mModifier = modifier;
+            mModifiers = modifiers;
         }
 
         /**
@@ -173,10 +172,10 @@ public class InnerClassesAttr extends Attribute {
         }
 
         /**
-         * Returns a copy of the modifiers.
+         * Returns the modifiers.
          */
         public Modifiers getModifiers() {
-            return new Modifiers(mModifier);
+            return mModifiers;
         }
 
         public void writeTo(DataOutput dout) throws IOException {
@@ -198,7 +197,7 @@ public class InnerClassesAttr extends Attribute {
                 dout.writeShort(mName.getIndex());
             }
             
-            dout.writeShort(mModifier);
+            dout.writeShort(mModifiers.getBitmask());
         }
     }
 }

@@ -19,331 +19,384 @@ package cojen.classfile;
 import java.lang.reflect.Modifier;
 
 /**
- * The Modifiers class is a wrapper around a Modifier bit mask. The
- * methods provided to manipulate the Modifier ensure that it is always
- * legal. i.e. setting it public automatically clears it from being
- * private or protected.
+ * The Modifiers class is an immutable wrapper around a modifier bitmask. The
+ * methods provided to manipulate the bitmask ensure that it is always
+ * legal. i.e. setting it public automatically clears it from being private or
+ * protected.
  * 
  * @author Brian S O'Neill
  */
-public class Modifiers extends Modifier implements Cloneable {
-    public static boolean isEnum(int modifier) {
-        return isNative(modifier);
-    }
+public class Modifiers {
+    public static final Modifiers NONE;
+    public static final Modifiers PUBLIC;
+    public static final Modifiers PUBLIC_STATIC;
+    public static final Modifiers PROTECTED;
+    public static final Modifiers PRIVATE;
 
-    public static boolean isVarArgs(int modifier) {
-        return isTransient(modifier);
+    static {
+        NONE = new Modifiers(0);
+        PUBLIC = new Modifiers(Modifier.PUBLIC);
+        PUBLIC_STATIC = new Modifiers(Modifier.PUBLIC | Modifier.STATIC);
+        PROTECTED = new Modifiers(Modifier.PROTECTED);
+        PRIVATE = new Modifiers(Modifier.PRIVATE);
     }
 
     /**
-     * When set public, the modifier is cleared from being private or
-     * protected.
+     * Returns a Modifiers object with the given bitmask.
      */
-    public static int setPublic(int modifier, boolean b) {
+    public static Modifiers getInstance(int bitmask) {
+        switch (bitmask) {
+        case 0:
+            return NONE;
+        case Modifier.PUBLIC:
+            return PUBLIC;
+        case Modifier.PUBLIC | Modifier.STATIC:
+            return PUBLIC_STATIC;
+        case Modifier.PROTECTED:
+            return PROTECTED;
+        case Modifier.PRIVATE:
+            return PRIVATE;
+        }
+
+        return new Modifiers(bitmask);
+    }
+
+    private static int toPublic(int bitmask, boolean b) {
         if (b) {
-            return (modifier | PUBLIC) & (~PROTECTED & ~PRIVATE);
+            return (bitmask | Modifier.PUBLIC) & (~Modifier.PROTECTED & ~Modifier.PRIVATE);
         } else {
-            return modifier & ~PUBLIC;
+            return bitmask & ~Modifier.PUBLIC;
         }
     }
     
-    /**
-     * When set private, the modifier is cleared from being public or
-     * protected.
-     */
-    public static int setPrivate(int modifier, boolean b) {
+    private static int toPrivate(int bitmask, boolean b) {
         if (b) {
-            return (modifier | PRIVATE) & (~PUBLIC & ~PROTECTED);
+            return (bitmask | Modifier.PRIVATE) & (~Modifier.PUBLIC & ~Modifier.PROTECTED);
         } else {
-            return modifier & ~PRIVATE;
+            return bitmask & ~Modifier.PRIVATE;
         }
     }
 
-    /**
-     * When set protected, the modifier is cleared from being public or
-     * private.
-     */
-    public static int setProtected(int modifier, boolean b) {
+    private static int toProtected(int bitmask, boolean b) {
         if (b) {
-            return (modifier | PROTECTED) & (~PUBLIC & ~PRIVATE);
+            return (bitmask | Modifier.PROTECTED) & (~Modifier.PUBLIC & ~Modifier.PRIVATE);
         } else {
-            return modifier & ~PROTECTED;
+            return bitmask & ~Modifier.PROTECTED;
         }
     }
     
-    public static int setStatic(int modifier, boolean b) {
+    private static int toStatic(int bitmask, boolean b) {
         if (b) {
-            return modifier | STATIC;
+            return bitmask | Modifier.STATIC;
         } else {
-            return modifier & ~STATIC;
+            return bitmask & ~Modifier.STATIC;
         }
     }
 
+    private static int toFinal(int bitmask, boolean b) {
+        if (b) {
+            return (bitmask | Modifier.FINAL) & (~Modifier.INTERFACE & ~Modifier.ABSTRACT);
+        } else {
+            return bitmask & ~Modifier.FINAL;
+        }
+    }
+    
+    private static int toSynchronized(int bitmask, boolean b) {
+        if (b) {
+            return (bitmask | Modifier.SYNCHRONIZED) &
+                (~Modifier.VOLATILE & ~Modifier.TRANSIENT & ~Modifier.INTERFACE);
+        } else {
+            return bitmask & ~Modifier.SYNCHRONIZED;
+        }
+    }
+    
+    private static int toVolatile(int bitmask, boolean b) {
+        if (b) {
+            return (bitmask | Modifier.VOLATILE) &
+                (~Modifier.SYNCHRONIZED & ~Modifier.NATIVE & ~Modifier.INTERFACE &
+                 ~Modifier.ABSTRACT & ~Modifier.STRICT);
+        } else {
+            return bitmask & ~Modifier.VOLATILE;
+        }
+    }
+    
+    private static int toTransient(int bitmask, boolean b) {
+        if (b) {
+            return (bitmask | Modifier.TRANSIENT) &
+                (~Modifier.SYNCHRONIZED & ~Modifier.NATIVE &
+                 ~Modifier.INTERFACE & ~Modifier.ABSTRACT & ~Modifier.STRICT);
+        } else {
+            return bitmask & ~Modifier.TRANSIENT;
+        }
+    }
+    
+    private static int toNative(int bitmask, boolean b) {
+        if (b) {
+            return (bitmask | Modifier.NATIVE) & 
+                (~Modifier.VOLATILE & ~Modifier.TRANSIENT &
+                 ~Modifier.INTERFACE & ~Modifier.ABSTRACT & ~Modifier.STRICT);
+        } else {
+            return bitmask & ~Modifier.NATIVE;
+        }
+    }
+    
+    private static int toInterface(int bitmask, boolean b) {
+        if (b) {
+            return (bitmask | (Modifier.INTERFACE | Modifier.ABSTRACT)) & 
+                (~Modifier.FINAL & ~Modifier.SYNCHRONIZED &
+                 ~Modifier.VOLATILE & ~Modifier.TRANSIENT & ~Modifier.NATIVE);
+        } else {
+            return bitmask & ~Modifier.INTERFACE;
+        }
+    }
+
+    private static int toAbstract(int bitmask, boolean b) {
+        if (b) {
+            return (bitmask | Modifier.ABSTRACT) & 
+                (~Modifier.FINAL & ~Modifier.VOLATILE & ~Modifier.TRANSIENT & ~Modifier.NATIVE &
+                 ~Modifier.SYNCHRONIZED & ~Modifier.STRICT);
+        } else {
+            return bitmask & ~Modifier.ABSTRACT & ~Modifier.INTERFACE;
+        }
+    }
+
+    private static int toStrict(int bitmask, boolean b) {
+        if (b) {
+            return bitmask | Modifier.STRICT;
+        } else {
+            return bitmask & ~Modifier.STRICT;
+        }
+    }
+
+    private static int toEnum(int bitmask, boolean b) {
+        // Enum re-uses the Modifier.NATIVE modifier, which used to only apply to
+        // methods.
+        if (b) {
+            return (bitmask | Modifier.NATIVE) &
+                (~Modifier.ABSTRACT & ~Modifier.INTERFACE &
+                 ~Modifier.STRICT & ~Modifier.SYNCHRONIZED);
+        } else {
+            return bitmask & ~Modifier.NATIVE;
+        }
+    }
+
+    private static int toVarArgs(int bitmask, boolean b) {
+        // Enum re-uses the TRANSIENT modifier, which used to only apply to
+        // fields.
+        if (b) {
+            return (bitmask | Modifier.TRANSIENT) &
+                (~Modifier.INTERFACE & ~Modifier.VOLATILE);
+        } else {
+            return bitmask & ~Modifier.TRANSIENT;
+        }
+    }
+
+    private final int mBitmask;
+    
+    private Modifiers(int bitmask) {
+        mBitmask = bitmask;
+    }
+
     /**
-     * When set final, the modifier is cleared from being an interface or
+     * Returns the bitmask.
+     */
+    public final int getBitmask() {
+        return mBitmask;
+    }
+    
+    public boolean isPublic() {
+        return Modifier.isPublic(mBitmask);
+    }
+
+    public boolean isPrivate() {
+        return Modifier.isPrivate(mBitmask);
+    }
+
+    public boolean isProtected() {
+        return Modifier.isProtected(mBitmask);
+    }
+    
+    public boolean isStatic() {
+        return Modifier.isStatic(mBitmask);
+    }
+
+    public boolean isFinal() {
+        return Modifier.isFinal(mBitmask);
+    }
+
+    public boolean isSynchronized() {
+        return Modifier.isSynchronized(mBitmask);
+    }
+
+    public boolean isVolatile() {
+        return Modifier.isVolatile(mBitmask);
+    }
+
+    public boolean isTransient() {
+        return Modifier.isTransient(mBitmask);
+    }
+    
+    public boolean isNative() {
+        return Modifier.isNative(mBitmask);
+    }
+    
+    public boolean isInterface() {
+        return Modifier.isInterface(mBitmask);
+    }
+    
+    public boolean isAbstract() {
+        return Modifier.isAbstract(mBitmask);
+    }
+
+    public boolean isStrict() {
+        return Modifier.isStrict(mBitmask);
+    }
+
+    public boolean isEnum() {
+        return Modifier.isNative(mBitmask);
+    }
+
+    public boolean isVarArgs() {
+        return Modifier.isTransient(mBitmask);
+    }
+
+    /**
+     * When set public, the bitmask is cleared from being private or protected.
+     *
+     * @param b true to set public, false otherwise
+     */
+    public Modifiers toPublic(boolean b) {
+        return convert(toPublic(mBitmask, b));
+    }
+    
+    /**
+     * When set private, the bitmask is cleared from being public or protected.
+     *
+     * @param b true to set private, false otherwise
+     */
+    public Modifiers toPrivate(boolean b) {
+        return convert(toPrivate(mBitmask, b));
+    }
+
+    /**
+     * When set protected, the bitmask is cleared from being public or private.
+     *
+     * @param b true to set protected, false otherwise
+     */
+    public Modifiers toProtected(boolean b) {
+        return convert(toProtected(mBitmask, b));
+    }
+
+    /**
+     * @param b true to set static, false otherwise
+     */
+    public Modifiers toStatic(boolean b) {
+        return convert(toStatic(mBitmask, b));
+    }
+
+    /**
+     * When set final, the bitmask is cleared from being an interface or
      * abstract.
+     *
+     * @param b true to set final, false otherwise
      */
-    public static int setFinal(int modifier, boolean b) {
-        if (b) {
-            return (modifier | FINAL) & (~INTERFACE & ~ABSTRACT);
-        } else {
-            return modifier & ~FINAL;
-        }
+    public Modifiers toFinal(boolean b) {
+        return convert(toFinal(mBitmask, b));
     }
-    
+
     /**
      * When set synchronized, non-method settings are cleared.
+     *
+     * @param b true to set synchronized, false otherwise
      */
-    public static int setSynchronized(int modifier, boolean b) {
-        if (b) {
-            return (modifier | SYNCHRONIZED) &
-                (~VOLATILE & ~TRANSIENT & ~INTERFACE);
-        } else {
-            return modifier & ~SYNCHRONIZED;
-        }
+    public Modifiers toSynchronized(boolean b) {
+        return convert(toSynchronized(mBitmask, b));
     }
-    
+
     /**
      * When set volatile, non-field settings are cleared.
+     *
+     * @param b true to set volatile, false otherwise
      */
-    public static int setVolatile(int modifier, boolean b) {
-        if (b) {
-            return (modifier | VOLATILE) &
-                (~SYNCHRONIZED & ~NATIVE & ~INTERFACE & ~ABSTRACT & ~STRICT);
-        } else {
-            return modifier & ~VOLATILE;
-        }
+    public Modifiers toVolatile(boolean b) {
+        return convert(toVolatile(mBitmask, b));
     }
-    
+
     /**
      * When set transient, non-field settings are cleared.
+     *
+     * @param b true to set transient, false otherwise
      */
-    public static int setTransient(int modifier, boolean b) {
-        if (b) {
-            return (modifier | TRANSIENT) &
-                (~SYNCHRONIZED & ~NATIVE & ~INTERFACE & ~ABSTRACT & ~STRICT);
-        } else {
-            return modifier & ~TRANSIENT;
-        }
+    public Modifiers toTransient(boolean b) {
+        return convert(toTransient(mBitmask, b));
     }
-    
+
     /**
      * When set native, non-native-method settings are cleared.
+     *
+     * @param b true to set native, false otherwise
      */
-    public static int setNative(int modifier, boolean b) {
-        if (b) {
-            return (modifier | NATIVE) & 
-                (~VOLATILE & ~TRANSIENT & ~INTERFACE & ~ABSTRACT & ~STRICT);
-        } else {
-            return modifier & ~NATIVE;
-        }
+    public Modifiers toNative(boolean b) {
+        return convert(toNative(mBitmask, b));
     }
-    
+
     /**
      * When set as an interface, non-interface settings are cleared and the
-     * modifier is set abstract.
+     * bitmask is set abstract.
+     *
+     * @param b true to set interface, false otherwise
      */
-    public static int setInterface(int modifier, boolean b) {
-        if (b) {
-            return (modifier | (INTERFACE | ABSTRACT)) & 
-                (~FINAL & ~SYNCHRONIZED & ~VOLATILE & ~TRANSIENT & ~NATIVE);
-        } else {
-            return modifier & ~INTERFACE;
-        }
+    public Modifiers toInterface(boolean b) {
+        return convert(toInterface(mBitmask, b));
     }
 
     /**
-     * When set abstract, the modifier is cleared from being final, volatile,
+     * When set abstract, the bitmask is cleared from being final, volatile,
      * transient, native, synchronized, and strictfp. When cleared from being
-     * abstract, the modifier is also cleared from being an interface.
+     * abstract, the bitmask is also cleared from being an interface.
+     *
+     * @param b true to set abstract, false otherwise
      */
-    public static int setAbstract(int modifier, boolean b) {
-        if (b) {
-            return (modifier | ABSTRACT) & 
-                (~FINAL & ~VOLATILE & ~TRANSIENT & ~NATIVE &
-                 ~SYNCHRONIZED & ~STRICT);
-        } else {
-            return modifier & ~ABSTRACT & ~INTERFACE;
-        }
+    public Modifiers toAbstract(boolean b) {
+        return convert(toAbstract(mBitmask, b));
     }
 
-    public static int setStrict(int modifier, boolean b) {
-        if (b) {
-            return modifier | STRICT;
-        } else {
-            return modifier & ~STRICT;
-        }
+    /**
+     * @param b true to set strictfp, false otherwise
+     */
+    public Modifiers toStrict(boolean b) {
+        return convert(toStrict(mBitmask, b));
     }
 
     /**
      * Used to identify if a field is an enum constant.
+     *
+     * @param b true to set enum, false otherwise
      */
-    public static int setEnum(int modifier, boolean b) {
-        // Enum re-uses the NATIVE modifier, which used to only apply to
-        // methods.
-        if (b) {
-            return (modifier | NATIVE) &
-                (~ABSTRACT & ~INTERFACE & ~STRICT & ~SYNCHRONIZED);
-        } else {
-            return modifier & ~NATIVE;
-        }
+    public Modifiers toEnum(boolean b) {
+        return convert(toEnum(mBitmask, b));
     }
 
     /**
      * Used to identify if a method accepts a variable amount of
      * arguments.
+     *
+     * @param b true to set varargs, false otherwise
      */
-    public static int setVarArgs(int modifier, boolean b) {
-        // Enum re-uses the TRANSIENT modifier, which used to only apply to
-        // fields.
-        if (b) {
-            return (modifier | TRANSIENT) &
-                (~INTERFACE & ~VOLATILE);
-        } else {
-            return modifier & ~TRANSIENT;
-        }
-    }
-
-    int mModifier;
-    
-    /** Construct with a modifier of 0. */
-    public Modifiers() {
-        mModifier = 0;
-    }
-
-    public Modifiers(int modifier) {
-        mModifier = modifier;
-    }
-    
-    public final int getModifier() {
-        return mModifier;
-    }
-    
-    public boolean isPublic() {
-        return isPublic(mModifier);
-    }
-
-    public boolean isPrivate() {
-        return isPrivate(mModifier);
-    }
-
-    public boolean isProtected() {
-        return isProtected(mModifier);
-    }
-    
-    public boolean isStatic() {
-        return isStatic(mModifier);
-    }
-
-    public boolean isFinal() {
-        return isFinal(mModifier);
-    }
-
-    public boolean isSynchronized() {
-        return isSynchronized(mModifier);
-    }
-
-    public boolean isVolatile() {
-        return isVolatile(mModifier);
-    }
-
-    public boolean isTransient() {
-        return isTransient(mModifier);
-    }
-    
-    public boolean isNative() {
-        return isNative(mModifier);
-    }
-    
-    public boolean isInterface() {
-        return isInterface(mModifier);
-    }
-    
-    public boolean isAbstract() {
-        return isAbstract(mModifier);
-    }
-
-    public boolean isStrict() {
-        return isStrict(mModifier);
-    }
-
-    public boolean isEnum() {
-        return isEnum(mModifier);
-    }
-
-    public boolean isVarArgs() {
-        return isVarArgs(mModifier);
-    }
-
-    public void setPublic(boolean b) {
-        mModifier = setPublic(mModifier, b);
-    }
-    
-    public void setPrivate(boolean b) {
-        mModifier = setPrivate(mModifier, b);
-    }
-
-    public void setProtected(boolean b) {
-        mModifier = setProtected(mModifier, b);
-    }
-
-    public void setStatic(boolean b) {
-        mModifier = setStatic(mModifier, b);
-    }
-
-    public void setFinal(boolean b) {
-        mModifier = setFinal(mModifier, b);
-    }
-
-    public void setSynchronized(boolean b) {
-        mModifier = setSynchronized(mModifier, b);
-    }
-
-    public void setVolatile(boolean b) {
-        mModifier = setVolatile(mModifier, b);
-    }
-
-    public void setTransient(boolean b) {
-        mModifier = setTransient(mModifier, b);
-    }
-
-    public void setNative(boolean b) {
-        mModifier = setNative(mModifier, b);
-    }
-
-    public void setInterface(boolean b) {
-        mModifier = setInterface(mModifier, b);
-    }
-
-    public void setAbstract(boolean b) {
-        mModifier = setAbstract(mModifier, b);
-    }
-
-    public void setStrict(boolean b) {
-        mModifier = setStrict(mModifier, b);
-    }
-
-    public void setEnum(boolean b) {
-        mModifier = setEnum(mModifier, b);
-    }
-
-    public void setVarArgs(boolean b) {
-        mModifier = setVarArgs(mModifier, b);
-    }
-
-    public Object clone() {
-        try {
-            return super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new InternalError(e.toString());
-        }
+    public Modifiers toVarArgs(boolean b) {
+        return convert(toVarArgs(mBitmask, b));
     }
 
     /**
      * Returns the string value generated by the Modifier class.
+     *
      * @see java.lang.reflect.Modifier#toString()
      */
     public String toString() {
-        return toString(mModifier);
+        return Modifier.toString(mBitmask);
+    }
+
+    private Modifiers convert(int bitmask) {
+        return bitmask == mBitmask ? this : getInstance(bitmask);
     }
 }

@@ -30,11 +30,8 @@ public class ConvertTest {
 
         cf.addDefaultConstructor();
 
-        Modifiers modifiers = new Modifiers();
-        modifiers.setPublic(true);
-        modifiers.setStatic(true);
         TypeDesc[] params = {TypeDesc.STRING.toArrayType()};
-        MethodInfo mi = cf.addMethod(modifiers, "main", null, params);
+        MethodInfo mi = cf.addMethod(Modifiers.PUBLIC_STATIC, "main", null, params);
         CodeBuilder builder = new CodeBuilder(mi);
 
         builder.mapLineNumber(1);
