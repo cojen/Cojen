@@ -291,6 +291,50 @@ public class Opcode {
         }
     }
 
+    /**
+     * Returns true if the given opcode can throw an exception at runtime.
+     */
+    public final static boolean canThrowException(byte opcode) {
+        switch (opcode) {
+        default:
+            return false;
+        case IALOAD:
+        case LALOAD:
+        case FALOAD:
+        case DALOAD:
+        case AALOAD:
+        case BALOAD:
+        case CALOAD:
+        case SALOAD:
+        case IASTORE:
+        case LASTORE:
+        case FASTORE:
+        case DASTORE:
+        case AASTORE:
+        case BASTORE:
+        case CASTORE:
+        case SASTORE:
+        case IDIV:
+        case LDIV:
+        case IREM:
+        case LREM:
+        case GETFIELD:
+        case PUTFIELD:
+        case INVOKEVIRTUAL:
+        case INVOKESPECIAL:
+        case INVOKEINTERFACE:
+        case NEWARRAY:
+        case ANEWARRAY:
+        case ARRAYLENGTH:
+        case ATHROW:
+        case CHECKCAST:
+        case MONITORENTER:
+        case MONITOREXIT:
+        case MULTIANEWARRAY:
+            return true;
+        }
+    }
+
     private static class Mnemonic {
         public static final String[] m = {
             "nop",
