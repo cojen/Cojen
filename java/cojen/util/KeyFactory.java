@@ -449,8 +449,34 @@ public class KeyFactory {
         if (b == null) {
             return -1;
         }
-        // TODO
-        return 0;
+        Class ac = a.getClass();
+        if (!(ac.isArray())) {
+            return ((Comparable)a).compareTo(b);
+        }
+        if (ac != b.getClass()) {
+            throw new ClassCastException();
+        }
+        if (a instanceof Object[]) {
+            return objectArrayCompare((Object[])a, (Object[])b);
+        } else if (a instanceof int[]) {
+            return intArrayCompare((int[])a, (int[])b);
+        } else if (a instanceof float[]) {
+            return floatArrayCompare((float[])a, (float[])b);
+        } else if (a instanceof long[]) {
+            return longArrayCompare((long[])a, (long[])b);
+        } else if (a instanceof double[]) {
+            return doubleArrayCompare((double[])a, (double[])b);
+        } else if (a instanceof byte[]) {
+            return byteArrayCompare((byte[])a, (byte[])b);
+        } else if (a instanceof char[]) {
+            return charArrayCompare((char[])a, (char[])b);
+        } else if (a instanceof boolean[]) {
+            return booleanArrayCompare((boolean[])a, (boolean[])b);
+        } else if (a instanceof short[]) {
+            return shortArrayCompare((short[])a, (short[])b);
+        } else {
+            throw new ClassCastException();
+        }
     }
 
     protected KeyFactory() {
