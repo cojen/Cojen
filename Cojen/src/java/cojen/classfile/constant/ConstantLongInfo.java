@@ -54,7 +54,7 @@ public class ConstantLongInfo extends ConstantInfo {
         return false;
     }
     
-    int getEntryCount() {
+    protected int getEntryCount() {
         return 2;
     }
 

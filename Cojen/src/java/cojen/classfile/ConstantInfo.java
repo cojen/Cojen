@@ -58,11 +58,11 @@ public abstract class ConstantInfo {
         return mIndex;
     }
 
-    boolean hasPriority() {
+    protected boolean hasPriority() {
         return false;
     }
     
-    int getEntryCount() {
+    protected int getEntryCount() {
         return 1;
     }
 
