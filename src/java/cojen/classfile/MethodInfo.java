@@ -203,12 +203,12 @@ public class MethodInfo {
     /** 
      * Add a declared exception that this method may throw.
      */
-    public void addException(String className) {
+    public void addException(TypeDesc type) {
         if (mExceptions == null) {
             addAttribute(new ExceptionsAttr(mCp));
         }
-
-        ConstantClassInfo cci = mCp.addConstantClass(className);
+        // TODO: Special handling for generics
+        ConstantClassInfo cci = mCp.addConstantClass(type);
         mExceptions.addException(cci);
     }
 

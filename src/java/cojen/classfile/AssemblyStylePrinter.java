@@ -327,7 +327,7 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
                     println(",");
                     print(indent + "    ", "       ");
                 }
-                print(exceptions[i]);
+                print(exceptions[i].getFullName());
             }
             if (code == null) {
                 println(";");
