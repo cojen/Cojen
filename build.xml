@@ -22,7 +22,7 @@
   <property name="component.title"         value="Cojen"/>
 
   <!-- The current version number of this component -->
-  <property name="component.version"       value="0.1"/>
+  <property name="component.version"       value="1.0"/>
 
   <!-- The current version number of this component -->
   <property name="component.fullname"      value="${component.name}-${component.version}"/>
@@ -135,6 +135,47 @@
     <jar    jarfile="${build.fullname}.jar"
             basedir="${build.classes}"/>
            <!-- manifest="${build.conf}/MANIFEST.MF"/ -->
+  </target>
+
+<!-- ====================================================================== -->
+
+  <target name="dist" depends="compile,jar,javadoc"
+          description="Create binary distribution">
+    <delete     dir="${build.dist.fullname}"/>
+    <mkdir      dir="${build.dist.fullname}"/>
+    
+	<!-- binary -->
+    <copy      file="LICENSE.txt" todir="${build.dist.fullname}"/>
+    <copy      file="${build.fullname}.jar"
+              todir="${build.dist.fullname}"/>
+    <copy     todir="${build.dist.fullname}">
+      <fileset  dir="${build}" includes="docs/**/*.*"/>
+    </copy>
+    
+	<tar   destfile="${build.fullname}.tar" basedir="${build.dist}"/>
+	<gzip   zipfile="${build.fullname}.tar.gz" src="${build.fullname}.tar"/>
+	<delete    file="${build.fullname}.tar"/>
+	<fixcrlf srcdir="${build.dist}" eol="crlf" includes="**/*.txt"/>
+	<zip   destfile="${build.fullname}.zip" basedir="${build.dist}"/>
+	
+	<!-- source -->
+	<delete     dir="${build.dist.fullname}/docs"/>
+    <copy     todir="${build.dist.fullname}">
+      <fileset  dir="." includes="${source}/**/*" excludes="CVS/**/*"/>
+    </copy>
+    <copy     todir="${build.dist.fullname}">
+      <fileset  dir="." includes="${xdocs}/**/*" excludes="CVS/**/*"/>
+    </copy>
+    <copy      file="build.xml" todir="${build.dist.fullname}"/>
+    <copy      file="maven.xml" todir="${build.dist.fullname}"/>
+    <copy      file="project.xml" todir="${build.dist.fullname}"/>
+    <copy      file="project.properties" todir="${build.dist.fullname}"/>
+	
+	<tar   destfile="${build.fullname}-src.tar" basedir="${build.dist}"/>
+	<gzip   zipfile="${build.fullname}-src.tar.gz" src="${build.fullname}-src.tar"/>
+	<delete    file="${build.fullname}-src.tar"/>
+	<fixcrlf srcdir="${build.dist}" eol="crlf" includes="**/*.txt"/>
+	<zip   destfile="${build.fullname}-src.zip" basedir="${build.dist}"/>
   </target>
 
 </project>
