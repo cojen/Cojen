@@ -55,6 +55,14 @@ public class ClassInjector {
     private static Map cLoaders = new WeakIdentityMap();
 
     /**
+     * Create a ClassInjector for defining one class. The parent ClassLoader
+     * used is the one which loaded the ClassInjector class.
+     */
+    public static ClassInjector create() {
+        return create(null, null);
+    }
+
+    /**
      * Create a ClassInjector for defining one class. The prefix is optional,
      * which is used as the start of the auto-generated class name. If the
      * parent ClassLoader, if not specified, will default to the ClassLoader of
