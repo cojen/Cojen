@@ -127,7 +127,7 @@ public class LocalVariableTableAttr extends Attribute {
         if (varName != null) {
             ConstantUTFInfo name = getConstantPool().addConstantUTF(varName);
             ConstantUTFInfo descriptor = 
-                getConstantPool().addConstantUTF(localVar.getType().toString());
+                getConstantPool().addConstantUTF(localVar.getType().getDescriptor());
             mEntries.add(new Entry(localVar, name, descriptor));
         }
 

@@ -62,7 +62,7 @@ public class FieldInfo {
 
         mModifier = modifiers.getModifier();
         mNameConstant = ConstantUTFInfo.make(mCp, name);
-        mDescriptorConstant = ConstantUTFInfo.make(mCp, type.toString());
+        mDescriptorConstant = ConstantUTFInfo.make(mCp, type.getDescriptor());
     }
     
     private FieldInfo(ClassFile parent,
@@ -159,6 +159,7 @@ public class FieldInfo {
      * Returns the signature attribute of this field, or null if none is
      * defined.
      */
+    // TODO: Eventually remove this method
     public SignatureAttr getSignatureAttr() {
         for (int i = mAttributes.size(); --i >= 0; ) {
             Object obj = mAttributes.get(i);

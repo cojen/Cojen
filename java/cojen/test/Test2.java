@@ -28,6 +28,7 @@ public class Test2 {
 
         TypeDesc td = TypeDesc.forClass(args[0]);
         System.out.println(td);
+        System.out.println(td.getDescriptor());
         System.out.println(td.getRootName());
         System.out.println(td.getFullName());
         System.out.println(td.getTypeCode());
@@ -52,6 +53,7 @@ public class Test2 {
         }
         MethodDesc md = MethodDesc.forArguments(td, params);
         System.out.println(md);
+        System.out.println(md.getDescriptor());
         System.out.println(md.toMethodSignature("foo"));
         System.out.println(md.getReturnType());
         System.out.println(md.getParameterCount());
@@ -62,9 +64,10 @@ public class Test2 {
 
         System.out.println("--------------");
 
-        MethodDesc md2 = MethodDesc.forDescriptor("(Ljava/lang/String;[ID[[LVector;)Lcom/go/trove/classfile/Test2;");
+        MethodDesc md2 = MethodDesc.forDescriptor("(Ljava/lang/String;[ID[[LVector;)Lcojen/test/Test2;");
         System.out.println(md == md2);
         System.out.println(md2);
+        System.out.println(md2.getDescriptor());
         System.out.println(md2.toMethodSignature("foo"));
         System.out.println(md2.getReturnType());
         System.out.println(md2.getParameterCount());
