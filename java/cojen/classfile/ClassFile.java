@@ -697,16 +697,7 @@ public class ClassFile {
      */
     public MethodInfo addMethod(Method method) {
         Modifiers modifiers = Modifiers.getInstance(method.getModifiers()).toAbstract(false);
-
-        TypeDesc ret = TypeDesc.forClass(method.getReturnType());
-
-        Class[] paramClasses = method.getParameterTypes();
-        TypeDesc[] params = new TypeDesc[paramClasses.length];
-        for (int i=0; i<params.length; i++) {
-            params[i] = TypeDesc.forClass(paramClasses[i]);
-        }
-
-        MethodInfo mi = addMethod(modifiers, method.getName(), ret, params);
+        MethodInfo mi = addMethod(modifiers, method.getName(), MethodDesc.forMethod(method));
         
         // exception stuff...
         Class[] exceptions = method.getExceptionTypes();

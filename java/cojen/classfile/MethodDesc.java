@@ -22,6 +22,7 @@ import java.io.ObjectOutput;
 import java.io.ObjectInput;
 import java.io.IOException;
 import java.io.ObjectStreamException;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.ArrayList;
 import cojen.util.WeakFlyweightSet;
@@ -120,6 +121,20 @@ public class MethodDesc extends Descriptor implements Serializable {
         } catch (IndexOutOfBoundsException e) {
             throw invalidDescriptor(desc);
         }
+    }
+
+    public static MethodDesc forMethod(Method method) {
+        Class[] paramClasses = method.getParameterTypes();
+        TypeDesc[] paramTypes;
+        if (paramClasses == null || paramClasses.length == 0) {
+            paramTypes = EMPTY_PARAMS;
+        } else {
+            paramTypes = new TypeDesc[paramClasses.length];
+            for (int i=paramClasses.length; --i>=0; ) {
+                paramTypes[i] = TypeDesc.forClass(paramClasses[i]);
+            }
+        }
+        return forArguments(TypeDesc.forClass(method.getReturnType()), paramTypes);
     }
 
     private static IllegalArgumentException invalidDescriptor(String desc) {
