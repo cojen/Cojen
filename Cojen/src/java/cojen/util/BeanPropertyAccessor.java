@@ -22,9 +22,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.math.BigInteger;
 import cojen.classfile.ClassFile;
 import cojen.classfile.CodeBuilder;
@@ -35,9 +32,6 @@ import cojen.classfile.Modifiers;
 import cojen.classfile.Opcode;
 import cojen.classfile.TypeDesc;
 
-// TODO: Create improved replacement
-import com.go.trove.util.ClassInjector;
-
 /**
  * Provides a simple and efficient means of reading and writing bean
  * properties. BeanPropertyAccessor auto-generates code, eliminating the
@@ -47,16 +41,8 @@ import com.go.trove.util.ClassInjector;
  * @author Brian S O'Neill
  */
 public abstract class BeanPropertyAccessor {
-    private static final boolean DEBUG;
-
     // Maps classes to softly referenced BeanPropertyAccessors.
     private static Map cAccessors = new WeakIdentityMap();
-
-    static {
-        // TODO: Use a better strategy for preserving generated classes.
-        DEBUG = Boolean.getBoolean
-            ("cojen.util.BeanPropertyAccessor.DEBUG");
-    }
 
     /**
      * Returns a new or cached BeanPropertyAccessor for the given class.
@@ -78,54 +64,12 @@ public abstract class BeanPropertyAccessor {
     }
 
     private static BeanPropertyAccessor generate(Class beanType) {
-        ClassInjector injector = new ClassInjector
-            (beanType.getClassLoader(), (File)null, null);
-        
-        int id = beanType.hashCode();
-            
-        String baseName = BeanPropertyAccessor.class.getName() + '$';
-        String className = baseName;
-        try {
-            while (true) {
-                className = baseName + (id & 0xffffffffL);
-                try {
-                    injector.loadClass(className);
-                } catch (LinkageError e) {
-                }
-                id++;
-            }
-        } catch (ClassNotFoundException e) {
-        }
-        
-        ClassFile cf = generateClassFile(className, beanType);
+        ClassInjector ci = ClassInjector.create
+            (BeanPropertyAccessor.class.getName(), beanType.getClassLoader());
+        Class clazz = ci.defineClass(generateClassFile(ci.getClassName(), beanType));
 
-        if (DEBUG) {
-            try {
-                String name = cf.getClassName();
-                name = name.substring(name.lastIndexOf('.') + 1) + ".class";
-                System.out.println(name);
-                java.io.FileOutputStream out =
-                    new java.io.FileOutputStream(name);
-                cf.writeTo(out);
-                out.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        
         try {
-            OutputStream stream = injector.getStream(cf.getClassName());
-            cf.writeTo(stream);
-            stream.close();
-        } catch (IOException e) {
-            throw new InternalError(e.toString());
-        }
-        
-        try {
-            Class clazz = injector.loadClass(cf.getClassName());
             return (BeanPropertyAccessor)clazz.newInstance();
-        } catch (ClassNotFoundException e) {
-            throw new InternalError(e.toString());
         } catch (InstantiationException e) {
             throw new InternalError(e.toString());
         } catch (IllegalAccessException e) {

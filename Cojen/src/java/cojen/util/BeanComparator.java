@@ -16,8 +16,6 @@
 
 package cojen.util;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -34,9 +32,6 @@ import cojen.classfile.MethodInfo;
 import cojen.classfile.Modifiers;
 import cojen.classfile.Opcode;
 import cojen.classfile.TypeDesc;
-
-// TODO: Create improved replacement
-import com.go.trove.util.ClassInjector;
 
 /**
  * A highly customizable, high-performance Comparator, designed specifically
@@ -491,54 +486,9 @@ public class BeanComparator implements Comparator, Serializable {
     }
 
     private Class generateComparatorClass(Rules rules) {
-        ClassInjector injector =
-            ClassInjector.getInstance(mBeanClass.getClassLoader());
-        
-        int id = rules.hashCode();
-            
-        String baseName = this.getClass().getName() + '$';
-        String className = baseName;
-        try {
-            while (true) {
-                className = baseName + (id & 0xffffffffL);
-                try {
-                    injector.loadClass(className);
-                } catch (LinkageError e) {
-                }
-                id++;
-            }
-        } catch (ClassNotFoundException e) {
-        }
-        
-        ClassFile cf = generateClassFile(className, rules);
-            
-        /*
-        try {
-            String name = cf.getClassName();
-            name = name.substring(name.lastIndexOf('.') + 1) + ".class";
-            System.out.println(name);
-            java.io.FileOutputStream out =
-                new java.io.FileOutputStream(name);
-            cf.writeTo(out);
-            out.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        */
-        
-        try {
-            OutputStream stream = injector.getStream(cf.getClassName());
-            cf.writeTo(stream);
-            stream.close();
-        } catch (IOException e) {
-            throw new InternalError(e.toString());
-        }
-        
-        try {
-            return injector.loadClass(cf.getClassName());
-        } catch (ClassNotFoundException e) {
-            throw new InternalError(e.toString());
-        }
+        ClassInjector ci = ClassInjector.create
+            (getClass().getName(), mBeanClass.getClassLoader());
+        return ci.defineClass(generateClassFile(ci.getClassName(), rules));
     }
 
     private static ClassFile generateClassFile(String className, Rules rules) {
