@@ -333,7 +333,7 @@ public interface CodeAssembler {
     /**
      * Generates code that converts the value of a primitive type already
      * on the stack. Conversions between all primitive types are supported as
-     * well as boxing and unboxing converions. Some example conversions:
+     * well as boxing and unboxing conversions. Some example conversions:
      *
      * <pre>
      * int to char
