@@ -237,6 +237,16 @@ public class ConstantPool {
         return (ConstantNameAndTypeInfo)addConstant(new ConstantNameAndTypeInfo(this, name, type));
     }
 
+    /**
+     * Get or create a constant name and type structure from the constant pool.
+     */
+    public ConstantNameAndTypeInfo addConstantNameAndType(ConstantUTFInfo nameConstant,
+                                                          ConstantUTFInfo descConstant) {
+        return (ConstantNameAndTypeInfo)addConstant
+            (new ConstantNameAndTypeInfo(nameConstant, descConstant));
+    }
+
+
     /** 
      * Will only insert into the pool if the constant is not already in the
      * pool. 
