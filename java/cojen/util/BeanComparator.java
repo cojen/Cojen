@@ -37,12 +37,10 @@ import cojen.classfile.Modifiers;
 import cojen.classfile.Opcode;
 import cojen.classfile.TypeDesc;
 
-// TODO: Consider chucking this.
-import com.go.trove.util.CompleteIntrospector;
 // TODO: Create improved replacement
 import com.go.trove.util.ClassInjector;
 
-/******************************************************************************
+/**
  * A highly customizable, high-performance Comparator, designed specifically
  * for advanced sorting of JavaBeans. BeanComparators contain dynamically
  * auto-generated code and perform as well as hand written Comparators.
@@ -57,8 +55,7 @@ import com.go.trove.util.ClassInjector;
  * Comparator c = BeanComparator.forClass(Thread.class)
  *     .orderBy("name")
  *     .orderBy("threadGroup.name")
- *     .orderBy("priority")
- *     .reverse();
+ *     .orderBy("-priority");
  * </pre>
  *
  * The results of sorting Threads using this Comparator and displaying the
@@ -194,9 +191,14 @@ public class BeanComparator implements Comparator, Serializable {
      * {@link Float#compareTo(Float) Float.compareTo} and
      * {@link Double#compareTo(Double) Double.compareTo}.
      * <p>
-     * Any {@link #reverse reverse-order}, {@link #nullHigh null-order} and 
-     * {@link #caseSensitive case-sensitive} settings are not carried over,
-     * and are reset to the defaults for this order-by property.
+     * As a convenience, property names may have a '-' or '+' character prefix
+     * to specify sort order. A prefix of '-' indicates that the property
+     * is to be sorted in reverse (descending). By default, properties are
+     * sorted in ascending order, and so a prefix of '+' has no effect.
+     * <p>
+     * Any previously applied {@link #reverse reverse-order}, {@link #nullHigh
+     * null-order} and {@link #caseSensitive case-sensitive} settings are not
+     * carried over, and are reset to the defaults for this order-by property.
      *
      * @throws IllegalArgumentException when property doesn't exist or cannot
      * be read.
@@ -208,10 +210,23 @@ public class BeanComparator implements Comparator, Serializable {
         String subName;
         if (dot < 0) {
             subName = null;
-        }
-        else {
+        } else {
             subName = propertyName.substring(dot + 1);
             propertyName = propertyName.substring(0, dot);
+        }
+
+        boolean reverse = false;
+        if (propertyName.length() > 0) {
+            char prefix = propertyName.charAt(0);
+            switch (prefix) {
+            default:
+                break;
+            case '-':
+                reverse = true;
+                // Fall through
+            case '+':
+                propertyName = propertyName.substring(1);
+            }
         }
 
         PropertyDescriptor desc =
@@ -250,7 +265,7 @@ public class BeanComparator implements Comparator, Serializable {
             bc = bc.using(subOrder.orderBy(subName));
         }
 
-        return bc;
+        return reverse ? bc.reverse() : bc;
     }
     
     /**
@@ -260,7 +275,7 @@ public class BeanComparator implements Comparator, Serializable {
      * property. If no order-by properties have been specified, then Comparator
      * is applied to the compared beans.
      * <p>
-     * Any String {@link #caseSensitive case-sensitive} or 
+     * Any previously applied String {@link #caseSensitive case-sensitive} or
      * {@link #collate collator} settings are overridden by this Comparator.
      * If property values being compared are primitive, they are converted to
      * their object peers before being passed to the Comparator.
@@ -405,8 +420,7 @@ public class BeanComparator implements Comparator, Serializable {
                 equalTest(mUsingComparator, bc.mUsingComparator) &&
                 equalTest(mCollator, bc.mCollator) &&
                 equalTest(mParent, bc.mParent);
-        }
-        else {
+        } else {
             return false;
         }
     }
@@ -416,8 +430,7 @@ public class BeanComparator implements Comparator, Serializable {
             try {
                 mProperties =
                     CompleteIntrospector.getAllProperties(mBeanClass);
-            }
-            catch (IntrospectionException e) {
+            } catch (IntrospectionException e) {
                 throw new RuntimeException(e.toString());
             }
         }
@@ -439,11 +452,9 @@ public class BeanComparator implements Comparator, Serializable {
             if (c == null) {
                 clazz = generateComparatorClass(rules);
                 cGeneratedComparatorCache.put(rules, clazz);
-            }
-            else if (c instanceof Comparator) {
+            } else if (c instanceof Comparator) {
                 return (Comparator)c;
-            }
-            else {
+            } else {
                 clazz = (Class)c;
             }
 
@@ -470,20 +481,15 @@ public class BeanComparator implements Comparator, Serializable {
                     (new Class[] {Comparator[].class, Comparator[].class});
                 c = (Comparator)ctor.newInstance
                     (new Object[] {collators, usingComparators});
-            }
-            catch (NoSuchMethodException e) {
+            } catch (NoSuchMethodException e) {
                 throw new InternalError(e.toString());
-            }
-            catch (InstantiationException e) {
+            } catch (InstantiationException e) {
                 throw new InternalError(e.toString());
-            }
-            catch (IllegalAccessException e) {
+            } catch (IllegalAccessException e) {
                 throw new InternalError(e.toString());
-            }
-            catch (IllegalArgumentException e) {
+            } catch (IllegalArgumentException e) {
                 throw new InternalError(e.toString());
-            }
-            catch (InvocationTargetException e) {
+            } catch (InvocationTargetException e) {
                 throw new InternalError(e.getTargetException().toString());
             }
             
@@ -510,13 +516,11 @@ public class BeanComparator implements Comparator, Serializable {
                 className = baseName + (id & 0xffffffffL);
                 try {
                     injector.loadClass(className);
-                }
-                catch (LinkageError e) {
+                } catch (LinkageError e) {
                 }
                 id++;
             }
-        }
-        catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException e) {
         }
         
         ClassFile cf = generateClassFile(className, rules);
@@ -530,8 +534,7 @@ public class BeanComparator implements Comparator, Serializable {
                 new java.io.FileOutputStream(name);
             cf.writeTo(out);
             out.close();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         */
@@ -540,15 +543,13 @@ public class BeanComparator implements Comparator, Serializable {
             OutputStream stream = injector.getStream(cf.getClassName());
             cf.writeTo(stream);
             stream.close();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new InternalError(e.toString());
         }
         
         try {
             return injector.loadClass(cf.getClassName());
-        }
-        catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException e) {
             throw new InternalError(e.toString());
         }
     }
@@ -598,8 +599,7 @@ public class BeanComparator implements Comparator, Serializable {
                 ("compare", new Class[] {Object.class, Object.class});
             compareToMethod = Comparable.class.getMethod
                 ("compareTo", new Class[] {Object.class});
-        }
-        catch (NoSuchMethodException e) {
+        } catch (NoSuchMethodException e) {
             throw new InternalError(e.toString());
         }
 
@@ -736,8 +736,7 @@ public class BeanComparator implements Comparator, Serializable {
                 loadAsObject(builder, propertyClass, p1);
                 loadAsObject(builder, propertyClass, p2);
                 builder.invoke(compareMethod);
-            }
-            else {
+            } else {
                 // If case-sensitive is off and a collator is provided and
                 // property could be a String, apply collator.
                 if ((bc.mFlags & 0x04) == 0 && bc.mCollator != null &&
@@ -778,11 +777,9 @@ public class BeanComparator implements Comparator, Serializable {
                     builder.invoke(compareMethod);
 
                     resultLabel.setLocation();
-                }
-                else if (propertyClass.isPrimitive()) {
+                } else if (propertyClass.isPrimitive()) {
                     generatePrimitiveComparison(builder, propertyClass, p1,p2);
-                }
-                else {
+                } else {
                     // Assume properties are instances of Comparable.
                     generateComparableCompareTo
                         (builder, propertyClass, compareToMethod,
@@ -870,8 +867,7 @@ public class BeanComparator implements Comparator, Serializable {
             try {
                 floatToIntBits = Float.class.getMethod
                     ("floatToIntBits", new Class[] {float.class});
-            }
-            catch (NoSuchMethodException e) {
+            } catch (NoSuchMethodException e) {
                 throw new InternalError(e.toString());
             }
 
@@ -885,8 +881,7 @@ public class BeanComparator implements Comparator, Serializable {
             builder.math(Opcode.LCMP);
 
             done.setLocation();
-        }
-        else if (type == double.class) {
+        } else if (type == double.class) {
             // Comparison is same as for Double.compareTo(Double).
             Label done = builder.createLabel();
 
@@ -912,8 +907,7 @@ public class BeanComparator implements Comparator, Serializable {
             try {
                 doubleToLongBits = Double.class.getMethod
                     ("doubleToLongBits", new Class[] {double.class});
-            }
-            catch (NoSuchMethodException e) {
+            } catch (NoSuchMethodException e) {
                 throw new InternalError(e.toString());
             }
 
@@ -925,20 +919,17 @@ public class BeanComparator implements Comparator, Serializable {
             builder.math(Opcode.LCMP);
 
             done.setLocation();
-        }
-        else if (type == long.class) {
+        } else if (type == long.class) {
             builder.loadLocal(a);
             builder.loadLocal(b);
             builder.math(Opcode.LCMP);
-        }
-        else if (type == int.class) {
+        } else if (type == int.class) {
             builder.loadLocal(a);
             builder.convert(TypeDesc.INT, TypeDesc.LONG);
             builder.loadLocal(b);
             builder.convert(TypeDesc.INT, TypeDesc.LONG);
             builder.math(Opcode.LCMP);
-        }
-        else {
+        } else {
             builder.loadLocal(a);
             builder.loadLocal(b);
             builder.math(Opcode.ISUB);
@@ -960,8 +951,7 @@ public class BeanComparator implements Comparator, Serializable {
             if (goodLabel != null) {
                 builder.branch(goodLabel);
             }
-        }
-        else {
+        } else {
             // Cast each property to Comparable only if needed.
             TypeDesc comparableType = TypeDesc.forClass(Comparable.class);
 
@@ -987,8 +977,7 @@ public class BeanComparator implements Comparator, Serializable {
             builder.pop();
             if (nextLabel == null) {
                 builder.loadConstant(0);
-            }
-            else {
+            } else {
                 builder.branch(nextLabel);
             }
 
