@@ -127,7 +127,7 @@ public class SoftValuedHashMap extends AbstractMap implements Map, Cloneable {
 
     public boolean containsValue(Object value) {
         if (value == null) {
-            value = WeakIdentityMap.NULL;
+            value = KeyFactory.NULL;
         }
 
         Entry[] tab = this.table;
@@ -220,7 +220,7 @@ public class SoftValuedHashMap extends AbstractMap implements Map, Cloneable {
                     }
                     count--;
                 } else if (e.hash == hash && key.equals(e.key)) {
-                    return (entryValue == WeakIdentityMap.NULL) ? null : entryValue;
+                    return (entryValue == KeyFactory.NULL) ? null : entryValue;
                 } else {
                     prev = e;
                 }
@@ -240,7 +240,7 @@ public class SoftValuedHashMap extends AbstractMap implements Map, Cloneable {
                     }
                     this.count--;
                 } else if (e.key == null) {
-                    return (entryValue == WeakIdentityMap.NULL) ? null : entryValue;
+                    return (entryValue == KeyFactory.NULL) ? null : entryValue;
                 } else {
                     prev = e;
                 }
@@ -310,7 +310,7 @@ public class SoftValuedHashMap extends AbstractMap implements Map, Cloneable {
 
     public Object put(Object key, Object value) {
         if (value == null) {
-            value = WeakIdentityMap.NULL;
+            value = KeyFactory.NULL;
         }
 
         // Makes sure the key is not already in the HashMap.
@@ -335,7 +335,7 @@ public class SoftValuedHashMap extends AbstractMap implements Map, Cloneable {
                     this.count--;
                 } else if (e.hash == hash && key.equals(e.key)) {
                     e.setValue(value);
-                    return (entryValue == WeakIdentityMap.NULL) ? null : entryValue;
+                    return (entryValue == KeyFactory.NULL) ? null : entryValue;
                 } else {
                     prev = e;
                 }
@@ -357,7 +357,7 @@ public class SoftValuedHashMap extends AbstractMap implements Map, Cloneable {
                     this.count--;
                 } else if (e.key == null) {
                     e.setValue(value);
-                    return (entryValue == WeakIdentityMap.NULL) ? null : entryValue;
+                    return (entryValue == KeyFactory.NULL) ? null : entryValue;
                 } else {
                     prev = e;
                 }
@@ -414,7 +414,7 @@ public class SoftValuedHashMap extends AbstractMap implements Map, Cloneable {
                     this.count--;
 
                     e.setValue(null);
-                    return (entryValue == WeakIdentityMap.NULL) ? null : entryValue;
+                    return (entryValue == KeyFactory.NULL) ? null : entryValue;
                 } else {
                     prev = e;
                 }
@@ -442,7 +442,7 @@ public class SoftValuedHashMap extends AbstractMap implements Map, Cloneable {
                     this.count--;
 
                     e.setValue(null);
-                    return (entryValue == WeakIdentityMap.NULL) ? null : entryValue;
+                    return (entryValue == KeyFactory.NULL) ? null : entryValue;
                 } else {
                     prev = e;
                 }
@@ -690,12 +690,12 @@ public class SoftValuedHashMap extends AbstractMap implements Map, Cloneable {
 
         public Object getValue() {
             Object value = this.value.get();
-            return value == WeakIdentityMap.NULL ? null : value;
+            return value == KeyFactory.NULL ? null : value;
         }
 
         public Object setValue(Object value) {
             Object oldValue = getValue();
-            this.value = new SoftReference(value == null ? WeakIdentityMap.NULL : value);
+            this.value = new SoftReference(value == null ? KeyFactory.NULL : value);
             return oldValue;
         }
 
@@ -710,7 +710,7 @@ public class SoftValuedHashMap extends AbstractMap implements Map, Cloneable {
             Object thisValue = get();
             if (thisValue == null) {
                 return false;
-            } else if (thisValue == WeakIdentityMap.NULL) {
+            } else if (thisValue == KeyFactory.NULL) {
                 thisValue = null;
             }
             return (this.key == null ? e.getKey() == null : this.key.equals(e.getKey())) &&
