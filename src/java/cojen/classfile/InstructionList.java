@@ -234,7 +234,9 @@ class InstructionList implements CodeBuffer {
             while (true) {
                 r = findAvailableRegister(registerUsers, r, live, v);
                 if (var.isDoubleWord()) {
-                    if (findAvailableRegister(registerUsers, r + 1, live, v) == r + 1) {
+                    if (findAvailableRegister(registerUsers, ++r, live, v) == r) {
+                        // Found consecutive registers, required for double word.
+                        r--;
                         break;
                     }
                 } else {
@@ -460,6 +462,12 @@ class InstructionList implements CodeBuffer {
         return (List)registerUsers.get(num);
     }
 
+    /**
+     * @param registerUsers
+     * @param r index into registerUsers
+     * @return index into registerUsers which is available, which may be equal
+     * to r or equal to the size of registerUsers
+     */
     private int findAvailableRegister(List registerUsers, int r, BitList[] live, int v) {
         registerScan:
         for (; r<registerUsers.size(); r++) {
