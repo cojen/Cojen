@@ -88,7 +88,7 @@ public class ConstantClassInfo extends ConstantInfo {
             while (--dim >= 0) {
                 type = type.toArrayType();
             }
-            desc = type.toString();
+            desc = type.getDescriptor();
         } else {
             desc = className.replace('.', '/');
         }
@@ -100,7 +100,7 @@ public class ConstantClassInfo extends ConstantInfo {
         super(TAG_CLASS);
         String desc;
         if (type.isArray()) {
-            desc = type.toString();
+            desc = type.getDescriptor();
         } else {
             desc = type.getRootName().replace('.', '/');
         }
