@@ -146,6 +146,7 @@
     
 	<!-- binary -->
     <copy      file="LICENSE.txt" todir="${build.dist.fullname}"/>
+    <copy      file="RELEASE-NOTES.txt" todir="${build.dist.fullname}"/>
     <copy      file="${build.fullname}.jar"
               todir="${build.dist.fullname}"/>
     <copy     todir="${build.dist.fullname}">
