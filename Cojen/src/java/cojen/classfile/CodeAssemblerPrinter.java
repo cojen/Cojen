@@ -124,7 +124,7 @@ public class CodeAssemblerPrinter implements CodeAssembler {
         println(mBulder + "exceptionHandler(" +
                 getLabelName(startLocation) + ", " +
                 getLabelName(endLocation) + ", " +
-                catchClassName + ')');
+                '"' + catchClassName + "\")");
     }
     
     public void mapLineNumber(int lineNumber) {
@@ -153,11 +153,31 @@ public class CodeAssemblerPrinter implements CodeAssembler {
     }
 
     public void loadConstant(float value) {
-        println(mBulder + "loadConstant(" + value + "f)");
+        String str;
+        if (value != value) {
+            str = "0.0f/0.0f";
+        } else if (value == Float.NEGATIVE_INFINITY) {
+            str = "-1.0f/0.0f";
+        } else if (value == Float.POSITIVE_INFINITY) {
+            str = "1.0f/0.0f";
+        } else {
+            str = String.valueOf(value) + 'f';
+        }
+        println(mBulder + "loadConstant(" + str + ")");
     }
 
     public void loadConstant(double value) {
-        println(mBulder + "loadConstant(" + value + "d)");
+        String str;
+        if (value != value) {
+            str = "0.0d/0.0d";
+        } else if (value == Double.NEGATIVE_INFINITY) {
+            str = "-1.0d/0.0d";
+        } else if (value == Double.POSITIVE_INFINITY) {
+            str = "1.0d/0.0d";
+        } else {
+            str = String.valueOf(value) + 'd';
+        }
+        println(mBulder + "loadConstant(" + str + ")");
     }
 
     public void loadLocal(LocalVariable local) {
@@ -622,7 +642,7 @@ public class CodeAssemblerPrinter implements CodeAssembler {
             TypeDesc componentType = type.getComponentType();
             if (componentType != null) {
                 buf.append(getTypeDescName(componentType));
-                buf.append(".toArray(");
+                buf.append(".toArrayType(");
             } else {
                 buf.append("TypeDesc.forClass(");
                 buf.append('"');
@@ -667,7 +687,7 @@ public class CodeAssemblerPrinter implements CodeAssembler {
         return name;
     }
 
-    private String escape(String value) {
+    static String escape(String value) {
         int length = value.length();
         int i = 0;
         for (; i < length; i++) {

@@ -26,7 +26,7 @@ import java.io.IOException;
  * @author Brian S O'Neill
  */
 public class ConstantIntegerInfo extends ConstantInfo {
-    private Integer mValue;
+    private int mValue;
     
     /** 
      * Will return either a new ConstantIntegerInfo object or one already in
@@ -40,28 +40,25 @@ public class ConstantIntegerInfo extends ConstantInfo {
     
     ConstantIntegerInfo(int value) {
         super(TAG_INTEGER);
-        mValue = new Integer(value);
-    }
-    
-    ConstantIntegerInfo(Integer value) {
-        super(TAG_INTEGER);
         mValue = value;
     }
     
-    public Integer getValue() {
+    public int getValue() {
         return mValue;
     }
 
     public int hashCode() {
-        return mValue.hashCode();
+        return mValue;
     }
     
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj instanceof ConstantIntegerInfo) {
             ConstantIntegerInfo other = (ConstantIntegerInfo)obj;
-            return mValue.equals(other.mValue);
+            return mValue == other.mValue;
         }
-        
         return false;
     }
     
@@ -71,10 +68,10 @@ public class ConstantIntegerInfo extends ConstantInfo {
 
     public void writeTo(DataOutput dout) throws IOException {
         super.writeTo(dout);
-        dout.writeInt(mValue.intValue());
+        dout.writeInt(mValue);
     }
 
     public String toString() {
-        return "CONSTANT_Integer_info: " + getValue();
+        return "CONSTANT_Integer_info: " + mValue;
     }
 }

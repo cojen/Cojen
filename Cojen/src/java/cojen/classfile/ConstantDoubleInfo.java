@@ -26,7 +26,7 @@ import java.io.IOException;
  * @author Brian S O'Neill
  */
 public class ConstantDoubleInfo extends ConstantInfo {
-    private Double mValue;
+    private double mValue;
     
     /** 
      * Will return either a new ConstantDoubleInfo object or one already in
@@ -40,28 +40,26 @@ public class ConstantDoubleInfo extends ConstantInfo {
     
     ConstantDoubleInfo(double value) {
         super(TAG_DOUBLE);
-        mValue = new Double(value);
-    }
-
-    ConstantDoubleInfo(Double value) {
-        super(TAG_DOUBLE);
         mValue = value;
     }
-    
-    public Double getValue() {
+
+    public double getValue() {
         return mValue;
     }
 
     public int hashCode() {
-        return mValue.hashCode();
+        long bits = Double.doubleToLongBits(mValue);
+        return (int)(bits ^ (bits >>> 32));
     }
     
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj instanceof ConstantDoubleInfo) {
             ConstantDoubleInfo other = (ConstantDoubleInfo)obj;
-            return mValue.equals(other.mValue);
+            return mValue == other.mValue;
         }
-
         return false;
     }
     
@@ -71,10 +69,10 @@ public class ConstantDoubleInfo extends ConstantInfo {
 
     public void writeTo(DataOutput dout) throws IOException {
         super.writeTo(dout);
-        dout.writeDouble(mValue.doubleValue());
+        dout.writeDouble(mValue);
     }
 
     public String toString() {
-        return "CONSTANT_Double_info: " + getValue();
+        return "CONSTANT_Double_info: " + mValue;
     }
 }

@@ -61,11 +61,13 @@ public class ConstantStringInfo extends ConstantInfo {
     }
     
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj instanceof ConstantStringInfo) {
             ConstantStringInfo other = (ConstantStringInfo)obj;
             return mStr.equals(other.mStr);
         }
-        
         return false;
     }
     

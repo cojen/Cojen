@@ -29,6 +29,7 @@ import java.lang.reflect.Modifier;
 public class Modifiers {
     public static final Modifiers NONE;
     public static final Modifiers PUBLIC;
+    public static final Modifiers PUBLIC_ABSTRACT;
     public static final Modifiers PUBLIC_STATIC;
     public static final Modifiers PROTECTED;
     public static final Modifiers PRIVATE;
@@ -36,6 +37,7 @@ public class Modifiers {
     static {
         NONE = new Modifiers(0);
         PUBLIC = new Modifiers(Modifier.PUBLIC);
+        PUBLIC_ABSTRACT = new Modifiers(Modifier.PUBLIC | Modifier.ABSTRACT);
         PUBLIC_STATIC = new Modifiers(Modifier.PUBLIC | Modifier.STATIC);
         PROTECTED = new Modifiers(Modifier.PROTECTED);
         PRIVATE = new Modifiers(Modifier.PRIVATE);
@@ -50,6 +52,8 @@ public class Modifiers {
             return NONE;
         case Modifier.PUBLIC:
             return PUBLIC;
+        case Modifier.PUBLIC | Modifier.ABSTRACT:
+            return PUBLIC_ABSTRACT;
         case Modifier.PUBLIC | Modifier.STATIC:
             return PUBLIC_STATIC;
         case Modifier.PROTECTED:
@@ -385,6 +389,21 @@ public class Modifiers {
      */
     public Modifiers toVarArgs(boolean b) {
         return convert(toVarArgs(mBitmask, b));
+    }
+
+    public int hashCode() {
+        return mBitmask;
+    }
+
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof Modifiers) {
+            Modifiers other = (Modifiers)obj;
+            return mBitmask == other.mBitmask;
+        }
+        return false;
     }
 
     /**
