@@ -697,6 +697,8 @@ public interface CodeAssembler {
      * value of an object on the stack. A branch is performed based on whether
      * the object reference on the stack is null or not.
      *
+     * <p>The generated instruction consumes the value on the stack.
+     *
      * @param location The location to branch to
      * @param choice If true, do branch when null, else branch when not null
      */
@@ -705,7 +707,9 @@ public interface CodeAssembler {
     /**
      * Generates code that performs a conditional branch based on the value of
      * two object references on the stack. A branch is performed based on
-     * whether the two objects are equal.
+     * whether the two objects are exactly the same.
+     *
+     * <p>The generated instruction consumes the two values on the stack.
      *
      * @param location The location to branch to
      * @param choice If true, branch when equal, else branch when not equal
@@ -717,9 +721,11 @@ public interface CodeAssembler {
      * between an int value on the stack and zero. The int value on the
      * stack is on the left side of the comparison expression.
      *
+     * <p>The generated instruction consumes the value on the stack.
+     *
      * @param location The location to branch to
      * @param choice One of "==", "!=", "<", ">=", ">" or "<="
-     * @exception IllegalArgumentException When the choice is not valid
+     * @throws IllegalArgumentException When the choice is not valid
      */
     void ifZeroComparisonBranch(Location location, String choice) 
         throws IllegalArgumentException;
@@ -729,11 +735,30 @@ public interface CodeAssembler {
      * between two int values on the stack. The first int value on the stack
      * is on the left side of the comparison expression.
      *
+     * <p>The generated instruction consumes the two values on the stack.
+     *
      * @param location The location to branch to
      * @param choice One of "==", "!=", "<", ">=", ">" or "<="
-     * @exception IllegalArgumentException When the choice is not valid
+     * @throws IllegalArgumentException When the choice is not valid
      */
     void ifComparisonBranch(Location location, String choice)
+        throws IllegalArgumentException;
+
+    /**
+     * Generates code the performs a conditional branch based on a comparison
+     * between two values of the given type on the stack. The first int value
+     * on the stack is on the left side of the comparison expression. When
+     * comparing objects, only an identity comparison is performed.
+     *
+     * <p>The generated instruction(s) consumes the two values on the stack.
+     *
+     * @param location The location to branch to
+     * @param choice One of "==", "!=", "<", ">=", ">" or "<=". Object types
+     * can only be compared for equality.
+     * @param type Type to expect on the stack
+     * @throws IllegalArgumentException When the choice is not valid
+     */
+    void ifComparisonBranch(Location location, String choice, TypeDesc type)
         throws IllegalArgumentException;
 
     /**
@@ -741,9 +766,9 @@ public interface CodeAssembler {
      * lookupswitch or tableswitch. The choice of which switch type to generate
      * is made based on the amount of bytes to be generated. A tableswitch
      * is usually smaller, unless the cases are sparse.
-     * <p>
-     * The key value to switch on must already be on the stack when this
-     * instruction executes.
+     *
+     * <p>The key value to switch on must already be on the stack when this
+     * instruction executes. It is consumed by the instruction.
      *
      * @param cases The values to match on. The array length must be the same
      * as for locations.
@@ -796,7 +821,7 @@ public interface CodeAssembler {
      * -1 or -1L followed by math(Opcode.IXOR) or math(Opcode.LXOR).
      *
      * @param opcode An opcode from the Opcode class.
-     * @exception IllegalArgumentException When the opcode selected is not
+     * @throws IllegalArgumentException When the opcode selected is not
      * a math operation.
      * @see Opcode
      */
