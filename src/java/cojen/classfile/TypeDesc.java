@@ -398,6 +398,12 @@ public abstract class TypeDesc extends Descriptor implements Serializable {
      */
     public abstract String getFullName();
 
+    // TODO
+    //public abstract String getGenericRootName();
+
+    // TODO
+    //public abstract String getGenericFullName();
+
     /**
      * Returns a type code for operating on primitive types in switches. If
      * not primitive, OBJECT_CODE is returned.
