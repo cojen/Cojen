@@ -65,7 +65,7 @@ public class ClassInjector {
      */
     public static ClassInjector create(String prefix, ClassLoader parent) {
         if (prefix == null) {
-            prefix = "ClassInjector";
+            prefix = ClassInjector.class.getName();
         }
         if (parent == null) {
             parent = ClassInjector.class.getClassLoader();
