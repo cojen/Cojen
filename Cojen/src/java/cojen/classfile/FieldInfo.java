@@ -109,6 +109,10 @@ public class FieldInfo {
         return mModifiers;
     }
 
+    public void setModifiers(Modifiers modifiers) {
+        mModifiers = modifiers;
+    }
+
     /**
      * Returns a constant from the constant pool with this field's name.
      */
