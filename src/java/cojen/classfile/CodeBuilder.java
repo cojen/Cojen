@@ -305,8 +305,7 @@ public class CodeBuilder implements CodeBuffer, CodeAssembler {
                           stringBufferDesc, stringParam);
         }
         
-        invokeVirtual("java.lang.StringBuffer", "toString",
-                      stringDesc, null);
+        invokeVirtual("java.lang.StringBuffer", "toString", stringDesc, null);
     }
 
     public void loadConstant(boolean value) {
