@@ -1,7 +1,11 @@
-Cojen version 1.0.2
+Cojen version 1.0.3
 -------------------------------
 
 Change History
+
+1.0.2 to 1.0.3
+-------------------------------
+- Bug fix in CodeBuilder.invoke(Constructor).
 
 1.0.1 to 1.0.2
 -------------------------------
