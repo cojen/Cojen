@@ -316,6 +316,26 @@ public class CodeAssemblerPrinter extends AbstractCodeAssembler implements CodeA
                 getTypeDescName(toType) + ')');
     }
 
+    public void convert(TypeDesc fromType, TypeDesc toType, int fpConvertMode) {
+        switch (fpConvertMode) {
+        default:
+            convert(fromType, toType);
+            break;
+        case CONVERT_FP_BITS:
+            println(mBulder + "convert(" +
+                    getTypeDescName(fromType) + ", " +
+                    getTypeDescName(toType) + ", " +
+                    mBulder + ".CONVERT_FP_BITS" + ')');
+            break;
+        case CONVERT_FP_RAW_BITS:
+            println(mBulder + "convert(" +
+                    getTypeDescName(fromType) + ", " +
+                    getTypeDescName(toType) + ", " +
+                    mBulder + ".CONVERT_FP_RAW_BITS" + ')');
+            break;
+        }
+    }
+
     public void invokeVirtual(String methodName,
                               TypeDesc ret,
                               TypeDesc[] params) {
