@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.io.ObjectStreamException;
 import java.util.Map;
 import java.lang.reflect.Array;
-import cojen.util.FlyweightSet;
+import cojen.util.WeakFlyweightSet;
 import cojen.util.WeakIdentityMap;
 
 /**
@@ -76,13 +76,13 @@ public abstract class TypeDesc extends Descriptor implements Serializable {
     public final static TypeDesc STRING;
 
     // Pool of all shared instances. Ensures identity comparison works.
-    final static FlyweightSet cInstances;
+    final static WeakFlyweightSet cInstances;
 
     // Cache that maps Classes to TypeDescs.
     final static Map cClassesToInstances;
 
     static {
-        cInstances = new FlyweightSet();
+        cInstances = new WeakFlyweightSet();
         cClassesToInstances = new WeakIdentityMap();
 
         VOID = intern(new PrimitiveType("V", VOID_CODE));
