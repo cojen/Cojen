@@ -113,8 +113,7 @@ class InstructionList implements CodeBuffer {
     public ExceptionHandler[] getExceptionHandlers() {
         resolve();
 
-        ExceptionHandler[] handlers = 
-            new ExceptionHandler[mExceptionHandlers.size()];
+        ExceptionHandler[] handlers = new ExceptionHandler[mExceptionHandlers.size()];
         return (ExceptionHandler[])mExceptionHandlers.toArray(handlers);
     }
 
@@ -148,7 +147,7 @@ class InstructionList implements CodeBuffer {
                 resolve0();
             } finally {
                 System.out.println("-- Instructions --");
-                
+
                 Iterator it = getInstructions().iterator();
                 while (it.hasNext()) {
                     System.out.println(it.next());
@@ -167,6 +166,18 @@ class InstructionList implements CodeBuffer {
         int instrCount = 0;
         for (instr = mFirst; instr != null; instr = instr.mNext) {
             instr.reset(instrCount++);
+        }
+
+        // Make sure exception handlers are registered with all protected
+        // instructions.
+        Iterator it = mExceptionHandlers.iterator();
+        while (it.hasNext()) {
+            ExceptionHandler handler = (ExceptionHandler)it.next();
+            instr = (Instruction)handler.getStartLocation();
+            Instruction end = (Instruction)handler.getEndLocation();
+            for ( ; instr != null && instr != end; instr = instr.mNext) {
+                instr.addExceptionHandler(handler);
+            }
         }
 
         // Perform variable liveness flow analysis for each local variable, in
@@ -199,7 +210,7 @@ class InstructionList implements CodeBuffer {
                     mMaxLocals = num + 1;
                 }
             }
-        }        
+        }
 
         // Merge bit lists together.
         BitList[] live = liveIn;
@@ -243,7 +254,7 @@ class InstructionList implements CodeBuffer {
         stackResolve(0, mFirst, subAdjustMap);
 
         // Continue flow analysis into exception handler entry points.
-        Iterator it = mExceptionHandlers.iterator();
+        it = mExceptionHandlers.iterator();
         while (it.hasNext()) {
             ExceptionHandler handler = (ExceptionHandler)it.next();
             Instruction enter = (Instruction)handler.getCatchLocation();
@@ -255,7 +266,7 @@ class InstructionList implements CodeBuffer {
         // their size as locations are set. Changing size affects the
         // locations of other instructions, so that is why additional passes
         // are required.
-        
+
         boolean passAgain;
         do {
             passAgain = false;
@@ -328,10 +339,13 @@ class InstructionList implements CodeBuffer {
     }
 
     private void livenessAnalysis(BitList[] liveIn, BitList[] liveOut) {
-        // TODO: Follow exception handlers.
+        // Track stores to variables to see if the result is discarded.
+        List[] localStores = new List[liveIn.length];
 
+        int passCount = -1;
         boolean passAgain;
         do {
+            passCount++;
             passAgain = false;
 
             for (Instruction instr = mLast; instr != null; instr = instr.mPrev) {
@@ -344,11 +358,21 @@ class InstructionList implements CodeBuffer {
                     LocalOperandInstruction loi = (LocalOperandInstruction)instr;
                     LocalVariableImpl var = loi.getLocalVariable();
                     int varIndex = var.getIndex();
+
                     if (loi.isLoad()) {
                         useIndex = varIndex;
                     }
+
                     if (loi.isStore()) {
                         defIndex = varIndex;
+                        if (passCount == 0 && loi instanceof StoreLocalInstruction) {
+                            List stores = localStores[varIndex];
+                            if (stores == null) {
+                                stores = new ArrayList();
+                                localStores[varIndex] = stores;
+                            }
+                            stores.add(instr);
+                        }
                     }
                 }
 
@@ -374,8 +398,20 @@ class InstructionList implements CodeBuffer {
                     Location[] targets = instr.getBranchTargets();
                     if (targets != null) {
                         for (int i=0; i<targets.length; i++) {
-                            LabelInstruction targetInstr = (LabelInstruction)targets[i];
+                            Instruction targetInstr = (Instruction)targets[i];
                             if (liveIn[v].get(targetInstr.getLocation())) {
+                                setLiveOut = true;
+                                passAgain |= liveOut[v].set(n);
+                            }
+                        }
+                    }
+
+                    Iterator handlers = instr.getExceptionHandlers();
+                    if (handlers != null) {
+                        while (handlers.hasNext()) {
+                            ExceptionHandler handler = (ExceptionHandler)handlers.next();
+                            Instruction catchInstr = (Instruction)handler.getCatchLocation();
+                            if (liveIn[v].get(catchInstr.getLocation())) {
                                 setLiveOut = true;
                                 passAgain |= liveOut[v].set(n);
                             }
@@ -391,6 +427,19 @@ class InstructionList implements CodeBuffer {
                 }
             }
         } while (passAgain); // do {} while ();
+
+        // See which local store instructions should discard their results.
+        for (int v=localStores.length; --v>=0; ) {
+            List stores = localStores[v];
+            if (stores != null) {
+                for (int i=stores.size(); --i>=0; ) {
+                    StoreLocalInstruction instr = (StoreLocalInstruction)stores.get(i);
+                    if (!liveOut[v].get(instr.getLocation())) {
+                        instr.discardResult();
+                    }
+                }
+            }
+        }
     }
 
     private void addRegisterUser(List registerUsers, LocalVariable var) {
@@ -478,14 +527,14 @@ class InstructionList implements CodeBuffer {
                         stackResolve(stackDepth, targetInstr, subAdjustMap);
                     } else {
                         Integer subAdjust = (Integer)subAdjustMap.get(targetInstr);
-                        
+
                         if (subAdjust == null) {
                             int newDepth =
                                 stackResolve(stackDepth, targetInstr, subAdjustMap);
                             subAdjust = new Integer(newDepth - stackDepth);
                             subAdjustMap.put(targetInstr, subAdjust);
                         }
-                        
+
                         stackDepth += subAdjust.intValue();
                     }
                 }
@@ -502,7 +551,7 @@ class InstructionList implements CodeBuffer {
 
         private String mName;
         private TypeDesc mType;
-        
+
         private int mNumber;
         private boolean mFixed;
 
@@ -526,23 +575,23 @@ class InstructionList implements CodeBuffer {
         public String getName() {
             return mName;
         }
-        
+
         public void setName(String name) {
             mName = name;
         }
-        
+
         public TypeDesc getType() {
             return mType;
         }
-        
+
         public boolean isDoubleWord() {
             return mType.isDoubleWord();
         }
-        
+
         public int getNumber() {
             return mNumber;
         }
-        
+
         public Set getLocationRangeSet() {
             // TODO
             return null;
@@ -580,7 +629,7 @@ class InstructionList implements CodeBuffer {
 
         Instruction mPrev;
         Instruction mNext;
-    
+
         // Indicates what the stack depth is when this instruction is reached.
         // Is -1 if not reached. Flow analysis sets this value.
         int mStackDepth = -1;
@@ -625,7 +674,7 @@ class InstructionList implements CodeBuffer {
             }
 
             mNext = null;
-            
+
             if (InstructionList.this.mFirst == null) {
                 mPrev = null;
                 InstructionList.this.mFirst = this;
@@ -633,7 +682,7 @@ class InstructionList implements CodeBuffer {
                 mPrev = InstructionList.this.mLast;
                 InstructionList.this.mLast.mNext = this;
             }
-            
+
             InstructionList.this.mLast = this;
         }
 
@@ -658,23 +707,23 @@ class InstructionList implements CodeBuffer {
          */
         public void remove() {
             InstructionList.this.mResolved = false;
-            
+
             if (mPrev != null) {
                 mPrev.mNext = mNext;
             }
-            
+
             if (mNext != null) {
                 mNext.mPrev = mPrev;
             }
-            
+
             if (this == InstructionList.this.mFirst) {
                 InstructionList.this.mFirst = mNext;
             }
-            
+
             if (this == InstructionList.this.mLast) {
                 InstructionList.this.mLast = mPrev;
             }
-            
+
             mPrev = null;
             mNext = null;
         }
@@ -696,20 +745,20 @@ class InstructionList implements CodeBuffer {
             if (mPrev != null) {
                 mPrev.mNext = replacement;
             }
-            
+
             if (mNext != null) {
                 mNext.mPrev = replacement;
             }
-            
+
             if (this == InstructionList.this.mFirst) {
                 InstructionList.this.mFirst = replacement;
             }
-            
+
             if (this == InstructionList.this.mLast) {
                 InstructionList.this.mLast = replacement;
             }
         }
-        
+
         /**
          * Returns a positive, negative or zero value indicating what affect
          * this generated instruction has on the runtime stack.
@@ -717,7 +766,7 @@ class InstructionList implements CodeBuffer {
         public int getStackAdjustment() {
             return mStackAdjust;
         }
-        
+
         /**
          * Returns the stack depth for when this instruction is reached. If the
          * value is negative, then this instruction is never reached.
@@ -725,14 +774,14 @@ class InstructionList implements CodeBuffer {
         public int getStackDepth() {
             return mStackDepth;
         }
-        
+
         /**
          * Returns the address of this instruction or -1 if not known.
          */
         public int getLocation() {
             return mLocation;
         }
-        
+
         /**
          * Returns all of the targets that this instruction may branch to. Not
          * all instructions support branching, and null is returned by default.
@@ -740,7 +789,22 @@ class InstructionList implements CodeBuffer {
         public Location[] getBranchTargets() {
             return null;
         }
-        
+
+        /**
+         * Returns an all the exception handlers that wraps this instruction,
+         * or null if none.
+         */
+        public Iterator getExceptionHandlers() {
+            return null;
+        }
+
+        /**
+         * Adds an exception handler that wraps this instruction, if it can
+         * throw an exception.
+         */
+        public void addExceptionHandler(ExceptionHandler handler) {
+        }
+
         /**
          * Returns true if execution flow may continue after this instruction.
          * It may be a goto, a method return, an exception throw or a
@@ -753,13 +817,13 @@ class InstructionList implements CodeBuffer {
         public boolean isSubroutineCall() {
             return false;
         }
-        
+
         /**
          * Returns null if this is a pseudo instruction and no bytes are
          * generated.
          */
         public abstract byte[] getBytes();
-        
+
         /**
          * An instruction is resolved when it has all information needed to
          * generate correct byte code.
@@ -799,9 +863,9 @@ class InstructionList implements CodeBuffer {
             if (index >= 0) {
                 name = name.substring(index + 1);
             }
-            
+
             StringBuffer buf = new StringBuffer(name.length() + 20);
-            
+
             int adjust = getStackAdjustment();
             int depth = getStackDepth();
 
@@ -810,14 +874,14 @@ class InstructionList implements CodeBuffer {
             } else {
                 buf.append('*');
             }
-            
+
             buf.append('[');
             buf.append(mLocation);
             buf.append("] ");
-            
+
             buf.append(name);
             buf.append(" (");
-            
+
             if (depth >= 0) {
                 buf.append(depth);
                 buf.append(" + ");
@@ -827,9 +891,9 @@ class InstructionList implements CodeBuffer {
             } else {
                 buf.append(adjust);
             }
-            
+
             buf.append(") ");
-            
+
             try {
                 byte[] bytes = getBytes();
                 boolean wide = false;
@@ -838,9 +902,9 @@ class InstructionList implements CodeBuffer {
                         if (i > 0) {
                             buf.append(',');
                         }
-                        
+
                         byte code = bytes[i];
-                        
+
                         if (i == 0 || wide) {
                             buf.append(Opcode.getMnemonic(code));
                             wide = code == Opcode.WIDE;
@@ -904,7 +968,7 @@ class InstructionList implements CodeBuffer {
         public byte[] getBytes() {
             return null;
         }
-        
+
         public boolean isResolved() {
             return getLocation() >= 0;
         }
@@ -915,11 +979,13 @@ class InstructionList implements CodeBuffer {
      */
     public class CodeInstruction extends Instruction {
         protected byte[] mBytes;
-        
+
+        private Set mExceptionHandlers;
+
         public CodeInstruction(int stackAdjust) {
             super(stackAdjust);
         }
-        
+
         protected CodeInstruction(int stackAdjust, boolean addInstruction) {
             super(stackAdjust, addInstruction);
         }
@@ -928,12 +994,34 @@ class InstructionList implements CodeBuffer {
             super(stackAdjust);
             mBytes = new byte[] {b};
         }
-        
+
         public CodeInstruction(int stackAdjust, byte[] bytes) {
             super(stackAdjust);
             mBytes = bytes;
         }
-        
+
+        public Iterator getExceptionHandlers() {
+            if (mExceptionHandlers == null) {
+                return null;
+            }
+            return mExceptionHandlers.iterator();
+        }
+
+        public void addExceptionHandler(ExceptionHandler handler) {
+            byte opcode;
+            if (mBytes != null) {
+                opcode = mBytes[0];
+            } else {
+                opcode = getBytes()[0];
+            }
+            if (Opcode.canThrowException(opcode)) {
+                if (mExceptionHandlers == null) {
+                    mExceptionHandlers = new HashSet(4);
+                }
+                mExceptionHandlers.add(handler);
+            }
+        }
+
         public boolean isFlowThrough() {
             if (mBytes != null && mBytes.length > 0) {
                 switch (mBytes[0]) {
@@ -949,14 +1037,14 @@ class InstructionList implements CodeBuffer {
                     return false;
                 }
             }
-            
+
             return true;
         }
-        
+
         public byte[] getBytes() {
             return mBytes;
         }
-        
+
         public boolean isResolved() {
             return true;
         }
@@ -979,9 +1067,9 @@ class InstructionList implements CodeBuffer {
         private BranchInstruction(int stackAdjust, boolean addInstruction,
                                   byte opcode, Location target) {
             super(stackAdjust, addInstruction);
-            
+
             mTarget = target;
-            
+
             switch (opcode) {
             case Opcode.GOTO_W:
             case Opcode.JSR_W:
@@ -1018,11 +1106,18 @@ class InstructionList implements CodeBuffer {
                      Opcode.getMnemonic(opcode));
             }
         }
-        
+
         public Location[] getBranchTargets() {
             return new Location[] {mTarget};
         }
-        
+
+        public Iterator getExceptionHandlers() {
+            return null;
+        }
+
+        public void addExceptionHandler(ExceptionHandler handler) {
+        }
+
         public boolean isSubroutineCall() {
             return mIsSub;
         }
@@ -1031,10 +1126,10 @@ class InstructionList implements CodeBuffer {
             if (!isResolved() || mHasShortHop) {
                 return mBytes;
             }
-            
+
             int offset = mTarget.getLocation() - mLocation;
             byte opcode = mBytes[0];
-            
+
             if (opcode == Opcode.GOTO_W || opcode == Opcode.JSR_W) {
                 mBytes[1] = (byte)(offset >> 24);
                 mBytes[2] = (byte)(offset >> 16);
@@ -1056,36 +1151,36 @@ class InstructionList implements CodeBuffer {
                 mBytes[4] = (byte)(offset >> 0);
             } else {
                 // The if branch requires a 32 bit offset.
-                
+
                 // Convert:
                 //
                 //           if <cond> goto target
                 //           // reached if <cond> false
                 // target:   // reached if <cond> true
-                
+
                 // to this:
                 //
                 //           if not <cond> goto shortHop
                 //           goto_w target
                 // shortHop: // reached if <cond> false
                 // target:   // reached if <cond> true
-                
+
                 mHasShortHop = true;
-                
+
                 opcode = Opcode.reverseIfOpcode(opcode);
-                
+
                 mBytes[0] = opcode;
                 mBytes[1] = (byte)0;
                 mBytes[2] = (byte)8;
-                
+
                 // insert goto_w instruction after this one.
                 insert
                     (new BranchInstruction(0, false, Opcode.GOTO_W, mTarget));
             }
-            
+
             return mBytes;
         }
-        
+
         public boolean isResolved() {
             return mTarget.getLocation() >= 0;
         }
@@ -1097,27 +1192,27 @@ class InstructionList implements CodeBuffer {
      */
     public class ConstantOperandInstruction extends CodeInstruction {
         private ConstantInfo mInfo;
-        
+
         public ConstantOperandInstruction(int stackAdjust,
                                           byte[] bytes,
                                           ConstantInfo info) {
             super(stackAdjust, bytes);
             mInfo = info;
         }
-        
+
         public byte[] getBytes() {
             int index = mInfo.getIndex();
-            
+
             if (index < 0) {
                 throw new IllegalStateException("Constant pool index not resolved");
             }
-            
+
             mBytes[1] = (byte)(index >> 8);
             mBytes[2] = (byte)index;
-            
+
             return mBytes;
         }
-        
+
         public boolean isResolved() {
             return mInfo.getIndex() >= 0;
         }
@@ -1130,7 +1225,7 @@ class InstructionList implements CodeBuffer {
     public class LoadConstantInstruction extends CodeInstruction {
         private ConstantInfo mInfo;
         private boolean mWideOnly;
-        
+
         public LoadConstantInstruction(int stackAdjust,
                                        ConstantInfo info) {
             this(stackAdjust, info, false);
@@ -1143,18 +1238,25 @@ class InstructionList implements CodeBuffer {
             mInfo = info;
             mWideOnly = wideOnly;
         }
-        
+
+        public Iterator getExceptionHandlers() {
+            return null;
+        }
+
+        public void addExceptionHandler(ExceptionHandler handler) {
+        }
+
         public boolean isFlowThrough() {
             return true;
         }
-        
+
         public byte[] getBytes() {
             int index = mInfo.getIndex();
-            
+
             if (index < 0) {
                 throw new IllegalStateException("Constant pool index not resolved");
             }
-            
+
             if (mWideOnly) {
                 byte[] bytes = new byte[3];
                 bytes[0] = Opcode.LDC2_W;
@@ -1174,7 +1276,7 @@ class InstructionList implements CodeBuffer {
                 return bytes;
             }
         }
-        
+
         public boolean isResolved() {
             return mInfo.getIndex() >= 0;
         }
@@ -1191,22 +1293,29 @@ class InstructionList implements CodeBuffer {
             super(stackAdjust);
             mLocal = (LocalVariableImpl)local;
         }
-        
+
+        public Iterator getExceptionHandler() {
+            return null;
+        }
+
+        public void addExceptionHandler(ExceptionHandler handler) {
+        }
+
         public boolean isResolved() {
             return mLocal.getNumber() >= 0;
         }
-        
+
         public LocalVariableImpl getLocalVariable() {
             return mLocal;
         }
 
         public int getVariableNumber() {
             int varNum = mLocal.getNumber();
-            
+
             if (varNum < 0) {
                 throw new IllegalStateException("Local variable number not resolved");
             }
-            
+
             return varNum;
         }
 
@@ -1222,11 +1331,11 @@ class InstructionList implements CodeBuffer {
         public LoadLocalInstruction(int stackAdjust, LocalVariable local) {
             super(stackAdjust, local);
         }
-        
+
         public boolean isFlowThrough() {
             return true;
         }
-        
+
         public byte[] getBytes() {
             int varNum = getVariableNumber();
             byte opcode;
@@ -1329,7 +1438,7 @@ class InstructionList implements CodeBuffer {
                 break;
             default:
                 writeIndex = true;
-                
+
                 switch (typeCode) {
                 default:
                     opcode = Opcode.ALOAD;
@@ -1369,7 +1478,7 @@ class InstructionList implements CodeBuffer {
                     };
                 }
             }
-            
+
             return mBytes;
         }
 
@@ -1387,28 +1496,30 @@ class InstructionList implements CodeBuffer {
      * variable.
      */
     public class StoreLocalInstruction extends LocalOperandInstruction {
+        private boolean mDiscardResult;
+
         public StoreLocalInstruction(int stackAdjust, LocalVariable local) {
             super(stackAdjust, local);
         }
-        
+
         public boolean isFlowThrough() {
             return true;
         }
-        
-        public byte[] getBytes() {
-            int varNum = getVariableNumber();
 
-            if (varNum < 0) {
-                // If variable number not resolved, then results of store are
-                // not needed. Just pop it off.
+        public byte[] getBytes() {
+            if (mDiscardResult) {
+                // Liveness analysis discovered that the results of this store
+                // are not needed so just pop if off the stack.
                 return new byte[] { mLocal.isDoubleWord() ? Opcode.POP2 : Opcode.POP };
             }
+
+            int varNum = getVariableNumber();
 
             byte opcode;
             boolean writeIndex = false;
 
             int typeCode = mLocal.getType().getTypeCode();
-            
+
             switch(varNum) {
             case 0:
                 switch (typeCode) {
@@ -1504,7 +1615,7 @@ class InstructionList implements CodeBuffer {
                 break;
             default:
                 writeIndex = true;
-                
+
                 switch (typeCode) {
                 default:
                     opcode = Opcode.ASTORE;
@@ -1528,7 +1639,7 @@ class InstructionList implements CodeBuffer {
                 }
                 break;
             }
-            
+
             if (!writeIndex) {
                 mBytes = new byte[] { opcode };
             } else {
@@ -1544,19 +1655,12 @@ class InstructionList implements CodeBuffer {
                     };
                 }
             }
-            
+
             return mBytes;
         }
 
         public boolean isResolved() {
             return true;
-        }
-
-        /**
-         * Returns -1 if store results should be discarded.
-         */
-        public int getVariableNumber() {
-            return mLocal.getNumber();
         }
 
         public boolean isLoad() {
@@ -1565,6 +1669,10 @@ class InstructionList implements CodeBuffer {
 
         public boolean isStore() {
             return true;
+        }
+
+        public void discardResult() {
+            mDiscardResult = true;
         }
     }
 
@@ -1575,14 +1683,14 @@ class InstructionList implements CodeBuffer {
         public RetInstruction(LocalVariable local) {
             super(0, local);
         }
-        
+
         public boolean isFlowThrough() {
             return false;
         }
-        
+
         public byte[] getBytes() {
             int varNum = getVariableNumber();
-            
+
             if (varNum <= 255) {
                 mBytes = new byte[] { Opcode.RET, (byte)varNum };
             } else {
@@ -1594,7 +1702,7 @@ class InstructionList implements CodeBuffer {
                     (byte)varNum
                 };
             }
-            
+
             return mBytes;
         }
 
@@ -1613,19 +1721,19 @@ class InstructionList implements CodeBuffer {
      */
     public class ShortIncrementInstruction extends LocalOperandInstruction {
         private short mAmount;
-        
+
         public ShortIncrementInstruction(LocalVariable local, short amount) {
             super(0, local);
             mAmount = amount;
         }
-        
+
         public boolean isFlowThrough() {
             return true;
         }
-        
+
         public byte[] getBytes() {
             int varNum = getVariableNumber();
-            
+
             if ((-128 <= mAmount && mAmount <= 127) && varNum <= 255) {
                 mBytes = new byte[] 
                 { Opcode.IINC, 
@@ -1643,7 +1751,7 @@ class InstructionList implements CodeBuffer {
                     (byte)mAmount
                 };
             }
-            
+
             return mBytes;
         }
 
@@ -1665,12 +1773,12 @@ class InstructionList implements CodeBuffer {
         private int[] mCases;
         private Location[] mLocations;
         private Location mDefaultLocation;
-        
+
         private byte mOpcode;
-        
+
         private int mSmallest;
         private int mLargest;
-        
+
         public SwitchInstruction(int[] casesParam,
                                  Location[] locationsParam,
                                  Location defaultLocation) {
@@ -1683,19 +1791,19 @@ class InstructionList implements CodeBuffer {
                     ("Switch cases and locations sizes differ: " + 
                      casesParam.length + ", " + locationsParam.length);
             }
-            
+
             mCases = new int[casesParam.length];
             System.arraycopy(casesParam, 0, mCases, 0, casesParam.length);
-            
+
             mLocations = new Location[locationsParam.length];
             System.arraycopy(locationsParam, 0, mLocations, 
                              0, locationsParam.length);
-            
+
             mDefaultLocation = defaultLocation;
-            
+
             // First sort the cases and locations.
             sort(0, mCases.length - 1);
-            
+
             // Check for duplicate cases.
             int lastCase = 0;
             for (int i=0; i<mCases.length; i++) {
@@ -1704,71 +1812,78 @@ class InstructionList implements CodeBuffer {
                 }
                 lastCase = mCases[i];
             }
-            
+
             // Now determine which kind of switch to use.
-            
+
             mSmallest = mCases[0];
             mLargest = mCases[mCases.length - 1];
             int tSize = 12 + 4 * (mLargest - mSmallest + 1);
-            
+
             int lSize = 8 + 8 * mCases.length;
-            
+
             if (tSize <= lSize) {
                 mOpcode = Opcode.TABLESWITCH;
             } else {
                 mOpcode = Opcode.LOOKUPSWITCH;
             }
         }   
-        
+
         public Location[] getBranchTargets() {
             Location[] targets = new Location[mLocations.length + 1];
             System.arraycopy(mLocations, 0, targets, 0, mLocations.length);
             targets[targets.length - 1] = mDefaultLocation;
-            
+
             return targets;
         }
-        
+
+        public Iterator getExceptionHandlers() {
+            return null;
+        }
+
+        public void addExceptionHandler(ExceptionHandler handler) {
+        }
+
         public boolean isFlowThrough() {
             return false;
         }
-        
+
         public byte[] getBytes() {
             int length = 1;
             int pad = 3 - (mLocation & 3);
             length += pad;
-            
+
             if (mOpcode == Opcode.TABLESWITCH) {
                 length += 12 + 4 * (mLargest - mSmallest + 1);
             } else {
                 length += 8 + 8 * mCases.length;
             }
-            
+
             mBytes = new byte[length];
-            
+
             if (!isResolved()) {
                 return mBytes;
             }
-            
+
             mBytes[0] = mOpcode;
             int cursor = pad + 1;
-            
+
             int defaultOffset = mDefaultLocation.getLocation() - mLocation;
             mBytes[cursor++] = (byte)(defaultOffset >> 24);
             mBytes[cursor++] = (byte)(defaultOffset >> 16);
             mBytes[cursor++] = (byte)(defaultOffset >> 8);
             mBytes[cursor++] = (byte)(defaultOffset >> 0);
-            
+
             if (mOpcode == Opcode.TABLESWITCH) {
                 mBytes[cursor++] = (byte)(mSmallest >> 24);
                 mBytes[cursor++] = (byte)(mSmallest >> 16);
                 mBytes[cursor++] = (byte)(mSmallest >> 8);
                 mBytes[cursor++] = (byte)(mSmallest >> 0);
-                
+
                 mBytes[cursor++] = (byte)(mLargest >> 24);
                 mBytes[cursor++] = (byte)(mLargest >> 16);
                 mBytes[cursor++] = (byte)(mLargest >> 8);
                 mBytes[cursor++] = (byte)(mLargest >> 0);
-                
+
                 int index = 0;
                 for (int case_ = mSmallest; case_ <= mLargest; case_++) {
                     if (case_ == mCases[index]) {
@@ -1778,7 +1893,7 @@ class InstructionList implements CodeBuffer {
                         mBytes[cursor++] = (byte)(offset >> 16);
                         mBytes[cursor++] = (byte)(offset >> 8);
                         mBytes[cursor++] = (byte)(offset >> 0);
-                        
+
                         index++;
                     } else {
                         mBytes[cursor++] = (byte)(defaultOffset >> 24);
@@ -1792,15 +1907,15 @@ class InstructionList implements CodeBuffer {
                 mBytes[cursor++] = (byte)(mCases.length >> 16);
                 mBytes[cursor++] = (byte)(mCases.length >> 8);
                 mBytes[cursor++] = (byte)(mCases.length >> 0);
-                
+
                 for (int index = 0; index < mCases.length; index++) {
                     int case_ = mCases[index];
-                    
+
                     mBytes[cursor++] = (byte)(case_ >> 24);
                     mBytes[cursor++] = (byte)(case_ >> 16);
                     mBytes[cursor++] = (byte)(case_ >> 8);
                     mBytes[cursor++] = (byte)(case_ >> 0);
-                    
+
                     int offset = mLocations[index].getLocation() - mLocation;
                     mBytes[cursor++] = (byte)(offset >> 24);
                     mBytes[cursor++] = (byte)(offset >> 16);
@@ -1808,7 +1923,7 @@ class InstructionList implements CodeBuffer {
                     mBytes[cursor++] = (byte)(offset >> 0);
                 }
             }
-            
+
             return mBytes;
         }
 
@@ -1819,38 +1934,38 @@ class InstructionList implements CodeBuffer {
                         break;
                     }
                 }
-                
+
                 return true;
             }
-            
+
             return false;
         }
-        
+
         private void sort(int left, int right) {
             if (left >= right) {
                 return;
             }
-            
+
             swap(left, (left + right) / 2); // move middle element to 0
-            
+
             int last = left;
-            
+
             for (int i = left + 1; i <= right; i++) {
                 if (mCases[i] < mCases[left]) {
                     swap(++last, i);
                 }
             }
-            
+
             swap(left, last);
             sort(left, last-1);
             sort(last + 1, right);
         }
-        
+
         private void swap(int i, int j) {
             int tempInt = mCases[i];
             mCases[i] = mCases[j];
             mCases[j] = tempInt;
-            
+
             Location tempLocation = mLocations[i];
             mLocations[i] = mLocations[j];
             mLocations[j] = tempLocation;
