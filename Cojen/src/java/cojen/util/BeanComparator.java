@@ -37,9 +37,6 @@ import cojen.classfile.Modifiers;
 import cojen.classfile.Opcode;
 import cojen.classfile.TypeDesc;
 
-// TODO: Use org.apache.commons.collections.map.ReferenceMap -- I don't like
-// it, however
-import com.go.trove.util.SoftHashMap;
 // TODO: Consider chucking this.
 import com.go.trove.util.CompleteIntrospector;
 // TODO: Create improved replacement
@@ -101,17 +98,13 @@ import com.go.trove.util.ClassInjector;
  * Serializable.
  *
  * @author Brian S O'Neill
- * @see java.beans.Introspector
- * @see CompleteIntrospector
- * @see java.util.Collections.sort
- * @see java.util.Arrays.sort
  */
 public class BeanComparator implements Comparator, Serializable {
     // Maps Rules to auto-generated Comparators.
     private static Map cGeneratedComparatorCache;
 
     static {
-        cGeneratedComparatorCache = new SoftHashMap();
+        cGeneratedComparatorCache = new SoftValuedHashMap();
     }
 
     /**

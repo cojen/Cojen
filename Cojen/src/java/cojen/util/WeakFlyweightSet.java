@@ -23,8 +23,8 @@ import java.util.NoSuchElementException;
 
 /**
  * A thread-safe Set that manages flyweights: sharable objects that are usually
- * immutable. Call the {@link #put put} method for supplying the FlyweightSet
- * with candidate flyweight instances.
+ * immutable. Call the {@link #put put} method for supplying the
+ * WeakFlyweightSet with candidate flyweight instances.
  * <p>
  * Objects that do not customize the hashCode and equals methods don't make
  * sense to use as flyweights because each instance will be considered unique.
@@ -33,18 +33,18 @@ import java.util.NoSuchElementException;
  *
  * @author Brian S O'Neill
  */
-public class FlyweightSet extends AbstractSet {
-    private Entry mTable[];
-    private int mCount;
-    private int mThreshold;
-    private float mLoadFactor;
-    
-    public FlyweightSet() {
+public class WeakFlyweightSet extends AbstractSet {
+    private Entry[] table;
+    private int count;
+    private int threshold;
+    private final float loadFactor;
+
+    public WeakFlyweightSet() {
         final int initialCapacity = 101;
         final float loadFactor = 0.75f;
-        mLoadFactor = loadFactor;
-        mTable = new Entry[initialCapacity];
-        mThreshold = (int)(initialCapacity * loadFactor);
+        this.loadFactor = loadFactor;
+        this.table = new Entry[initialCapacity];
+        this.threshold = (int)(initialCapacity * loadFactor);
     }
 
     /**
@@ -54,29 +54,29 @@ public class FlyweightSet extends AbstractSet {
      * set, it will be added to the set, becoming a flyweight.
      *
      * @param obj candidate flyweight; null is also accepted
-     */    
+     */
     public synchronized Object put(Object obj) {
-        // This implementation is based on the IdentityMap.put method.
-        
+        // This implementation is based on the WeakIdentityMap.put method.
+
         if (obj == null) {
             return null;
         }
-        
-        Entry tab[] = mTable;
+
+        Entry[] tab = this.table;
         int hash = hashCode(obj);
-        int index = (hash & 0x7FFFFFFF) % tab.length;
-        
-        for (Entry e = tab[index], prev = null; e != null; e = e.mNext) {
+        int index = (hash & 0x7fffffff) % tab.length;
+
+        for (Entry e = tab[index], prev = null; e != null; e = e.next) {
             Object iobj = e.get();
             if (iobj == null) {
                 // Clean up after a cleared Reference.
                 if (prev != null) {
-                    prev.mNext = e.mNext;
+                    prev.next = e.next;
                 } else {
-                    tab[index] = e.mNext;
+                    tab[index] = e.next;
                 }
-                mCount--;
-            } else if (e.mHash == hash &&
+                this.count--;
+            } else if (e.hash == hash &&
 					   obj.getClass() == iobj.getClass() &&
 					   equals(obj, iobj)) {
                 // Found flyweight instance.
@@ -85,53 +85,53 @@ public class FlyweightSet extends AbstractSet {
                 prev = e;
             }
         }
-        
-        if (mCount >= mThreshold) {
+
+        if (this.count >= this.threshold) {
             // Cleanup the table if the threshold is exceeded.
             cleanup();
         }
-        
-        if (mCount >= mThreshold) {
+
+        if (this.count >= this.threshold) {
             // Rehash the table if the threshold is still exceeded.
             rehash();
-            tab = mTable;
-            index = (hash & 0x7FFFFFFF) % tab.length;
+            tab = this.table;
+            index = (hash & 0x7fffffff) % tab.length;
         }
-        
+
         // Create a new entry.
         tab[index] = new Entry(obj, hash, tab[index]);
-        mCount++;
+        this.count++;
         return obj;
     }
-    
+
     public Iterator iterator() {
         return new SetIterator();
     }
 
     public int size() {
-        return mCount;
+        return this.count;
     }
 
-    public boolean contains(Object obj) {
+    public synchronized boolean contains(Object obj) {
         if (obj == null) {
             return false;
         }
-        
-        Entry tab[] = mTable;
+
+        Entry[] tab = this.table;
         int hash = hashCode(obj);
-        int index = (hash & 0x7FFFFFFF) % tab.length;
-        
-        for (Entry e = tab[index], prev = null; e != null; e = e.mNext) {
+        int index = (hash & 0x7fffffff) % tab.length;
+
+        for (Entry e = tab[index], prev = null; e != null; e = e.next) {
             Object iobj = e.get();
             if (iobj == null) {
                 // Clean up after a cleared Reference.
                 if (prev != null) {
-                    prev.mNext = e.mNext;
+                    prev.next = e.next;
                 } else {
-                    tab[index] = e.mNext;
+                    tab[index] = e.next;
                 }
-                mCount--;
-            } else if (e.mHash == hash &&
+                this.count--;
+            } else if (e.hash == hash &&
                      obj.getClass() == iobj.getClass() &&
                      equals(obj, iobj)) {
                 // Found flyweight instance.
@@ -144,7 +144,7 @@ public class FlyweightSet extends AbstractSet {
         return false;
     }
 
-    public String toString() {
+    public synchronized String toString() {
         return WeakIdentityMap.toString(this);
     }
 
@@ -157,99 +157,104 @@ public class FlyweightSet extends AbstractSet {
     }
 
     private void cleanup() {
-        Entry tab[] = mTable;
+        Entry[] tab = this.table;
         for (int i = tab.length; i-- > 0; ) {
-            for (Entry e = tab[i], prev = null; e != null; e = e.mNext) {
+            for (Entry e = tab[i], prev = null; e != null; e = e.next) {
                 if (e.get() == null) {
                     // Clean up after a cleared Reference.
                     if (prev != null) {
-                        prev.mNext = e.mNext;
+                        prev.next = e.next;
                     } else {
-                        tab[i] = e.mNext;
+                        tab[i] = e.next;
                     }
-                    mCount--;
+                    this.count--;
                 } else {
                     prev = e;
                 }
             }
         }
     }
-    
+
     private void rehash() {
-        int oldCapacity = mTable.length;
-        Entry[] tab = mTable;
-        
+        int oldCapacity = this.table.length;
+        Entry[] tab = this.table;
+
         int newCapacity = oldCapacity * 2 + 1;
         Entry[] newTab = new Entry[newCapacity];
-        
-        mThreshold = (int)(newCapacity * mLoadFactor);
-        mTable = newTab;
-        
+
+        this.threshold = (int)(newCapacity * this.loadFactor);
+        this.table = newTab;
+
         for (int i = oldCapacity; i-- > 0; ) {
             for (Entry old = tab[i]; old != null; ) {
                 Entry e = old;
-                old = old.mNext;
-                
+                old = old.next;
+
                 // Only copy entry if it hasn't been cleared.
                 if (e.get() == null) {
-                    mCount--;
+                    this.count--;
                 } else {
-                    int index = (e.mHash & 0x7FFFFFFF) % newCapacity;
-                    e.mNext = newTab[index];
+                    int index = (e.hash & 0x7fffffff) % newCapacity;
+                    e.next = newTab[index];
                     newTab[index] = e;
                 }
             }
         }
     }
-    
+
     private static class Entry extends WeakReference {
-        int mHash;
-        Entry mNext;
-        
+        int hash;
+        Entry next;
+
         Entry(Object flyweight, int hash, Entry next) {
             super(flyweight);
-            mHash = hash;
-            mNext = next;
+            this.hash = hash;
+            this.next = next;
         }
     }
 
     private class SetIterator implements Iterator {
-        private Entry[] mTable = FlyweightSet.this.mTable;
-        private int mIndex = mTable.length;
-        private Entry mEntry;
+        private final Entry[] table;
+
+        private int index;
+
         // To ensure that the iterator doesn't return cleared entries, keep a
         // hard reference to the flyweight. Its existence will prevent the weak
         // reference from being cleared.
-        private Object mEntryFlyweight;
-        private Entry mLastReturned;
-        
+        private Object entryFlyweight;
+        private Entry entry;
+
+        SetIterator() {
+            this.table = WeakFlyweightSet.this.table;
+            this.index = table.length;
+        }
+
         public boolean hasNext() {
-            while (mEntry == null ||
-                   (mEntryFlyweight = mEntry.get()) == null) {
-                if (mEntry != null) {
+            while (this.entry == null || (this.entryFlyweight = this.entry.get()) == null) {
+                if (this.entry != null) {
                     // Skip past a cleared Reference.
-                    mEntry = mEntry.mNext;
+                    this.entry = this.entry.next;
                 } else {
-                    if (mIndex <= 0) {
+                    if (this.index <= 0) {
                         return false;
                     } else {
-                        mEntry = mTable[--mIndex];
+                        this.entry = this.table[--this.index];
                     }
                 }
             }
 
             return true;
         }
-        
+
         public Object next() {
             if (!hasNext()) {
                 throw new NoSuchElementException();
             }
 
-            mEntry = mEntry.mNext;
-            return mEntryFlyweight;
+            this.entry = this.entry.next;
+            return this.entryFlyweight;
         }
-        
+
         public void remove() {
             throw new UnsupportedOperationException();
         }
