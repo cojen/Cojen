@@ -94,13 +94,11 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
         // passed in parameters.
 
         LocalVariable localVar;
-        int varNum = 0;
 
         if (info.getModifiers().isStatic()) {
             mThisReference = null;
         } else {
-            localVar = mInstructions.createLocalParameter
-                ("this", mClassFile.getType(), varNum++);
+            localVar = mInstructions.createLocalParameter("this", mClassFile.getType());
             mThisReference = localVar;
 
             if (saveLocalVariableInfo) {
@@ -114,11 +112,8 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
         mParameters = new LocalVariable[paramSize];
 
         for (int i = 0; i<paramTypes.length; i++) {
-            localVar = mInstructions.createLocalParameter
-                (null, paramTypes[i], varNum);
-            varNum += (localVar.isDoubleWord() ? 2 : 1);
+            localVar = mInstructions.createLocalParameter(null, paramTypes[i]);
             mParameters[i] = localVar;
-
             if (saveLocalVariableInfo) {
                 mCodeAttr.localVariableUse(localVar);
             }
