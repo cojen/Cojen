@@ -31,10 +31,10 @@ import cojen.classfile.ClassFile;
 
 /**
  * ClassInjector allows transient classes to be loaded, where a transient class
- * is defined as being dynamically created at runtime. The name given to
- * transient classes is randomly assigned to prevent name collisions and to
- * discourage referencing the classname persistently outside the runtime
- * environment.
+ * is defined as being dynamically created at runtime. Unless explicit, the
+ * name given to transient classes is randomly assigned to prevent name
+ * collisions and to discourage referencing the classname persistently outside
+ * the runtime environment.
  * <p>
  * Classes defined by ClassInjector may be unloaded, if no references to it
  * exist. Once unloaded, they cannot be loaded again by name since the
@@ -82,6 +82,31 @@ public class ClassInjector {
      * @param parent optional parent ClassLoader
      */
     public static ClassInjector create(String prefix, ClassLoader parent) {
+        return create(prefix, parent, false);
+    }
+
+    /**
+     * Create a ClassInjector for defining one class with an explicit name. If
+     * the parent ClassLoader is not specified, it will default to the
+     * ClassLoader of the ClassInjector class.
+     * <p>
+     * If the parent loader was used for loading injected classes, the new
+     * class will be loaded by it. This allows auto-generated classes access to
+     * package accessible members, as long as they are defined in the same
+     * package.
+     *
+     * @param name required class name
+     * @param parent optional parent ClassLoader
+     * @throws IllegalArgumentException if name is null
+     */
+    public static ClassInjector createExplicit(String name, ClassLoader parent) {
+        if (name == null) {
+            throw new IllegalArgumentException("Explicit class name not provided");
+        }
+        return create(name, parent, true);
+    }
+
+    private static ClassInjector create(String prefix, ClassLoader parent, boolean explicit) {
         if (prefix == null) {
             prefix = ClassInjector.class.getName();
         }
@@ -92,7 +117,7 @@ public class ClassInjector {
             }
         }
 
-        String name = null;
+        String name = explicit ? prefix : null;
         Loader loader;
 
         synchronized (cRandom) {
@@ -114,41 +139,60 @@ public class ClassInjector {
                 loader = parent == null ? new Loader() : new Loader(parent);
                 cLoaders.put(parent, new SoftReference(loader));
             }
-        
-            for (int tryCount = 0; tryCount < 1000; tryCount++) {
-                name = null;
 
-                long ID = cRandom.nextInt();
-
-                // Use a small identifier if possible, making it easier to read
-                // stack traces and decompiled classes.
-                switch (tryCount) {
-                case 0:
-                    ID &= 0xffL;
-                    break;
-                case 1:
-                    ID &= 0xffffL;
-                    break;
-                default:
-                    ID &= 0xffffffffL;
-                    break;
-                }
-
-                name = prefix + '$' + ID;
-
-                if (!loader.reserveName(name)) {
-                    continue;
-                }
-
-                try {
-                    if (loader != null) {
-                        loader.loadClass(name);
-                    } else {
-                        Class.forName(name);
+            if (explicit) {
+                reserveCheck: {
+                    for (int i=0; i<2; i++) {
+                        if (loader.reserveName(name)) {
+                            try {
+                                loader.loadClass(name);
+                            } catch (ClassNotFoundException e) {
+                                break reserveCheck;
+                            }
+                        }
+                        if (i > 0) {
+                            throw new IllegalStateException
+                                ("Class name already reserved: " + name);
+                        }
+                        // Make a new loader and try again.
+                        loader = parent == null ? new Loader() : new Loader(parent);
                     }
-                } catch (ClassNotFoundException e) {
-                    break;
-                } catch (LinkageError e) {
+
+                    // Save new loader.
+                    cLoaders.put(parent, new SoftReference(loader));
+                }
+            } else {
+                for (int tryCount = 0; tryCount < 1000; tryCount++) {
+                    name = null;
+                    
+                    long ID = cRandom.nextInt();
+                    
+                    // Use a small identifier if possible, making it easier to read
+                    // stack traces and decompiled classes.
+                    switch (tryCount) {
+                    case 0:
+                        ID &= 0xffL;
+                        break;
+                    case 1:
+                        ID &= 0xffffL;
+                        break;
+                    default:
+                        ID &= 0xffffffffL;
+                        break;
+                    }
+                    
+                    name = prefix + '$' + ID;
+                    
+                    if (!loader.reserveName(name)) {
+                        continue;
+                    }
+                    
+                    try {
+                        loader.loadClass(name);
+                    } catch (ClassNotFoundException e) {
+                        break;
+                    } catch (LinkageError e) {
+                    }
                 }
             }
         }
