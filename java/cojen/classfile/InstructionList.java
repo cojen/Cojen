@@ -177,6 +177,8 @@ class InstructionList implements CodeBuffer {
 
         // Sweep through the instructions, marking them as not being
         // visted by flow analysis and set fake locations.
+        // TODO: Are fake locations only needed for exception handler
+        // processing during variable flow analysis?
         int instrCount = 0;
         for (instr = mFirst; instr != null; instr = instr.mNext) {
             instr.mStackDepth = -1;
@@ -552,7 +554,9 @@ class InstructionList implements CodeBuffer {
         private int mNumber;
         private boolean mFixed;
 
+        // TODO: Perhaps tracking first store is not needed?
         private List mStoreInstructions;
+        // TODO: Remove
         private SortedSet mLocationRangeSet;
 
         public LocalVariableImpl(String name, TypeDesc type,
@@ -638,10 +642,12 @@ class InstructionList implements CodeBuffer {
             return mFixed;
         }
 
+        // TODO: Make non-public
         public void addStoreInstruction(Instruction instr) {
             mStoreInstructions.add(instr);
         }
 
+        // TODO: Make non-public
         public Iterator iterateStoreInstructions() {
             return mStoreInstructions.iterator();
         }

@@ -262,7 +262,7 @@ public abstract class PatternMatcher {
             MethodInfo mi = cf.addConstructor(Modifiers.PUBLIC, params);
             mBuilder = new CodeBuilder(mi);
             mBuilder.loadThis();
-            mBuilder.loadLocal(mBuilder.getParameters()[0]);
+            mBuilder.loadLocal(mBuilder.getParameter(0));
             mBuilder.invokeSuperConstructor(params);
             mBuilder.returnVoid();
 
@@ -279,9 +279,9 @@ public abstract class PatternMatcher {
             mi = cf.addMethod(Modifiers.PUBLIC, "fillMatchResults", null, params);
             mBuilder = new CodeBuilder(mi);
 
-            mLookupLocal = mBuilder.getParameters()[0];
-            mLimitLocal = mBuilder.getParameters()[1];
-            mResultsLocal = mBuilder.getParameters()[2];
+            mLookupLocal = mBuilder.getParameter(0);
+            mLimitLocal = mBuilder.getParameter(1);
+            mResultsLocal = mBuilder.getParameter(2);
             mPositionsLocal = mBuilder.createLocalVariable("positions", mIntArrayType);
             mIndexLocal = mBuilder.createLocalVariable("index", mIntType);
 

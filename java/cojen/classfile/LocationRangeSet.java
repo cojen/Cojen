@@ -26,6 +26,7 @@ import java.util.TreeSet;
  *
  * @author Brian S O'Neill
  */
+// TODO: Remove this
 class LocationRangeSet {
     /**
      * Reduces a set of LocationRange objects.

@@ -80,9 +80,9 @@ public class CodeDisassembler {
         gatherLabels();
 
         // Gather the local variables of the parameters.
-        LocalVariable[] paramVars = assembler.getParameters();
-        for (int i=0; i<paramVars.length; i++) {
-            LocalVariable paramVar = paramVars[i];
+        int paramCount = assembler.getParameterCount();
+        for (int i=0; i<paramCount; i++) {
+            LocalVariable paramVar = assembler.getParameter(i);
             int number = paramVar.getNumber();
             if (number >= mLocals.size()) {
                 mLocals.setSize(number + 1);

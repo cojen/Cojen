@@ -1023,7 +1023,21 @@ public class ClassFile {
         }
     }
 
-    // TODO: Add a toString method that dumps the descriptor like MethodInfo
-    // and FieldInfo
+    public String toString() {
+        StringBuffer buf = new StringBuffer();
+        String modStr = mModifiers.toString();
+        if (modStr.length() > 0) {
+            buf.append(modStr);
+            buf.append(' ');
+        }
+        if (getModifiers().isInterface()) {
+            buf.append("interface");
+        } else {
+            buf.append("class");
+        }
+        buf.append(' ');
+        buf.append(getClassName());
 
+        return buf.toString();
+    }
 }

@@ -31,7 +31,7 @@ import java.io.PrintWriter;
  * @author Brian S O'Neill
  */
 public class CodeAssemblerPrinter implements CodeAssembler {
-    private final TypeDesc[] mParamTypes;
+    private final LocalVariable[] mParams;
     private final boolean mIsStatic;
     private final PrintWriter mWriter;
     private final String mLinePrefix;
@@ -68,7 +68,6 @@ public class CodeAssemblerPrinter implements CodeAssembler {
                                 String linePrefix, String lineSuffix,
                                 String builder)
     {
-        mParamTypes = paramTypes;
         mIsStatic = isStatic;
         mWriter = writer;
         mLinePrefix = linePrefix;
@@ -81,23 +80,26 @@ public class CodeAssemblerPrinter implements CodeAssembler {
         mBulder = builder;
         mTypeDescNames = new HashMap();
         mTypeDescArrayNames = new HashMap();
-    }
 
-    public LocalVariable[] getParameters() {
-        LocalVariable[] vars = new LocalVariable[mParamTypes.length];
+        mParams = new LocalVariable[paramTypes.length];
 
-        int varNum = (mIsStatic) ? 0 : 1;
-        for (int i = 0; i<mParamTypes.length; i++) {
+        int varNum = (isStatic) ? 0 : 1;
+        for (int i = 0; i<paramTypes.length; i++) {
             String varName = "var_" + (++mLocalCounter);
             println("LocalVariable " + varName + " = " +
-                    mBulder + "getParameters()[" + i + ']');
-            LocalVariable localVar =
-                new NamedLocal(varName, mParamTypes[i], varNum);
+                    mBulder + "getParameter(" + i + ')');
+            LocalVariable localVar = new NamedLocal(varName, paramTypes[i], varNum);
             varNum += (localVar.isDoubleWord() ? 2 : 1);
-            vars[i] = localVar;
+            mParams[i] = localVar;
         }
-        
-        return vars;
+    }
+
+    public int getParameterCount() {
+        return mParams.length;
+    }
+
+    public LocalVariable getParameter(int index) {
+        return mParams[index];
     }
 
     public LocalVariable createLocalVariable(String name, 
@@ -124,7 +126,8 @@ public class CodeAssemblerPrinter implements CodeAssembler {
         println(mBulder + "exceptionHandler(" +
                 getLabelName(startLocation) + ", " +
                 getLabelName(endLocation) + ", " +
-                '"' + catchClassName + "\")");
+                (catchClassName == null ? "null" : ('"' + catchClassName + '"')) +
+                ')');
     }
     
     public void mapLineNumber(int lineNumber) {
@@ -749,9 +752,9 @@ public class CodeAssemblerPrinter implements CodeAssembler {
     }
 
     private class NamedLocal implements LocalVariable {
-        private String mName;
-        private TypeDesc mType;
-        private int mNumber;
+        private final String mName;
+        private final TypeDesc mType;
+        private final int mNumber;
 
         public NamedLocal(String name, TypeDesc type, int number) {
             mName = name;

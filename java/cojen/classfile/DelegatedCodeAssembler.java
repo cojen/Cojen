@@ -29,8 +29,12 @@ public class DelegatedCodeAssembler implements CodeAssembler {
         mAssembler = assembler;
     }
 
-    public LocalVariable[] getParameters() {
-        return mAssembler.getParameters();
+    public int getParameterCount() {
+        return mAssembler.getParameterCount();
+    }
+
+    public LocalVariable getParameter(int index) {
+        return mAssembler.getParameter(index);
     }
 
     public LocalVariable createLocalVariable(String name, TypeDesc type) {
