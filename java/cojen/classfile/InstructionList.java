@@ -44,6 +44,7 @@ class InstructionList implements CodeBuffer {
 
     private List mExceptionHandlers = new ArrayList(4);
     private List mLocalVariables = new ArrayList();
+    private int mNextFixedVariableNumber;
 
     private int mMaxStack;
     private int mMaxLocals;
@@ -127,11 +128,14 @@ class InstructionList implements CodeBuffer {
         return var;
     }
 
-    public LocalVariable createLocalParameter(String name,
-                                              TypeDesc type,
-                                              int number) {
-        LocalVariable var = new LocalVariableImpl(mLocalVariables.size(), name, type, number);
+    /**
+     * All parameters must be defined before adding instructions.
+     */
+    public LocalVariable createLocalParameter(String name, TypeDesc type) {
+        LocalVariable var = new LocalVariableImpl
+            (mLocalVariables.size(), name, type, mNextFixedVariableNumber);
         mLocalVariables.add(var);
+        mNextFixedVariableNumber += type.isDoubleWord() ? 2 : 1;
         return var;
     }
 
@@ -165,10 +169,11 @@ class InstructionList implements CodeBuffer {
         // Sweep through the instructions, preparing for flow analysis.
         int instrCount = 0;
         for (instr = mFirst; instr != null; instr = instr.mNext) {
+            // Set address to instruction index.
             instr.reset(instrCount++);
         }
 
-        // Make sure exception handlers are registered with all protected
+        // Make sure exception handlers are registered with all guarded
         // instructions.
         Iterator it = mExceptionHandlers.iterator();
         while (it.hasNext()) {
@@ -181,106 +186,112 @@ class InstructionList implements CodeBuffer {
         }
 
         // Perform variable liveness flow analysis for each local variable, in
-        // order to determine which register it should be assigned.
-
-        int size = mLocalVariables.size();
-        BitList[] liveIn = new BitList[size];
-        BitList[] liveOut = new BitList[size];
-        for (int v=0; v<size; v++) {
-            liveIn[v] = new BitList(instrCount);
-            liveOut[v] = new BitList(instrCount);
-        }
-
-        livenessAnalysis(liveIn, liveOut);
-
-        // Register number -> list of variables that use that register.
-        List registerUsers = new ArrayList();
-
-        // First fill up list with variables that have a fixed number.
-        for (int v=0; v<size; v++) {
-            LocalVariableImpl var = (LocalVariableImpl)mLocalVariables.get(v);
-            if (var.isFixedNumber()) {
-                addRegisterUser(registerUsers, var);
-                // Ensure that max locals is large enough to hold parameters.
-                int num = var.getNumber();
-                if (var.isDoubleWord()) {
-                    num++;
+        // order to determine which register it should be assigned. Takes
+        // advantage of the fact that instruction addresses are not yet
+        // resolved to true addresses, but are instead indexes. This means the
+        // liveness analysis operates on smaller BitLists, which makes some
+        // operations (i.e. intersection) a bit faster.
+        {
+            int size = mLocalVariables.size();
+            BitList[] liveIn = new BitList[size];
+            BitList[] liveOut = new BitList[size];
+            for (int v=0; v<size; v++) {
+                liveIn[v] = new BitList(instrCount);
+                liveOut[v] = new BitList(instrCount);
+            }
+            
+            livenessAnalysis(liveIn, liveOut);
+            
+            // Register number -> list of variables that use that register.
+            List registerUsers = new ArrayList();
+            
+            // First fill up list with variables that have a fixed number.
+            for (int v=0; v<size; v++) {
+                LocalVariableImpl var = (LocalVariableImpl)mLocalVariables.get(v);
+                if (var.isFixedNumber()) {
+                    addRegisterUser(registerUsers, var);
+                    // Ensure that max locals is large enough to hold parameters.
+                    int num = var.getNumber();
+                    if (var.isDoubleWord()) {
+                        num++;
+                    }
+                    if (num >= mMaxLocals) {
+                        mMaxLocals = num + 1;
+                    }
                 }
-                if (num >= mMaxLocals) {
-                    mMaxLocals = num + 1;
+            }
+            
+            // Merge bit lists together.
+            BitList[] live = liveIn;
+            for (int v=0; v<size; v++) {
+                live[v].or(liveOut[v]);
+                if (live[v].isAllClear()) {
+                    // Variable isn't needed.
+                    live[v] = null;
                 }
             }
-        }
-
-        // Merge bit lists together.
-        BitList[] live = liveIn;
-        for (int v=0; v<size; v++) {
-            live[v].or(liveOut[v]);
-            if (live[v].isAllClear()) {
-                // Variable isn't needed.
-                live[v] = null;
-            }
-        }
-
-        for (int v=0; v<size; v++) {
-            if (live[v] == null) {
-                continue;
-            }
-            LocalVariableImpl var = (LocalVariableImpl)mLocalVariables.get(v);
-            if (var.isFixedNumber()) {
-                continue;
-            }
-            int r = 0;
-            while (true) {
-                r = findAvailableRegister(registerUsers, r, live, v);
-                if (var.isDoubleWord()) {
-                    if (findAvailableRegister(registerUsers, ++r, live, v) == r) {
-                        // Found consecutive registers, required for double word.
-                        r--;
+            
+            for (int v=0; v<size; v++) {
+                if (live[v] == null) {
+                    continue;
+                }
+                LocalVariableImpl var = (LocalVariableImpl)mLocalVariables.get(v);
+                if (var.isFixedNumber()) {
+                    continue;
+                }
+                int r = 0;
+                while (true) {
+                    r = findAvailableRegister(registerUsers, r, live, v);
+                    if (var.isDoubleWord()) {
+                        if (findAvailableRegister(registerUsers, ++r, live, v) == r) {
+                            // Found consecutive registers, required for double word.
+                            r--;
+                            break;
+                        }
+                    } else {
                         break;
                     }
-                } else {
-                    break;
                 }
+                var.setNumber(r);
+                addRegisterUser(registerUsers, var);
             }
-            var.setNumber(r);
-            addRegisterUser(registerUsers, var);
-        }
-
-        mMaxLocals = Math.max(mMaxLocals, registerUsers.size());
+            
+            mMaxLocals = Math.max(mMaxLocals, registerUsers.size());
+        } // end liveness analysis
 
         // Perform stack flow analysis to determine the max stack size.
-
-        // Start the flow analysis at the first instruction.
-        Map subAdjustMap = new HashMap(11);
-        stackResolve(0, mFirst, subAdjustMap);
-
-        // Continue flow analysis into exception handler entry points.
-        it = mExceptionHandlers.iterator();
-        while (it.hasNext()) {
-            ExceptionHandler handler = (ExceptionHandler)it.next();
-            Instruction enter = (Instruction)handler.getCatchLocation();
-            stackResolve(1, enter, subAdjustMap);
+        {
+            // Start the flow analysis at the first instruction.
+            Map subAdjustMap = new HashMap(11);
+            stackResolve(0, mFirst, subAdjustMap);
+            
+            // Continue flow analysis into exception handler entry points.
+            it = mExceptionHandlers.iterator();
+            while (it.hasNext()) {
+                ExceptionHandler handler = (ExceptionHandler)it.next();
+                Instruction enter = (Instruction)handler.getCatchLocation();
+                stackResolve(1, enter, subAdjustMap);
+            }
         }
-
+            
         // Okay, build up the byte code and set real instruction locations.
         // Multiple passes may be required because instructions may adjust
         // their size as locations are set. Changing size affects the
         // locations of other instructions, so that is why additional passes
         // are required.
-
+            
         boolean passAgain;
         do {
             passAgain = false;
-
-            mByteCodes = new byte[16];
+            
+            mByteCodes = new byte[instrCount * 2]; // estimate
             mBufferLength = 0;
-
+            
             for (instr = mFirst; instr != null; instr = instr.mNext) {
                 if (!instr.isResolved()) {
                     passAgain = true;
                 }
-
+                
                 if (instr instanceof Label) {
                     if (instr.mLocation != mBufferLength) {
                         if (instr.mLocation >= 0) {
@@ -293,7 +304,7 @@ class InstructionList implements CodeBuffer {
                     }
                 } else {
                     instr.mLocation = mBufferLength;
-
+                    
                     byte[] bytes = instr.getBytes();
                     if (bytes != null) {
                         if (passAgain) {
@@ -308,7 +319,7 @@ class InstructionList implements CodeBuffer {
                 }
             }
         } while (passAgain); // do {} while ();
-
+        
         if (mBufferLength != mByteCodes.length) {
             byte[] newBytes = new byte[mBufferLength];
             System.arraycopy(mByteCodes, 0, newBytes, 0, mBufferLength);
@@ -537,8 +548,7 @@ class InstructionList implements CodeBuffer {
                         Integer subAdjust = (Integer)subAdjustMap.get(targetInstr);
 
                         if (subAdjust == null) {
-                            int newDepth =
-                                stackResolve(stackDepth, targetInstr, subAdjustMap);
+                            int newDepth = stackResolve(stackDepth, targetInstr, subAdjustMap);
                             subAdjust = new Integer(newDepth - stackDepth);
                             subAdjustMap.put(targetInstr, subAdjust);
                         }
@@ -607,6 +617,11 @@ class InstructionList implements CodeBuffer {
 
         public void setNumber(int number) {
             mNumber = number;
+        }
+
+        public void setFixedNumber(int number) {
+            mNumber = number;
+            mFixed = true;
         }
 
         public boolean isFixedNumber() {
@@ -938,7 +953,7 @@ class InstructionList implements CodeBuffer {
     }
 
     /**
-     * Defines a psuedo instruction for a label. No byte code is ever generated
+     * Defines a pseudo instruction for a label. No byte code is ever generated
      * from a label. Labels are not automatically added to the list.
      */
     public class LabelInstruction extends Instruction implements Label {
@@ -1079,9 +1094,10 @@ class InstructionList implements CodeBuffer {
             mTarget = target;
 
             switch (opcode) {
-            case Opcode.GOTO_W:
             case Opcode.JSR_W:
                 mIsSub = true;
+                // Flow through to next case.
+            case Opcode.GOTO_W:
                 mBytes = new byte[5];
                 mBytes[0] = opcode;
                 break;
@@ -1688,8 +1704,18 @@ class InstructionList implements CodeBuffer {
      * Defines a ret instruction for returning from a jsr call. 
      */
     public class RetInstruction extends LocalOperandInstruction {
+        // Note: This instruction does not provide any branch targets. The
+        // analysis for determining all possible return locations is
+        // complicated. Instead, the stack flow analysis assumes that all jsr
+        // calls are "well formed", and so it doesn't need to follow the ret
+        // back to a "comes from" label. Liveness analysis could take advantage
+        // of the branch targets, and reduce the set of variables used to
+        // manage jsr return addresses. Since jsr/ret is used infrequently,
+        // local variables used by ret are fixed and are not optimized.
+
         public RetInstruction(LocalVariable local) {
             super(0, local);
+            ((LocalVariableImpl)local).setFixedNumber(mNextFixedVariableNumber++);
         }
 
         public boolean isFlowThrough() {
