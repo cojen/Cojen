@@ -223,6 +223,7 @@ public class ClassFile {
                         .toPublic(innerFlags.isPublic());
                 } else if (info.getOuterClass() == null ||
                            thisClass.equals(info.getOuterClass())) {
+
                     // This class is an outer class.
                     ConstantClassInfo inner = info.getInnerClass();
                     if (inner != null) {
@@ -280,6 +281,15 @@ public class ClassFile {
     {
         String name = inner.getType().getRootName();
 
+        // Prevent cycles in inner class structure.
+        for (ClassFile outer = outerClass; outer != null; outer = outer.getOuterClass()) {
+            if (name.equals(outer.getClassName())) {
+                // Cycle prevented.
+                return null;
+            }
+        }
+
+        // Prevent classes from being loaded multiple times.
         ClassFile innerClass = (ClassFile)loadedClassFiles.get(name);
         if (innerClass != null) {
             return innerClass;
@@ -796,6 +806,7 @@ public class ClassFile {
 
         ClassFile inner = new ClassFile(fullInnerClassName, superClassName);
         Modifiers modifiers = inner.getModifiers().toPrivate(true).toStatic(true);
+        inner.setModifiers(modifiers);
         inner.mInnerClassName = innerClassName;
         inner.mOuterClass = this;
 
@@ -809,6 +820,9 @@ public class ClassFile {
         if (mInnerClassesAttr == null) {
             addAttribute(new InnerClassesAttr(mCp));
         }
+
+        // TODO: Anonymous inner classes and method scoped classes do not have
+        // an outer class listed.
 
         mInnerClassesAttr.addInnerClass(fullInnerClassName, mClassName, 
                                         innerClassName, modifiers);
