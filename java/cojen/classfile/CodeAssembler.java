@@ -377,6 +377,8 @@ public interface CodeAssembler {
      * </pre>
      * 
      * In all, 240 conversions are supported.
+     *
+     * @throws IllegalArgumentException if conversion not supported
      */
     void convert(TypeDesc fromType, TypeDesc toType);
 
