@@ -16,9 +16,6 @@
 
 package cojen.classfile;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import cojen.classfile.attr.CodeAttr;
 
 /**
@@ -27,12 +24,12 @@ import cojen.classfile.attr.CodeAttr;
  * 
  * @author Brian S O'Neill
  */
-public class CodeBuilder implements CodeBuffer, CodeAssembler {
+public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, CodeAssembler {
     private final CodeAttr mCodeAttr;
     private final ClassFile mClassFile;
     private final ConstantPool mCp;
 
-    private final InstructionList mInstructions = new InstructionList();
+    private final InstructionList mInstructions;
 
     private final LocalVariable mThisReference;
     private final LocalVariable[] mParameters;
@@ -84,6 +81,7 @@ public class CodeBuilder implements CodeBuffer, CodeAssembler {
         mCodeAttr = info.getCodeAttr();
         mClassFile = info.getClassFile();
         mCp = mClassFile.getConstantPool();
+        mInstructions = new InstructionList();
 
         mCodeAttr.setCodeBuffer(this);
 
@@ -1007,45 +1005,6 @@ public class CodeBuilder implements CodeBuffer, CodeAssembler {
 
     // invocation style instructions
 
-    public void invoke(Method method) {
-        TypeDesc ret = TypeDesc.forClass(method.getReturnType());
-
-        Class[] paramClasses = method.getParameterTypes();
-        TypeDesc[] params = new TypeDesc[paramClasses.length];
-        for (int i=0; i<params.length; i++) {
-            params[i] = TypeDesc.forClass(paramClasses[i]);
-        }
-
-        Class clazz = method.getDeclaringClass();
-
-        if (Modifier.isStatic(method.getModifiers())) {
-            invokeStatic(clazz.getName(),
-                         method.getName(),
-                         ret, 
-                         params);
-        } else if (clazz.isInterface()) {
-            invokeInterface(clazz.getName(),
-                            method.getName(),
-                            ret, 
-                            params);
-        } else {
-            invokeVirtual(clazz.getName(),
-                          method.getName(),
-                          ret, 
-                          params);
-        }
-    }
-
-    public void invoke(Constructor constructor) {
-        Class[] paramClasses = constructor.getParameterTypes();
-        TypeDesc[] params = new TypeDesc[paramClasses.length];
-        for (int i=0; i<params.length; i++) {
-            params[i] = TypeDesc.forClass(paramClasses[i]);
-        }
-
-        invokeConstructor(constructor.getDeclaringClass().toString(), params);
-    }
-
     public void invokeVirtual(String methodName,
                               TypeDesc ret,
                               TypeDesc[] params) {
@@ -1192,21 +1151,6 @@ public class CodeBuilder implements CodeBuffer, CodeAssembler {
         invokeSuper(getClassName(superClassDesc), methodName, ret, params);
     }
 
-    public void invokeSuper(Method method) {
-        TypeDesc ret = TypeDesc.forClass(method.getReturnType());
-
-        Class[] paramClasses = method.getParameterTypes();
-        TypeDesc[] params = new TypeDesc[paramClasses.length];
-        for (int i=0; i<params.length; i++) {
-            params[i] = TypeDesc.forClass(paramClasses[i]);
-        }
-
-        invokeSuper(method.getDeclaringClass().getName(),
-                    method.getName(),
-                    ret, 
-                    params);
-    }
-
     public void invokeConstructor(TypeDesc[] params) {
         ConstantInfo info = 
             mCp.addConstantConstructor(mClassFile.getClassName(), params);
@@ -1236,16 +1180,6 @@ public class CodeBuilder implements CodeBuffer, CodeAssembler {
 
     public void invokeSuperConstructor(TypeDesc[] params) {
         invokeConstructor(mClassFile.getSuperClassName(), params);
-    }
-
-    public void invokeSuper(Constructor constructor) {
-        Class[] paramClasses = constructor.getParameterTypes();
-        TypeDesc[] params = new TypeDesc[paramClasses.length];
-        for (int i=0; i<params.length; i++) {
-            params[i] = TypeDesc.forClass(paramClasses[i]);
-        }
-
-        invokeSuperConstructor(params);
     }
 
     private int returnSize(TypeDesc ret) {
