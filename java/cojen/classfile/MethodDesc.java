@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.io.ObjectStreamException;
 import java.util.List;
 import java.util.ArrayList;
-import cojen.util.FlyweightSet;
+import cojen.util.WeakFlyweightSet;
 
 /**
  * This class is used to build method descriptor strings as 
@@ -37,7 +37,7 @@ public class MethodDesc extends Descriptor implements Serializable {
     private static final TypeDesc[] EMPTY_PARAMS = new TypeDesc[0];
 
     // MethodDesc and TypeDesc can share the same instance cache.
-    private final static FlyweightSet mInstances = TypeDesc.cInstances;
+    private final static WeakFlyweightSet mInstances = TypeDesc.cInstances;
 
     static MethodDesc intern(MethodDesc desc) {
         return (MethodDesc)mInstances.put(desc);
@@ -171,7 +171,7 @@ public class MethodDesc extends Descriptor implements Serializable {
      * Returns this in Java method signature syntax.
      *
      * @param name method name
-     * @param varags request that the last argument, if it is an array, to
+     * @param varargs request that the last argument, if it is an array, to
      * be formatted in varargs syntax.
      */
     public String toMethodSignature(String name, boolean varargs) {
