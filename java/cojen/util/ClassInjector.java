@@ -167,8 +167,7 @@ public class ClassInjector {
     /**
      * Returns the newly defined class.
      *
-     * @throws IllegalStateException if class was never defined using
-     * openStream
+     * @throws IllegalStateException if class was never defined
      */
     public Class getNewClass() throws IllegalStateException, ClassFormatError {
         if (mClass != null) {
