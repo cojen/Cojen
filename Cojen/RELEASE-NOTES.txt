@@ -1,0 +1,8 @@
+Cojen version 1.0.1
+-------------------------------
+
+Change History
+
+1.0 to 1.0.1
+-------------------------------
+- Fixed a bug in encoding longs and doubles into the constant pool
