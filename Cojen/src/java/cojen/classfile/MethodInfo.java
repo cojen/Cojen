@@ -178,6 +178,7 @@ public class MethodInfo {
      * Returns the signature attribute of this method, or null if none is
      * defined.
      */
+    // TODO: Eventually remove this method
     public SignatureAttr getSignatureAttr() {
         for (int i = mAttributes.size(); --i >= 0; ) {
             Object obj = mAttributes.get(i);
