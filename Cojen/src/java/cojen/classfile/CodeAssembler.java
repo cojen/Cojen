@@ -105,13 +105,28 @@ public interface CodeAssembler {
     // load-constant-to-stack style instructions
 
     /**
-     * Generates code that loads a constant string value onto the stack.
-     * If value is null, the generated code loads a null onto the stack.
-     * Strings that exceed 65535 UTF encoded bytes in length are loaded by
-     * creating a StringBuffer, appending substrings, and then converting to a
-     * String.
+     * Generates code that loads a null reference onto the stack.
+     */
+    void loadNull();
+
+    /**
+     * Generates code that loads a constant string value onto the stack. If
+     * value is null, the generated code loads a null onto the stack. Strings
+     * that exceed 65535 UTF encoded bytes in length are loaded by creating a
+     * StringBuffer (or a StringBuilder), appending substrings, and then
+     * converting it to a String.
      */
     void loadConstant(String value);
+
+    /**
+     * Generates code that loads a constant class value onto the stack.
+     * If value is null, the generated code loads a null onto the stack.
+     *
+     * @param type any object or primitive type
+     * @throws IllegalStateException if class file target version does not
+     * support this feature
+     */
+    void loadConstant(TypeDesc type) throws IllegalStateException;
 
     /**
      * Generates code that loads a constant boolean value onto the stack.

@@ -135,12 +135,25 @@ public class CodeAssemblerPrinter extends AbstractCodeAssembler implements CodeA
         println(mBulder + "mapLineNumber(" + lineNumber + ')');
     }
 
+    public void loadNull() {
+        println(mBulder + "loadNull()");
+    }
+
     public void loadConstant(String value) {
         if (value == null) {
-            println(mBulder + "loadConstant(null)");
+            loadNull();
         } else {
             println(mBulder + "loadConstant(\"" + escape(value) + "\")");
         }
+    }
+
+    public void loadConstant(TypeDesc type) {
+        if (type == null) {
+            loadNull();
+        } else {
+            println(mBulder + "loadConstant(" + getTypeDescName(type) + ')');
+        }
+        
     }
 
     public void loadConstant(boolean value) {

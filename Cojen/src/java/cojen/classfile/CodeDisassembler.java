@@ -87,7 +87,7 @@ public class CodeDisassembler {
      * Disassemble the MethodInfo into the given assembler.
      *
      * @param params if not null, override the local variables which hold parameter values
-     * @param returnLocation if not null, disasseble will branch to this location upon seeing
+     * @param returnLocation if not null, disassemble will branch to this location upon seeing
      * a return, leaving any arguments on the stack
      * @see CodeAssemblerPrinter
      */
@@ -195,7 +195,7 @@ public class CodeDisassembler {
                 break;
 
             case Opcode.ACONST_NULL:
-                assembler.loadConstant(null);
+                assembler.loadNull();
                 break;
             case Opcode.ICONST_M1:
                 assembler.loadConstant(-1);
@@ -470,6 +470,8 @@ public class CodeDisassembler {
                     assembler.loadConstant(((ConstantFloatInfo)ci).getValue());
                 } else if (ci instanceof ConstantDoubleInfo) {
                     assembler.loadConstant(((ConstantDoubleInfo)ci).getValue());
+                } else if (ci instanceof ConstantClassInfo) {
+                    assembler.loadConstant(((ConstantClassInfo)ci).getType());
                 } else {
                     error(opcode, "Invalid constant type for load: " + ci);
                 }
