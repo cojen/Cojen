@@ -30,7 +30,7 @@ import java.io.PrintWriter;
  *
  * @author Brian S O'Neill
  */
-public class CodeAssemblerPrinter implements CodeAssembler {
+public class CodeAssemblerPrinter extends AbstractCodeAssembler implements CodeAssembler {
     private final LocalVariable[] mParams;
     private final boolean mIsStatic;
     private final PrintWriter mWriter;
