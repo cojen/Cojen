@@ -27,6 +27,10 @@ import cojen.classfile.attribute.ExceptionsAttr;
 import cojen.classfile.attribute.InnerClassesAttr;
 import cojen.classfile.attribute.LineNumberTableAttr;
 import cojen.classfile.attribute.LocalVariableTableAttr;
+import cojen.classfile.attribute.RuntimeInvisibleAnnotationsAttr;
+import cojen.classfile.attribute.RuntimeInvisibleParameterAnnotationsAttr;
+import cojen.classfile.attribute.RuntimeVisibleAnnotationsAttr;
+import cojen.classfile.attribute.RuntimeVisibleParameterAnnotationsAttr;
 import cojen.classfile.attribute.SignatureAttr;
 import cojen.classfile.attribute.SourceFileAttr;
 import cojen.classfile.attribute.SyntheticAttr;
@@ -54,6 +58,12 @@ public abstract class Attribute {
     public static final String SYNTHETIC = "Synthetic";
     public static final String SIGNATURE = "Signature";
     public static final String ENCLOSING_METHOD = "EnclosingMethod";
+    public static final String RUNTIME_VISIBLE_ANNOTATIONS = "RuntimeVisibleAnnotations";
+    public static final String RUNTIME_INVISIBLE_ANNOTATIONS = "RuntimeInvisibleAnnotations";
+    public static final String RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS =
+        "RuntimeVisibleParamaterAnnotations";
+    public static final String RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS =
+        "RuntimeInvisibleParamaterAnnotations";
 
     /** The ConstantPool that this attribute is defined against. */
     private final ConstantPool mCp;
@@ -173,6 +183,17 @@ public abstract class Attribute {
                         return new LineNumberTableAttr(cp, name, length, din);
                     } else if (name.equals(LOCAL_VARIABLE_TABLE)) {
                         return new LocalVariableTableAttr(cp, name, length, din);
+                    }
+                    break;
+                case 'R':
+                    if (name.equals(RUNTIME_VISIBLE_ANNOTATIONS)) {
+                        return new RuntimeVisibleAnnotationsAttr(cp, name, length, din);
+                    } else if (name.equals(RUNTIME_INVISIBLE_ANNOTATIONS)) {
+                        return new RuntimeInvisibleAnnotationsAttr(cp, name, length, din);
+                    } else if (name.equals(RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS)) {
+                        return new RuntimeVisibleParameterAnnotationsAttr(cp, name, length, din);
+                    } else if (name.equals(RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS)) {
+                        return new RuntimeInvisibleParameterAnnotationsAttr(cp, name, length, din);
                     }
                     break;
                 case 'S':
