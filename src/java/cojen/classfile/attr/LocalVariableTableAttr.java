@@ -18,10 +18,10 @@ package cojen.classfile.attr;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.Set;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -32,6 +32,7 @@ import cojen.classfile.FixedLocation;
 import cojen.classfile.LocalVariable;
 import cojen.classfile.Location;
 import cojen.classfile.LocationRange;
+import cojen.classfile.LocationRangeImpl;
 import cojen.classfile.TypeDesc;
 
 /**
@@ -75,11 +76,9 @@ public class LocalVariableTableAttr extends Attribute {
             final Location startLocation = new FixedLocation(start_pc);
             final Location endLocation = new FixedLocation(end_pc);
 
-            SortedSet ranges = new TreeSet();
-            // TODO
-            //ranges.add(new LocationRangeImpl(startLocation, endLocation));
-            final SortedSet fRanges =
-                Collections.unmodifiableSortedSet(ranges);
+            Set ranges = new HashSet();
+            ranges.add(new LocationRangeImpl(startLocation, endLocation));
+            final Set fRanges = Collections.unmodifiableSet(ranges);
 
             LocalVariable localVar = new LocalVariable() {
                 private String mName;
@@ -110,7 +109,7 @@ public class LocalVariableTableAttr extends Attribute {
                     return index;
                 }
 
-                public SortedSet getLocationRangeSet() {
+                public Set getLocationRangeSet() {
                     return fRanges;
                 }
             };
@@ -147,15 +146,17 @@ public class LocalVariableTableAttr extends Attribute {
             Entry entry = (Entry)mEntries.get(i);
             LocalVariable localVar = entry.mLocalVar;
 
-            SortedSet ranges = localVar.getLocationRangeSet();
+            Set ranges = localVar.getLocationRangeSet();
+            if (ranges == null) {
+                continue;
+            }
 
             int name_index = entry.mName.getIndex();
             int descriptor_index = entry.mDescriptor.getIndex();
             int index = localVar.getNumber();
 
             check("local variable table entry name index", name_index);
-            check("local variable table entry descriptor index", 
-                  descriptor_index);
+            check("local variable table entry descriptor index", descriptor_index);
             check("local variable table entry index", index);
 
             Iterator it = ranges.iterator();
@@ -202,7 +203,7 @@ public class LocalVariableTableAttr extends Attribute {
             Entry entry = (Entry)mEntries.get(i);
             LocalVariable localVar = entry.mLocalVar;
 
-            SortedSet ranges = localVar.getLocationRangeSet();
+            Set ranges = localVar.getLocationRangeSet();
             if (ranges == null || ranges.size() == 0) {
                 continue;
             }

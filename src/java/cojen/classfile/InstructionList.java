@@ -20,12 +20,12 @@ import java.util.AbstractCollection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.SortedSet;
 
 /**
  * The InstructionList class is used by the CodeBuilder to perform lower-level
@@ -123,7 +123,7 @@ class InstructionList implements CodeBuffer {
     }
 
     public LocalVariable createLocalVariable(String name, TypeDesc type) {
-        LocalVariable var = new LocalVariableImpl(name, type, -1);
+        LocalVariable var = new LocalVariableImpl(mLocalVariables.size(), name, type, -1);
         mLocalVariables.add(var);
         return var;
     }
@@ -131,19 +131,8 @@ class InstructionList implements CodeBuffer {
     public LocalVariable createLocalParameter(String name,
                                               TypeDesc type,
                                               int number) {
-        LocalVariableImpl var = new LocalVariableImpl(name, type, number);
+        LocalVariable var = new LocalVariableImpl(mLocalVariables.size(), name, type, number);
         mLocalVariables.add(var);
-        if (mFirst == null) {
-            // Make sure there is an initial instruction. Create a pseudo one.
-            LabelInstruction label = new LabelInstruction();
-            label.setLocation();
-            mFirst = label;
-        }
-        
-        // Parameters are initialized first, so ensure flow analysis starts
-        // at the beginning.
-        var.addStoreInstruction(mFirst);
-
         return var;
     }
 
@@ -157,8 +146,7 @@ class InstructionList implements CodeBuffer {
         } else {
             try {
                 resolve0();
-            }
-            finally {
+            } finally {
                 System.out.println("-- Instructions --");
                 
                 Iterator it = getInstructions().iterator();
@@ -175,114 +163,72 @@ class InstructionList implements CodeBuffer {
 
         Instruction instr;
 
-        // Sweep through the instructions, marking them as not being
-        // visted by flow analysis and set fake locations.
-        // TODO: Are fake locations only needed for exception handler
-        // processing during variable flow analysis?
+        // Sweep through the instructions, preparing for flow analysis.
         int instrCount = 0;
         for (instr = mFirst; instr != null; instr = instr.mNext) {
-            instr.mStackDepth = -1;
-            instr.mLocation = instrCount++;
+            instr.reset(instrCount++);
         }
 
-        // Assign variable numbers using the simplest technique.
+        // Perform variable liveness flow analysis for each local variable, in
+        // order to determine which register it should be assigned.
 
         int size = mLocalVariables.size();
-        List activeLocationBits = new ArrayList(size);
-        for (int i=0; i<size; i++) {
-            LocalVariableImpl var = (LocalVariableImpl)mLocalVariables.get(i);
-            if (var.getNumber() < 0) {
-                var.setNumber(mMaxLocals);
-            }
-            
-            int max = var.getNumber() + (var.isDoubleWord() ? 2 : 1);
-            if (max > mMaxLocals) {
-                mMaxLocals = max;
+        BitList[] liveIn = new BitList[size];
+        BitList[] liveOut = new BitList[size];
+        for (int v=0; v<size; v++) {
+            liveIn[v] = new BitList(instrCount);
+            liveOut[v] = new BitList(instrCount);
+        }
+
+        livenessAnalysis(liveIn, liveOut);
+
+        // Merge bit lists together.
+        BitList[] live = liveIn;
+        for (int v=0; v<size; v++) {
+            live[v].or(liveOut[v]);
+            if (live[v].isAllClear()) {
+                // Variable isn't needed.
+                live[v] = null;
             }
         }
 
-        /*
-        // Perform variable flow analysis for each local variable, in order to
-        // determine which register it should be assigned.
+        // Register number -> list of variables that use that register.
+        List registerUsers = new ArrayList();
 
-        int size = mLocalVariables.size();
-        List activeLocationBits = new ArrayList(size);
-        for (int i=0; i<size; i++) {
-            LocalVariableImpl var = (LocalVariableImpl)mLocalVariables.get(i);
-            BitList activeLocations = new BitList(instrCount);
-            activeLocationBits.add(activeLocations);
-
-            // Start flow analysis at store variable instructions.
-            Iterator it = var.iterateStoreInstructions();
-            while (it.hasNext()) {
-                Instruction enter = (Instruction)it.next();
-                variableResolve(var, enter, activeLocations,
-                                new BitList(instrCount), false);
-            }
-            
-            // Continue flow analysis into all exception handlers that wrap
-            // the active locations.
-            boolean passAgain;
-            do {
-                passAgain = false;
-                it = mExceptionHandlers.iterator();
-                while (it.hasNext()) {
-                    ExceptionHandler handler = (ExceptionHandler)it.next();
-                    if (!isIntersecting(activeLocations, handler)) {
-                        continue;
-                    }
-                    Instruction enter = 
-                        (Instruction)handler.getCatchLocation();
-                    passAgain =
-                        variableResolve(var, enter, activeLocations,
-                                        new BitList(instrCount), false);
-                    passAgain = false;
-                }
-            } while (passAgain);
-
-            if (!var.isFixedNumber()) {
-                var.setNumber(-1);
-
-                // Assign variable number by checking first if it can be shared
-                // with another variable of the same size.
-
-                boolean[] conflicts = new boolean[mMaxLocals];
-
-                for (int j=0; j<i; j++) {
-                    LocalVariable av = (LocalVariable)mLocalVariables.get(j);
-                    if (av.getNumber() < 0 ||
-                        av.isDoubleWord() != var.isDoubleWord()) {
-                        continue;
-                    }
-                    BitList alocs = (BitList)activeLocationBits.get(j);
-                    if (isIntersecting(alocs, activeLocations)) {
-                        conflicts[av.getNumber()] = true;
-                        if (av.getNumber() == var.getNumber()) {
-                            var.setNumber(-1);
-                        }
-                    } else if (conflicts[av.getNumber()]) {
-                        var.setNumber(-1);
-                    } else {
-                        var.setNumber(av.getNumber());
-                    }
-                }
-                
-                if (var.getNumber() < 0) {
-                    var.setNumber(mMaxLocals);
+        // First fill up list with variables that have a fixed number.
+        for (int v=0; v<size; v++) {
+            if (live[v] != null) {
+                LocalVariableImpl var = (LocalVariableImpl)mLocalVariables.get(v);
+                if (var.isFixedNumber()) {
+                    addRegisterUser(registerUsers, var);
                 }
             }
+        }        
 
-            int max = var.getNumber() + (var.isDoubleWord() ? 2 : 1);
-            if (max > mMaxLocals) {
-                mMaxLocals = max;
+        for (int v=0; v<size; v++) {
+            if (live[v] == null) {
+                continue;
             }
-
-            // TODO
-            //var.setLocations(activeLocations);
+            LocalVariableImpl var = (LocalVariableImpl)mLocalVariables.get(v);
+            if (var.isFixedNumber()) {
+                continue;
+            }
+            int r = 0;
+            while (true) {
+                r = findAvailableRegister(registerUsers, r, live, v);
+                if (var.isDoubleWord()) {
+                    if (findAvailableRegister(registerUsers, r + 1, live, v) == r + 1) {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
+            var.setNumber(r);
+            addRegisterUser(registerUsers, var);
         }
 
-        activeLocationBits = null;
-        */
+        mMaxLocals = registerUsers.size();
 
         // Perform stack flow analysis to determine the max stack size.
 
@@ -324,7 +270,6 @@ class InstructionList implements CodeBuffer {
                             // needed to expand in size) then do another pass.
                             passAgain = true;
                         }
-
                         instr.mLocation = mBufferLength;
                     }
                 } else {
@@ -376,102 +321,105 @@ class InstructionList implements CodeBuffer {
         }
     }
 
-    /*
-    private boolean variableResolve(LocalVariableImpl var,
-                                    Instruction instr,
-                                    BitList activeLocations,
-                                    BitList possibleLocations,
-                                    boolean fork) {
-        while (instr != null) {
-            int instrLoc = instr.getLocation();
+    private void livenessAnalysis(BitList[] liveIn, BitList[] liveOut) {
+        // Exception handlers require no special treatment since they have no
+        // live variables upon entry.
 
-            if (activeLocations.get(instrLoc)) {
-                activeLocations.or(possibleLocations);
-                if (possibleLocations.isAllClear()) {
-                    return false;
-                } else {
-                    possibleLocations.clear();
-                    return true;
+        boolean passAgain;
+        do {
+            passAgain = false;
+
+            for (Instruction instr = mLast; instr != null; instr = instr.mPrev) {
+                int n = instr.getLocation();
+
+                int useIndex = -1;
+                int defIndex = -1;
+
+                if (instr instanceof LocalOperandInstruction) {
+                    LocalOperandInstruction loi = (LocalOperandInstruction)instr;
+                    LocalVariableImpl var = loi.getLocalVariable();
+                    int varIndex = var.getIndex();
+                    if (loi.isLoad()) {
+                        useIndex = varIndex;
+                    }
+                    if (loi.isStore()) {
+                        defIndex = varIndex;
+                    }
                 }
-            }
 
-            if (possibleLocations.get(instrLoc)) {
-                return false;
-            }
+                for (int v=liveIn.length; --v>=0; ) {
+                    boolean setLiveIn, setLiveOut;
 
-            possibleLocations.set(instrLoc);
-
-            if (instr instanceof LocalOperandInstruction &&
-                ((LocalOperandInstruction)instr).getLocalVariable() == var) {
-
-                if (instr instanceof StoreLocalInstruction) {
-                    activeLocations.set(instrLoc);
-                    if (fork) {
-                        possibleLocations.clear(instrLoc);
+                    if (useIndex == v || (v != defIndex && liveOut[v].get(n))) {
+                        passAgain |= liveIn[v].set(n);
+                        setLiveIn = true;
                     } else {
-                        possibleLocations.clear();
-                    }
-                } else {
-                    activeLocations.or(possibleLocations);
-                    possibleLocations.clear();
-                }
-            }
-
-            // Determine the next instruction to flow down to.
-            Instruction next = null;
-
-            if (instr.isFlowThrough()) {
-                if ((next = instr.mNext) == null) {
-                    throw new IllegalStateException
-                        ("Execution flows through end of method");
-                }
-            }
-
-            Location[] targets = instr.getBranchTargets();
-            if (targets != null) {
-                for (int i=0; i<targets.length; i++) {
-                    LabelInstruction targetInstr = 
-                        (LabelInstruction)targets[i];
-
-                    if (i == 0 && next == null) {
-                        // Flow to the first target if instruction doesn't
-                        // flow to its next instruction.
-                        next = targetInstr;
-                        continue;
+                        setLiveIn = false;
                     }
 
-                    variableResolve
-                        (var, targetInstr, activeLocations,
-                         possibleLocations, true);
+                    setLiveOut = false;
+
+                    if (instr.isFlowThrough() && instr.mNext != null) {
+                        if (liveIn[v].get(instr.mNext.getLocation())) {
+                            setLiveOut = true;
+                            passAgain |= liveOut[v].set(n);
+                        }
+                    }
+
+                    Location[] targets = instr.getBranchTargets();
+                    if (targets != null) {
+                        for (int i=0; i<targets.length; i++) {
+                            LabelInstruction targetInstr = (LabelInstruction)targets[i];
+                            if (liveIn[v].get(targetInstr.getLocation())) {
+                                setLiveOut = true;
+                                passAgain |= liveOut[v].set(n);
+                            }
+                        }
+                    }
+
+                    if (!setLiveIn && setLiveOut && v != defIndex) {
+                        // Set liveIn entry now that liveOut has been
+                        // updated. This greatly reduces the number of full
+                        // passes required.
+                        passAgain |= liveIn[v].set(n);
+                    }
                 }
             }
+        } while (passAgain); // do {} while ();
+    }
 
-            instr = next;
+    private void addRegisterUser(List registerUsers, LocalVariable var) {
+        int num = var.getNumber();
+        if (num < 0) {
+            throw new IllegalStateException("Local variable number not resolved");
         }
-
-        return true;
+        getRegisterUsers(registerUsers, num).add(var);
+        if (var.isDoubleWord()) {
+            getRegisterUsers(registerUsers, num + 1).add(var);
+        }
     }
 
-    private boolean isIntersecting(BitList a, BitList b) {
-        a = (BitList)a.clone();
-        a.and(b);
-        return !a.isAllClear();
+    private List getRegisterUsers(List registerUsers, int num) {
+        while (registerUsers.size() <= num) {
+            registerUsers.add(new ArrayList());
+        }
+        return (List)registerUsers.get(num);
     }
 
-    private boolean isIntersecting(BitList bits, LocationRange range) {
-        // TODO: how efficient is this?
-        int start = range.getStartLocation().getLocation();
-        int end = range.getEndLocation().getLocation();
-
-        for (int i=start; i<end; i++) {
-            if (bits.get(i)) {
-                return true;
+    private int findAvailableRegister(List registerUsers, int r, BitList[] live, int v) {
+        registerScan:
+        for (; r<registerUsers.size(); r++) {
+            List users = getRegisterUsers(registerUsers, r);
+            for (int i=0; i<users.size(); i++) {
+                int v2 = ((LocalVariableImpl)users.get(i)).getIndex();
+                if (live[v].intersects(live[v2])) {
+                    continue registerScan;
+                }
             }
+            break;
         }
-
-        return false;
+        return r;
     }
-    */
 
     private int stackResolve(int stackDepth, 
                              Instruction instr, 
@@ -509,10 +457,10 @@ class InstructionList implements CodeBuffer {
             }
 
             Location[] targets = instr.getBranchTargets();
+
             if (targets != null) {
                 for (int i=0; i<targets.length; i++) {
-                    LabelInstruction targetInstr = 
-                        (LabelInstruction)targets[i];
+                    LabelInstruction targetInstr = (LabelInstruction)targets[i];
 
                     if (i == 0 && next == null) {
                         // Flow to the first target if instruction doesn't
@@ -522,16 +470,13 @@ class InstructionList implements CodeBuffer {
                     }
 
                     if (!instr.isSubroutineCall()) {
-                        stackResolve
-                            (stackDepth, targetInstr, subAdjustMap);
+                        stackResolve(stackDepth, targetInstr, subAdjustMap);
                     } else {
-                        Integer subAdjust =
-                            (Integer)subAdjustMap.get(targetInstr);
+                        Integer subAdjust = (Integer)subAdjustMap.get(targetInstr);
                         
                         if (subAdjust == null) {
                             int newDepth =
-                                stackResolve(stackDepth, targetInstr,
-                                             subAdjustMap);
+                                stackResolve(stackDepth, targetInstr, subAdjustMap);
                             subAdjust = new Integer(newDepth - stackDepth);
                             subAdjustMap.put(targetInstr, subAdjust);
                         }
@@ -548,28 +493,28 @@ class InstructionList implements CodeBuffer {
     }
 
     private class LocalVariableImpl implements LocalVariable {
+        private final int mIndex;
+
         private String mName;
         private TypeDesc mType;
         
         private int mNumber;
         private boolean mFixed;
 
-        // TODO: Perhaps tracking first store is not needed?
-        private List mStoreInstructions;
-        // TODO: Remove
-        private SortedSet mLocationRangeSet;
-
-        public LocalVariableImpl(String name, TypeDesc type,
-                                 int number) {
+        public LocalVariableImpl(int index, String name, TypeDesc type, int number) {
+            mIndex = index;
             mName = name;
             mType = type;
             mNumber = number;
             if (number >= 0) {
                 mFixed = true;
             }
-            mStoreInstructions = new ArrayList();
         }
-        
+
+        int getIndex() {
+            return mIndex;
+        }
+
         /**
          * May return null if this LocalVariable is unnamed.
          */
@@ -593,63 +538,17 @@ class InstructionList implements CodeBuffer {
             return mNumber;
         }
         
+        public Set getLocationRangeSet() {
+            // TODO
+            return null;
+        }
+
         public void setNumber(int number) {
             mNumber = number;
         }
 
-        public SortedSet getLocationRangeSet() {
-            return mLocationRangeSet;
-        }
-        
-        public void setLocations(Set locations) {
-            /* TODO
-            List sortedLocations = new ArrayList(locations);
-            Collections.sort(sortedLocations);
-
-            mLocationRangeSet = new TreeSet();
-            
-            Iterator it = sortedLocations.iterator();
-            Instruction first = null;
-            Instruction last = null;
-            while (it.hasNext()) {
-                Instruction instr = (Instruction)it.next();
-                if (first == null) {
-                    first = last = instr;
-                } else if (last.mNext == instr) {
-                    last = instr;
-                } else {
-                    if (last.mNext != null) {
-                        last = last.mNext;
-                    }
-                    mLocationRangeSet.add(new LocationRangeImpl(first, last));
-                    first = last = instr;
-                }
-            }
-
-            if (first != null && last != null) {
-                if (last.mNext != null) {
-                    last = last.mNext;
-                }
-                mLocationRangeSet.add(new LocationRangeImpl(first, last));
-            }
-
-            mLocationRangeSet =
-                Collections.unmodifiableSortedSet(mLocationRangeSet);
-            */
-        }
-
         public boolean isFixedNumber() {
             return mFixed;
-        }
-
-        // TODO: Make non-public
-        public void addStoreInstruction(Instruction instr) {
-            mStoreInstructions.add(instr);
-        }
-
-        // TODO: Make non-public
-        public Iterator iterateStoreInstructions() {
-            return mStoreInstructions.iterator();
         }
 
         public String toString() {
@@ -949,6 +848,15 @@ class InstructionList implements CodeBuffer {
             }
 
             return buf.toString();
+        }
+
+        /**
+         * Reset this instruction in preparation for flow analysis.
+         */
+        void reset(int instrCount) {
+            mStackDepth = -1;
+            // Start with a fake location.
+            mLocation = instrCount;
         }
     }
 
@@ -1271,23 +1179,22 @@ class InstructionList implements CodeBuffer {
      * Defines an instruction that contains an operand for referencing a
      * LocalVariable.
      */
-    public class LocalOperandInstruction extends CodeInstruction {
-        protected LocalVariable mLocal;
-        
-        public LocalOperandInstruction(int stackAdjust,
-                                       LocalVariable local) {
+    public abstract class LocalOperandInstruction extends CodeInstruction {
+        protected LocalVariableImpl mLocal;
+
+        public LocalOperandInstruction(int stackAdjust, LocalVariable local) {
             super(stackAdjust);
-            mLocal = local;
+            mLocal = (LocalVariableImpl)local;
         }
         
         public boolean isResolved() {
             return mLocal.getNumber() >= 0;
         }
         
-        public LocalVariable getLocalVariable() {
+        public LocalVariableImpl getLocalVariable() {
             return mLocal;
         }
-        
+
         public int getVariableNumber() {
             int varNum = mLocal.getNumber();
             
@@ -1297,14 +1204,17 @@ class InstructionList implements CodeBuffer {
             
             return varNum;
         }
+
+        public abstract boolean isLoad();
+
+        public abstract boolean isStore();
     }
 
     /**
      * Defines an instruction that loads a local variable onto the stack.
      */
     public class LoadLocalInstruction extends LocalOperandInstruction {
-        public LoadLocalInstruction(int stackAdjust,
-                                    LocalVariable local) {
+        public LoadLocalInstruction(int stackAdjust, LocalVariable local) {
             super(stackAdjust, local);
         }
         
@@ -1457,6 +1367,14 @@ class InstructionList implements CodeBuffer {
             
             return mBytes;
         }
+
+        public boolean isLoad() {
+            return true;
+        }
+
+        public boolean isStore() {
+            return false;
+        }
     }
 
     /**
@@ -1464,10 +1382,8 @@ class InstructionList implements CodeBuffer {
      * variable.
      */
     public class StoreLocalInstruction extends LocalOperandInstruction {
-        public StoreLocalInstruction(int stackAdjust,
-                                     LocalVariable local) {
+        public StoreLocalInstruction(int stackAdjust, LocalVariable local) {
             super(stackAdjust, local);
-            ((LocalVariableImpl)local).addStoreInstruction(this);
         }
         
         public boolean isFlowThrough() {
@@ -1476,6 +1392,13 @@ class InstructionList implements CodeBuffer {
         
         public byte[] getBytes() {
             int varNum = getVariableNumber();
+
+            if (varNum < 0) {
+                // If variable number not resolved, then results of store are
+                // not needed. Just pop it off.
+                return new byte[] { mLocal.isDoubleWord() ? Opcode.POP2 : Opcode.POP };
+            }
+
             byte opcode;
             boolean writeIndex = false;
 
@@ -1619,8 +1542,27 @@ class InstructionList implements CodeBuffer {
             
             return mBytes;
         }
+
+        public boolean isResolved() {
+            return true;
+        }
+
+        /**
+         * Returns -1 if store results should be discarded.
+         */
+        public int getVariableNumber() {
+            return mLocal.getNumber();
+        }
+
+        public boolean isLoad() {
+            return false;
+        }
+
+        public boolean isStore() {
+            return true;
+        }
     }
-    
+
     /**
      * Defines a ret instruction for returning from a jsr call. 
      */
@@ -1649,6 +1591,14 @@ class InstructionList implements CodeBuffer {
             }
             
             return mBytes;
+        }
+
+        public boolean isLoad() {
+            return true;
+        }
+
+        public boolean isStore() {
+            return false;
         }
     }
 
@@ -1690,6 +1640,14 @@ class InstructionList implements CodeBuffer {
             }
             
             return mBytes;
+        }
+
+        public boolean isLoad() {
+            return true;
+        }
+
+        public boolean isStore() {
+            return true;
         }
     }
 

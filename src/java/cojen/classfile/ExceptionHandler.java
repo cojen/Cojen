@@ -67,27 +67,6 @@ public class ExceptionHandler implements LocationRange {
         return mCatchType;
     }
 
-    public int compareTo(Object obj) {
-        if (this == obj) {
-            return 0;
-        }
-
-        LocationRange other = (LocationRange)obj;
-
-        int result = getStartLocation().compareTo(other.getStartLocation());
-
-        if (result == 0) {
-            result = getEndLocation().compareTo(other.getEndLocation());
-        }
-
-        if (result == 0 && obj instanceof ExceptionHandler) {
-            result = getCatchLocation().compareTo
-                (((ExceptionHandler)other).getCatchLocation());
-        }
-
-        return result;
-    }
-    
     public void writeTo(DataOutput dout) throws IOException {
         int start_pc = getStartLocation().getLocation();
         int end_pc = getEndLocation().getLocation();

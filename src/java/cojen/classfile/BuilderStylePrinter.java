@@ -46,6 +46,7 @@ class BuilderStylePrinter implements DisassemblyTool.Printer {
         println("import cojen.classfile.FieldInfo;");
         println("import cojen.classfile.Label;");
         println("import cojen.classfile.LocalVariable;");
+        println("import cojen.classfile.Location;");
         println("import cojen.classfile.MethodInfo;");
         println("import cojen.classfile.Modifiers;");
         println("import cojen.classfile.Opcode;");

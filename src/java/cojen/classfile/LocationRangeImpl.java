@@ -20,11 +20,11 @@ package cojen.classfile;
  * 
  * @author Brian S O'Neill
  */
-class LocationRangeImpl implements LocationRange {
+public class LocationRangeImpl implements LocationRange {
     private final Location mStart;
     private final Location mEnd;
 
-    LocationRangeImpl(Location a, Location b) {
+    public LocationRangeImpl(Location a, Location b) {
         if (a.compareTo(b) <= 0) {
             mStart = a;
             mEnd = b;
@@ -34,7 +34,7 @@ class LocationRangeImpl implements LocationRange {
         }
     }
 
-    LocationRangeImpl(LocationRange a, LocationRange b) {
+    public LocationRangeImpl(LocationRange a, LocationRange b) {
         mStart = (a.getStartLocation().compareTo(b.getStartLocation()) <= 0) ?
             a.getStartLocation() : b.getStartLocation();
 
@@ -50,24 +50,20 @@ class LocationRangeImpl implements LocationRange {
         return mEnd;
     }
 
-    public boolean equals(Object obj) {
-        return compareTo(obj) == 0;
+    public int hashCode() {
+        return getStartLocation().hashCode() * 31 + getEndLocation().hashCode();
     }
 
-    public int compareTo(Object obj) {
+    public boolean equals(Object obj) {
         if (this == obj) {
-            return 0;
+            return true;
         }
-
-        LocationRange other = (LocationRange)obj;
-
-        int result = getStartLocation().compareTo(other.getStartLocation());
-
-        if (result == 0) {
-            result = getEndLocation().compareTo(other.getEndLocation());
+        if (obj instanceof LocationRangeImpl) {
+            LocationRangeImpl other = (LocationRangeImpl)obj;
+            return getStartLocation() == other.getStartLocation() &&
+                getEndLocation() == other.getEndLocation();
         }
-
-        return result;
+        return false;
     }
 
     public String toString() {
