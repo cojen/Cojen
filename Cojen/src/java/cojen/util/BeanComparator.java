@@ -522,10 +522,10 @@ public class BeanComparator implements Comparator, Serializable {
         builder.loadThis();
         builder.invokeSuperConstructor(null);
         builder.loadThis();
-        builder.loadLocal(builder.getParameters()[0]);
+        builder.loadLocal(builder.getParameter(0));
         builder.storeField("mCollators", comparatorArrayType);
         builder.loadThis();
-        builder.loadLocal(builder.getParameters()[1]);
+        builder.loadLocal(builder.getParameter(1));
         builder.storeField("mUsingComparators", comparatorArrayType);
         builder.returnVoid();
 
@@ -545,8 +545,8 @@ public class BeanComparator implements Comparator, Serializable {
         builder = new CodeBuilder(mi);
 
         Label endLabel = builder.createLabel();
-        LocalVariable obj1 = builder.getParameters()[0];
-        LocalVariable obj2 = builder.getParameters()[1];
+        LocalVariable obj1 = builder.getParameter(0);
+        LocalVariable obj2 = builder.getParameter(1);
 
         // The first rule always applies to the beans directly. All others
         // apply to properties.

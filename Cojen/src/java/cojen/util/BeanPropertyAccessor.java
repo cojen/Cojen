@@ -132,13 +132,13 @@ public abstract class BeanPropertyAccessor {
         mi.markSynthetic();
         CodeBuilder builder = new CodeBuilder(mi);
 
-        LocalVariable beanVar = builder.getParameters()[0];
-        LocalVariable propertyVar = builder.getParameters()[1];
+        LocalVariable beanVar = builder.getParameter(0);
+        LocalVariable propertyVar = builder.getParameter(1);
         LocalVariable valueVar;
         if (forRead) {
             valueVar = null;
         } else {
-            valueVar = builder.getParameters()[2];
+            valueVar = builder.getParameter(2);
         }
 
         builder.loadLocal(beanVar);

@@ -45,5 +45,6 @@ public interface LocalVariable {
      *
      * @return an unmodifiable set of {@link LocationRange} objects.
      */
+    // TODO: Remove this
     java.util.SortedSet getLocationRangeSet();
 }

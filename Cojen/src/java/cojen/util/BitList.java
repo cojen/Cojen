@@ -21,6 +21,7 @@ package cojen.util;
  *
  * @author Brian S O'Neill
  */
+// TODO: Remove this class
 class BitList implements Cloneable, java.io.Serializable {
     /**
      * Test program.

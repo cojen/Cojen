@@ -186,8 +186,12 @@ public class CodeBuilder implements CodeBuffer, CodeAssembler {
         return classDesc.getRootName();
     }
 
-    public LocalVariable[] getParameters() {
-        return (LocalVariable[])mParameters.clone();
+    public int getParameterCount() {
+        return mParameters.length;
+    }
+
+    public LocalVariable getParameter(int index) {
+        return mParameters[index];
     }
 
     public LocalVariable createLocalVariable(String name, TypeDesc type) {
