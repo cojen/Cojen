@@ -699,6 +699,14 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
     // numerical conversion style instructions
 
     public void convert(TypeDesc fromType, TypeDesc toType) {
+        convert(fromType, toType, CONVERT_FP_NORMAL);
+    }
+
+    public void convert(TypeDesc fromType, TypeDesc toType, int fpConvertMode) {
+        if (fpConvertMode < 0 || fpConvertMode > CONVERT_FP_RAW_BITS) {
+            throw new IllegalArgumentException("Illegal floating point conversion mode");
+        }
+
         if (toType == TypeDesc.OBJECT) {
             if (fromType.isPrimitive()) {
                 toType = fromType.toObjectType();
@@ -739,185 +747,207 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
         }
         int toTypeCode = toPrimitiveType.getTypeCode();
 
-        int stackAdjust = 0;
-        byte op;
+        // Location is set at end, after doConversion.
+        Label end = createLabel();
 
-        switch (fromTypeCode) {
-        case TypeDesc.INT_CODE:
-        case TypeDesc.BYTE_CODE:
-        case TypeDesc.SHORT_CODE:
-        case TypeDesc.CHAR_CODE:
-        case TypeDesc.BOOLEAN_CODE:
-            switch (toTypeCode) {
-            case TypeDesc.BYTE_CODE:
-                op = (fromTypeCode == TypeDesc.BYTE_CODE) ?
-                    Opcode.NOP : Opcode.I2B;
-                break;
-            case TypeDesc.SHORT_CODE:
-                op = (fromTypeCode == TypeDesc.SHORT_CODE) ?
-                    Opcode.NOP : Opcode.I2S;
-                break;
-            case TypeDesc.CHAR_CODE:
-                op = (fromTypeCode == TypeDesc.CHAR_CODE) ?
-                    Opcode.NOP : Opcode.I2C;
-                break;
-            case TypeDesc.FLOAT_CODE:
-                op = Opcode.I2F;
-                break;
-            case TypeDesc.LONG_CODE:
-                stackAdjust = 1;
-                op = Opcode.I2L;
-                break;
-            case TypeDesc.DOUBLE_CODE:
-                stackAdjust = 1;
-                op = Opcode.I2D;
-                break;
-            case TypeDesc.INT_CODE:
-                op = Opcode.NOP;
-                break;
-            case TypeDesc.BOOLEAN_CODE:
-                if (!fromType.isPrimitive()) {
-                    unbox(fromType, fromPrimitiveType);
-                }
-                toBoolean(!toType.isPrimitive());
-                return;
-            default:
-                throw invalidConversion(fromType, toType);
-            }
-            break;
+        doConversion: {
+            int stackAdjust = 0;
+            byte op;
             
-        case TypeDesc.LONG_CODE:
-            switch (toTypeCode) {
+            switch (fromTypeCode) {
             case TypeDesc.INT_CODE:
-                stackAdjust = -1;
-                op = Opcode.L2I;
-                break;
-            case TypeDesc.FLOAT_CODE:
-                stackAdjust = -1;
-                op = Opcode.L2F;
-                break;
-            case TypeDesc.DOUBLE_CODE:
-                op = Opcode.L2D;
-                break;
             case TypeDesc.BYTE_CODE:
-            case TypeDesc.CHAR_CODE:
             case TypeDesc.SHORT_CODE:
-                addCode(-1, Opcode.L2I);
-                convert(TypeDesc.INT, toPrimitiveType);
-                // fall through
-            case TypeDesc.LONG_CODE:
-                op = Opcode.NOP;
-                break;
+            case TypeDesc.CHAR_CODE:
             case TypeDesc.BOOLEAN_CODE:
-                if (!fromType.isPrimitive()) {
-                    unbox(fromType, fromPrimitiveType);
+                switch (toTypeCode) {
+                case TypeDesc.BYTE_CODE:
+                    op = (fromTypeCode == TypeDesc.BYTE_CODE) ?
+                        Opcode.NOP : Opcode.I2B;
+                    break;
+                case TypeDesc.SHORT_CODE:
+                    op = (fromTypeCode == TypeDesc.SHORT_CODE) ?
+                        Opcode.NOP : Opcode.I2S;
+                    break;
+                case TypeDesc.CHAR_CODE:
+                    op = (fromTypeCode == TypeDesc.CHAR_CODE) ?
+                        Opcode.NOP : Opcode.I2C;
+                    break;
+                case TypeDesc.FLOAT_CODE:
+                    op = Opcode.I2F;
+                    break;
+                case TypeDesc.LONG_CODE:
+                    stackAdjust = 1;
+                    op = Opcode.I2L;
+                    break;
+                case TypeDesc.DOUBLE_CODE:
+                    stackAdjust = 1;
+                    op = Opcode.I2D;
+                    break;
+                case TypeDesc.INT_CODE:
+                    op = Opcode.NOP;
+                    break;
+                case TypeDesc.BOOLEAN_CODE:
+                    if (!fromType.isPrimitive()) {
+                        if (!toType.isPrimitive()) {
+                            nullConvert(end);
+                        }
+                        unbox(fromType, fromPrimitiveType);
+                    }
+                    toBoolean(!toType.isPrimitive());
+                    break doConversion;
+                default:
+                    throw invalidConversion(fromType, toType);
                 }
-                loadConstant(0L);
-                math(Opcode.LCMP);
-                toBoolean(!toType.isPrimitive());
-                return;
+                break;
+                
+            case TypeDesc.LONG_CODE:
+                switch (toTypeCode) {
+                case TypeDesc.INT_CODE:
+                    stackAdjust = -1;
+                    op = Opcode.L2I;
+                    break;
+                case TypeDesc.FLOAT_CODE:
+                    stackAdjust = -1;
+                    op = Opcode.L2F;
+                    break;
+                case TypeDesc.DOUBLE_CODE:
+                    op = Opcode.L2D;
+                    break;
+                case TypeDesc.BYTE_CODE:
+                case TypeDesc.CHAR_CODE:
+                case TypeDesc.SHORT_CODE:
+                    addCode(-1, Opcode.L2I);
+                    convert(TypeDesc.INT, toPrimitiveType);
+                    // fall through
+                case TypeDesc.LONG_CODE:
+                    op = Opcode.NOP;
+                    break;
+                case TypeDesc.BOOLEAN_CODE:
+                    if (!fromType.isPrimitive()) {
+                        if (!toType.isPrimitive()) {
+                            nullConvert(end);
+                        }
+                        unbox(fromType, fromPrimitiveType);
+                    }
+                    loadConstant(0L);
+                    math(Opcode.LCMP);
+                    toBoolean(!toType.isPrimitive());
+                    break doConversion;
+                default:
+                    throw invalidConversion(fromType, toType);
+                }
+                break;
+                
+            case TypeDesc.FLOAT_CODE:
+                switch (toTypeCode) {
+                case TypeDesc.INT_CODE:
+                    op = Opcode.F2I;
+                    break;
+                case TypeDesc.LONG_CODE:
+                    stackAdjust = 1;
+                    op = Opcode.F2L;
+                    break;
+                case TypeDesc.DOUBLE_CODE:
+                    stackAdjust = 1;
+                    op = Opcode.F2D;
+                    break;
+                case TypeDesc.BYTE_CODE:
+                case TypeDesc.CHAR_CODE:
+                case TypeDesc.SHORT_CODE:
+                    addCode(0, Opcode.F2I);
+                    convert(TypeDesc.INT, toPrimitiveType);
+                    // fall through
+                case TypeDesc.FLOAT_CODE:
+                    op = Opcode.NOP;
+                    break;
+                case TypeDesc.BOOLEAN_CODE:
+                    if (!fromType.isPrimitive()) {
+                        if (!toType.isPrimitive()) {
+                            nullConvert(end);
+                        }
+                        unbox(fromType, fromPrimitiveType);
+                    }
+                    loadConstant(0.0f);
+                    math(Opcode.FCMPG);
+                    toBoolean(!toType.isPrimitive());
+                    break doConversion;
+                default:
+                    throw invalidConversion(fromType, toType);
+                }
+                break;
+                
+            case TypeDesc.DOUBLE_CODE:
+                switch (toTypeCode) {
+                case TypeDesc.INT_CODE:
+                    stackAdjust = -1;
+                    op = Opcode.D2I;
+                    break;
+                case TypeDesc.FLOAT_CODE:
+                    stackAdjust = -1;
+                    op = Opcode.D2F;
+                    break;
+                case TypeDesc.LONG_CODE:
+                    op = Opcode.D2L;
+                    break;
+                case TypeDesc.BYTE_CODE:
+                case TypeDesc.CHAR_CODE:
+                case TypeDesc.SHORT_CODE:
+                    addCode(-1, Opcode.D2I);
+                    convert(TypeDesc.INT, toPrimitiveType);
+                    // fall through
+                case TypeDesc.DOUBLE_CODE:
+                    op = Opcode.NOP;
+                    break;
+                case TypeDesc.BOOLEAN_CODE:
+                    if (!fromType.isPrimitive()) {
+                        if (!toType.isPrimitive()) {
+                            nullConvert(end);
+                        }
+                        unbox(fromType, fromPrimitiveType);
+                    }
+                    loadConstant(0.0d);
+                    math(Opcode.DCMPG);
+                    toBoolean(!toType.isPrimitive());
+                    break doConversion;
+                default:
+                    throw invalidConversion(fromType, toType);
+                }
+                break;
+                
             default:
                 throw invalidConversion(fromType, toType);
             }
-            break;
-
-        case TypeDesc.FLOAT_CODE:
-            switch (toTypeCode) {
-            case TypeDesc.INT_CODE:
-                op = Opcode.F2I;
-                break;
-            case TypeDesc.LONG_CODE:
-                stackAdjust = 1;
-                op = Opcode.F2L;
-                break;
-            case TypeDesc.DOUBLE_CODE:
-                stackAdjust = 1;
-                op = Opcode.F2D;
-                break;
-            case TypeDesc.BYTE_CODE:
-            case TypeDesc.CHAR_CODE:
-            case TypeDesc.SHORT_CODE:
-                addCode(0, Opcode.F2I);
-                convert(TypeDesc.INT, toPrimitiveType);
-                // fall through
-            case TypeDesc.FLOAT_CODE:
-                op = Opcode.NOP;
-                break;
-            case TypeDesc.BOOLEAN_CODE:
-                if (!fromType.isPrimitive()) {
-                    unbox(fromType, fromPrimitiveType);
-                }
-                loadConstant(0.0f);
-                math(Opcode.FCMPG);
-                toBoolean(!toType.isPrimitive());
-                return;
-            default:
-                throw invalidConversion(fromType, toType);
-            }
-            break;
-
-        case TypeDesc.DOUBLE_CODE:
-            switch (toTypeCode) {
-            case TypeDesc.INT_CODE:
-                stackAdjust = -1;
-                op = Opcode.D2I;
-                break;
-            case TypeDesc.FLOAT_CODE:
-                stackAdjust = -1;
-                op = Opcode.D2F;
-                break;
-            case TypeDesc.LONG_CODE:
-                op = Opcode.D2L;
-                break;
-            case TypeDesc.BYTE_CODE:
-            case TypeDesc.CHAR_CODE:
-            case TypeDesc.SHORT_CODE:
-                addCode(-1, Opcode.D2I);
-                convert(TypeDesc.INT, toPrimitiveType);
-                // fall through
-            case TypeDesc.DOUBLE_CODE:
-                op = Opcode.NOP;
-                break;
-            case TypeDesc.BOOLEAN_CODE:
-                if (!fromType.isPrimitive()) {
-                    unbox(fromType, fromPrimitiveType);
-                }
-                loadConstant(0.0d);
-                math(Opcode.DCMPG);
-                toBoolean(!toType.isPrimitive());
-                return;
-            default:
-                throw invalidConversion(fromType, toType);
-            }
-            break;
             
-        default:
-            throw invalidConversion(fromType, toType);
-        }
-
-        if (!fromType.isPrimitive()) {
-            unbox(fromType, fromPrimitiveType);
-        }
-
-        if (toType.isPrimitive()) {
-            if (op != Opcode.NOP) {
-                addCode(stackAdjust, op);
+            if (!fromType.isPrimitive()) {
+                if (!toType.isPrimitive()) {
+                    nullConvert(end);
+                }
+                unbox(fromType, fromPrimitiveType);
             }
-        } else {
-            if (op == Opcode.NOP) {
-                prebox(toPrimitiveType, toType);
-            } else if (!fromPrimitiveType.isDoubleWord() &&
-                       toPrimitiveType.isDoubleWord()) {
-                // Slight optimization here. Perform prebox on single word value,
-                // depending on what conversion is being applied.
-                prebox(fromPrimitiveType, toType);
-                addCode(stackAdjust, op);
+
+            if (toType.isPrimitive()) {
+                if (op != Opcode.NOP) {
+                    convertPrimitive(stackAdjust, op, fpConvertMode);
+                }
             } else {
-                addCode(stackAdjust, op);
-                prebox(toPrimitiveType, toType);
+                if (op == Opcode.NOP) {
+                    prebox(toPrimitiveType, toType);
+                } else if (!fromPrimitiveType.isDoubleWord() &&
+                           toPrimitiveType.isDoubleWord()) {
+                    // Slight optimization here. Perform prebox on single word value,
+                    // depending on what conversion is being applied.
+                    prebox(fromPrimitiveType, toType);
+                    convertPrimitive(stackAdjust, op, fpConvertMode);
+                } else {
+                    convertPrimitive(stackAdjust, op, fpConvertMode);
+                    prebox(toPrimitiveType, toType);
+                }
+                box(toPrimitiveType, toType);
             }
-            box(toPrimitiveType, toType);
         }
+
+        end.setLocation();
     }
 
     /**
@@ -1054,6 +1084,58 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
             loadConstant(true);
         }
         done.setLocation();
+    }
+
+    private void convertPrimitive(int stackAdjust, byte op, int fpConvertMode) {
+        if (fpConvertMode != CONVERT_FP_NORMAL) {
+            switch (op) {
+            case Opcode.I2F:
+                invokeStatic("java.lang.Float", "intBitsToFloat", TypeDesc.FLOAT,
+                             new TypeDesc[] {TypeDesc.INT});
+                return;
+
+            case Opcode.L2D:
+                invokeStatic("java.lang.Double", "longBitsToDouble", TypeDesc.DOUBLE,
+                             new TypeDesc[] {TypeDesc.LONG});
+                return;
+
+            case Opcode.F2I:
+                if (fpConvertMode == CONVERT_FP_RAW_BITS) {
+                    invokeStatic("java.lang.Float", "floatToRawIntBits", TypeDesc.INT,
+                                 new TypeDesc[] {TypeDesc.FLOAT});
+                } else {
+                    invokeStatic("java.lang.Float", "floatToIntBits", TypeDesc.INT,
+                                 new TypeDesc[] {TypeDesc.FLOAT});
+                }
+                return;
+
+            case Opcode.D2L:
+                if (fpConvertMode == CONVERT_FP_RAW_BITS) {
+                    invokeStatic("java.lang.Double", "doubleToRawLongBits", TypeDesc.LONG,
+                                 new TypeDesc[] {TypeDesc.DOUBLE});
+                } else {
+                    invokeStatic("java.lang.Double", "doubleToLongBits", TypeDesc.LONG,
+                                 new TypeDesc[] {TypeDesc.DOUBLE});
+                }
+                return;
+            }
+        }
+
+        addCode(stackAdjust, op);
+    }    
+
+    // Check if from object is null. If so, no need to convert, and don't throw
+    // a NullPointerException. Assumes that from type and to type are objects.
+    private void nullConvert(Label end) {
+        LocalVariable temp = createLocalVariable("temp", TypeDesc.OBJECT);
+        storeLocal(temp);
+        loadLocal(temp);
+        Label notNull = createLabel();
+        ifNullBranch(notNull, false);
+        loadNull();
+        branch(end);
+        notNull.setLocation();
+        loadLocal(temp);
     }
 
     private IllegalArgumentException invalidConversion
