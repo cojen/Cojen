@@ -165,8 +165,7 @@ public class ClassFile {
             superClass = (ConstantClassInfo)cp.getConstant(index);
         }
 
-        ClassFile cf =
-            new ClassFile(cp, modifiers, thisClass, superClass, outerClass);
+        ClassFile cf = new ClassFile(cp, modifiers, thisClass, superClass, outerClass);
         cf.setVersion(major, minor);
         loadedClassFiles.put(cf.getClassName(), cf);
 
@@ -202,8 +201,7 @@ public class ClassFile {
 
         // Load inner and outer classes.
         if (cf.mInnerClassesAttr != null && loader != null) {
-            InnerClassesAttr.Info[] infos =
-                cf.mInnerClassesAttr.getInnerClassesInfo();
+            InnerClassesAttr.Info[] infos = cf.mInnerClassesAttr.getInnerClassesInfo();
             for (int i=0; i<infos.length; i++) {
                 InnerClassesAttr.Info info = infos[i];
 
@@ -218,12 +216,13 @@ public class ClassFile {
                             (outer, loader, attrFactory, loadedClassFiles);
                     }
                     Modifiers innerFlags = info.getModifiers();
-                    modifiers = modifiers
+                    cf.mModifiers = cf.mModifiers
                         .toStatic(innerFlags.isStatic())
                         .toPrivate(innerFlags.isPrivate())
                         .toProtected(innerFlags.isProtected())
                         .toPublic(innerFlags.isPublic());
-                } else if (thisClass.equals(info.getOuterClass())) {
+                } else if (info.getOuterClass() == null ||
+                           thisClass.equals(info.getOuterClass())) {
                     // This class is an outer class.
                     ConstantClassInfo inner = info.getInnerClass();
                     if (inner != null) {
@@ -231,7 +230,7 @@ public class ClassFile {
                             (inner, loader, attrFactory, loadedClassFiles, cf);
                         
                         if (innerClass != null) {
-                            if (innerClass.getInnerClassName() == null) {
+                            if (innerClass.getInnerClassName() != null) {
                                 innerClass.mInnerClassName = info.getInnerClassName().getValue();
                             }
                             if (cf.mInnerClasses == null) {
@@ -269,8 +268,7 @@ public class ClassFile {
             in = new DataInputStream(in);
         }
 
-        return readFrom
-            ((DataInput)in, loader, attrFactory, loadedClassFiles, null);
+        return readFrom((DataInput)in, loader, attrFactory, loadedClassFiles, null);
     }
 
     private static ClassFile readInnerClass(ConstantClassInfo inner,
@@ -296,8 +294,7 @@ public class ClassFile {
             in = new DataInputStream(in);
         }
 
-        return readFrom
-            ((DataInput)in, loader, attrFactory, loadedClassFiles, outerClass);
+        return readFrom((DataInput)in, loader, attrFactory, loadedClassFiles, outerClass);
     }
 
     private int mVersion;
@@ -750,20 +747,23 @@ public class ClassFile {
      * Add an inner class to this class. By default, inner classes are private
      * static.
      *
+     * @param fullInnerClassName Optional full inner class name.
      * @param innerClassName Optional short inner class name.
      */
-    public ClassFile addInnerClass(String innerClassName) {
-        return addInnerClass(innerClassName, (String)null);
+    public ClassFile addInnerClass(String fullInnerClassName, String innerClassName) {
+        return addInnerClass(fullInnerClassName, innerClassName, (String)null);
     }
 
     /**
      * Add an inner class to this class. By default, inner classes are private
      * static.
      *
+     * @param fullInnerClassName Optional full inner class name.
      * @param innerClassName Optional short inner class name.
      * @param superClass Super class.
      */
-    public ClassFile addInnerClass(String innerClassName, Class superClass) {
+    public ClassFile addInnerClass(String fullInnerClassName, String innerClassName,
+                                   Class superClass) {
         return addInnerClass(innerClassName, superClass.getName());
     }
 
@@ -771,18 +771,27 @@ public class ClassFile {
      * Add an inner class to this class. By default, inner classes are private
      * static.
      *
+     * @param fullInnerClassName Optional full inner class name.
      * @param innerClassName Optional short inner class name.
      * @param superClassName Full super class name.
      */
-    public ClassFile addInnerClass(String innerClassName, 
+    public ClassFile addInnerClass(String fullInnerClassName, String innerClassName, 
                                    String superClassName) {
-        String fullInnerClassName;
-        if (innerClassName == null) {
-            char sep = getMajorVersion() < 49 ? '$' : '+';
-            fullInnerClassName = 
-                mClassName + sep + (++mAnonymousInnerClassCount);
+        if (fullInnerClassName == null) {
+            if (innerClassName == null) {
+                char sep = getMajorVersion() < 49 ? '$' : '+';
+                fullInnerClassName = mClassName + sep + (++mAnonymousInnerClassCount);
+            } else {
+                fullInnerClassName = mClassName + '$' + innerClassName;
+            }
         } else {
-            fullInnerClassName = mClassName + '$' + innerClassName;
+            if (innerClassName == null) {
+                if (getMajorVersion() < 49) {
+                    fullInnerClassName = fullInnerClassName.replace('+', '$');
+                } else {
+                    fullInnerClassName = fullInnerClassName.replace('$', '+');
+                }
+            }
         }
 
         ClassFile inner = new ClassFile(fullInnerClassName, superClassName);
