@@ -195,7 +195,7 @@ public class CodeAttr extends Attribute {
 
     public void writeDataTo(DataOutput dout) throws IOException {
         if (mCodeBuffer == null) {
-            throw new NullPointerException("CodeAttr has no CodeBuffer set");
+            throw new IllegalStateException("CodeAttr has no CodeBuffer set");
         }
 
         ExceptionHandler[] handlers = mCodeBuffer.getExceptionHandlers();

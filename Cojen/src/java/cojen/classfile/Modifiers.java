@@ -27,6 +27,14 @@ import java.lang.reflect.Modifier;
  * @author Brian S O'Neill
  */
 public class Modifiers extends Modifier implements Cloneable {
+    public static boolean isEnum(int modifier) {
+        return isNative(modifier);
+    }
+
+    public static boolean isVarArgs(int modifier) {
+        return isTransient(modifier);
+    }
+
     /**
      * When set public, the modifier is cleared from being private or
      * protected.
@@ -260,11 +268,11 @@ public class Modifiers extends Modifier implements Cloneable {
     }
 
     public boolean isEnum() {
-        return isNative();
+        return isEnum(mModifier);
     }
 
     public boolean isVarArgs() {
-        return isTransient();
+        return isVarArgs(mModifier);
     }
 
     public void setPublic(boolean b) {

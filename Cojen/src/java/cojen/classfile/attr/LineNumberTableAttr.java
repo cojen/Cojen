@@ -77,7 +77,10 @@ public class LineNumberTableAttr extends Attribute {
     }
 
     public void addEntry(Location start, int line_number) throws IllegalArgumentException {
-        check("line number", line_number);
+        if (line_number < 0 || line_number > 65535) {
+            throw new IllegalArgumentException("Value for line number out of " +
+                                               "valid range: " + line_number);
+        }
         mEntries.add(new Entry(start, line_number));
         mClean = false;
     }
@@ -95,18 +98,14 @@ public class LineNumberTableAttr extends Attribute {
             
             int start_pc = entry.mStart.getLocation();
 
-            check("line number table entry start PC", start_pc);
+            if (start_pc < 0 || start_pc > 65535) {
+                throw new IllegalStateException
+                    ("Value for line number table entry start PC out of " +
+                     "valid range: " + start_pc);
+            }
 
             dout.writeShort(start_pc);
             dout.writeShort(entry.mLineNumber);
-        }
-    }
-
-    private void check(String type, int addr) throws IllegalArgumentException {
-        if (addr < 0 || addr > 65535) {
-            throw new IllegalArgumentException("Value for " + type + " out of " +
-                                               "valid range: " + addr);
-
         }
     }
 
