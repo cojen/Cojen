@@ -55,7 +55,7 @@ public class ConstantDoubleInfo extends ConstantInfo {
         return false;
     }
     
-    int getEntryCount() {
+    protected int getEntryCount() {
         return 2;
     }
 
