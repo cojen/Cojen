@@ -721,6 +721,15 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
 
         TypeDesc fromPrimitiveType = fromType.toPrimitiveType();
         if (fromPrimitiveType == null) {
+            if (!toType.isPrimitive()) {
+                Class fromClass = fromType.toClass();
+                if (fromClass != null) {
+                    Class toClass = toType.toClass();
+                    if (toClass != null && toClass.isAssignableFrom(fromClass)) {
+                        return;
+                    }
+                }
+            }
             throw invalidConversion(fromType, toType);
         }
         int fromTypeCode = fromPrimitiveType.getTypeCode();
