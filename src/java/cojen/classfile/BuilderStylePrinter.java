@@ -141,6 +141,9 @@ class BuilderStylePrinter implements DisassemblyTool.Printer {
             mIndent += 4;
         }
 
+        if (cf.getTarget() != null) {
+            println("cf.setTarget(\"" + escape(cf.getTarget()) + "\");");
+        }
         println("cf.setSourceFile(\"" + escape(cf.getSourceFile()) + "\");");
 
         if (cf.isSynthetic()) {
@@ -287,12 +290,19 @@ class BuilderStylePrinter implements DisassemblyTool.Printer {
                 print("ClassFile ");
             }
             print("innerClass = ");
-            String name = innerClasses[i].getInnerClassName();
+            String name = innerClasses[i].getClassName();
+            String innerName = innerClasses[i].getInnerClassName();
+            if (innerName != null) {
+                if ((cf.getClassName() + '$' + innerName).equals(name)) {
+                    name = null;
+                }
+                innerName = '"' + escape(innerName) + '"';
+            }
             if (name != null) {
                 name = '"' + escape(name) + '"';
             }
-            println("cf.addInnerClass(" + name + ", \"" +
-                    innerClasses[i].getSuperClassName() + "\");");
+            println("cf.addInnerClass(" + name + ", " + innerName + ", \"" +
+                    escape(innerClasses[i].getSuperClassName()) + "\");");
             String suffix = "_" + (i + 1);
             if (innerClassSuffix != null) {
                 suffix = innerClassSuffix + suffix;

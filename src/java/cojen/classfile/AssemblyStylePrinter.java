@@ -86,10 +86,35 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
                 addBreak = true;
             }
 
+            if (indent.length() == 0 && mClassFile.getTarget() != null) {
+                if (addBreak) {
+                    println(indent, " * ");
+                    addBreak = false;
+                }
+                print(indent, " * @target ");
+                println(CodeAssemblerPrinter.escape(mClassFile.getTarget()));
+            }
+
             if (mClassFile.getSourceFile() != null) {
-                print(indent, " * Originally compiled from \"");
-                print(CodeAssemblerPrinter.escape(mClassFile.getSourceFile()));
-                println("\".");
+                if (addBreak) {
+                    println(indent, " * ");
+                    addBreak = false;
+                }
+                print(indent, " * @source ");
+                println(CodeAssemblerPrinter.escape(mClassFile.getSourceFile()));
+            }
+
+            if (mClassFile.isInnerClass()) {
+                if (addBreak) {
+                    println(indent, " * ");
+                    addBreak = false;
+                }
+                if (mClassFile.getInnerClassName() == null) {
+                    println(indent, " * @anonymous");
+                } else {
+                    print(indent, " * @name ");
+                    println(CodeAssemblerPrinter.escape(mClassFile.getInnerClassName()));
+                }
             }
 
             if (mClassFile.isDeprecated()) {
@@ -99,6 +124,7 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
                 }
                 println(indent, " * @deprecated");
             }
+
             if (mClassFile.isSynthetic()) {
                 if (addBreak) {
                     println(indent, " * ");
@@ -106,6 +132,7 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
                 }
                 println(indent, " * @synthetic");
             }
+
             // TODO: Just testing
             SignatureAttr sig = mClassFile.getSignatureAttr();
             if (sig != null) {
