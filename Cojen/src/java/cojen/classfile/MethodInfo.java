@@ -22,10 +22,14 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
+import cojen.classfile.attribute.Annotation;
+import cojen.classfile.attribute.AnnotationsAttr;
 import cojen.classfile.attribute.CodeAttr;
 import cojen.classfile.attribute.DeprecatedAttr;
 import cojen.classfile.attribute.EnclosingMethodAttr;
 import cojen.classfile.attribute.ExceptionsAttr;
+import cojen.classfile.attribute.RuntimeInvisibleAnnotationsAttr;
+import cojen.classfile.attribute.RuntimeVisibleAnnotationsAttr;
 import cojen.classfile.attribute.SignatureAttr;
 import cojen.classfile.attribute.SourceFileAttr;
 import cojen.classfile.attribute.SyntheticAttr;
@@ -187,6 +191,76 @@ public class MethodInfo {
             }
         }
         return false;
+    }
+
+    /**
+     * Returns all the runtime invisible annotations defined for this class
+     * file, or an empty array if none.
+     */
+    public Annotation[] getRuntimeInvisibleAnnotations() {
+        for (int i = mAttributes.size(); --i >= 0; ) {
+            Object obj = mAttributes.get(i);
+            if (obj instanceof RuntimeInvisibleAnnotationsAttr) {
+                return ((AnnotationsAttr) obj).getAnnotations();
+            }
+        }
+        return new Annotation[0];
+    }
+
+    /**
+     * Returns all the runtime visible annotations defined for this class file,
+     * or an empty array if none.
+     */
+    public Annotation[] getRuntimeVisibleAnnotations() {
+        for (int i = mAttributes.size(); --i >= 0; ) {
+            Object obj = mAttributes.get(i);
+            if (obj instanceof RuntimeVisibleAnnotationsAttr) {
+                return ((AnnotationsAttr) obj).getAnnotations();
+            }
+        }
+        return new Annotation[0];
+    }
+
+    /**
+     * Add a runtime invisible annotation.
+     */
+    public Annotation addRuntimeInvisibleAnnotation(TypeDesc type) {
+        AnnotationsAttr attr = null;
+        for (int i = mAttributes.size(); --i >= 0; ) {
+            Object obj = mAttributes.get(i);
+            if (obj instanceof RuntimeInvisibleAnnotationsAttr) {
+                attr = (AnnotationsAttr) obj;
+            }
+        }
+        if (attr == null) {
+            attr = new RuntimeInvisibleAnnotationsAttr(mCp);
+            addAttribute(attr);
+        }
+        Annotation ann = new Annotation(mCp);
+        ann.setType(type);
+        attr.addAnnotation(ann);
+        return ann;
+    }
+
+    /**
+     * Add a runtime visible annotation.
+     */
+    public Annotation addRuntimeVisibleAnnotation(TypeDesc type) {
+        AnnotationsAttr attr = null;
+        for (int i = mAttributes.size(); --i >= 0; ) {
+            Object obj = mAttributes.get(i);
+            if (obj instanceof RuntimeVisibleAnnotationsAttr) {
+                attr = (AnnotationsAttr) obj;
+            }
+        }
+        if (attr == null) {
+            attr = new RuntimeVisibleAnnotationsAttr(mCp);
+            addAttribute(attr);
+        }
+        Annotation ann = new Annotation(mCp);
+        ann.setType(type);
+        attr.addAnnotation(ann);
+        return ann;
     }
 
     /**
