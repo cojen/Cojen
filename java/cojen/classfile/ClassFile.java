@@ -527,8 +527,9 @@ public class ClassFile {
                                    String superClassName) {
         String fullInnerClassName;
         if (innerClassName == null) {
+            char sep = getMajorVersion() < 49 ? '$' : '+';
             fullInnerClassName = 
-                mClassName + '$' + (++mAnonymousInnerClassCount);
+                mClassName + sep + (++mAnonymousInnerClassCount);
         } else {
             fullInnerClassName = mClassName + '$' + innerClassName;
         }
@@ -653,7 +654,12 @@ public class ClassFile {
      * Sets the version to use when writing the generated classfile, overriding
      * the target.
      */
-    public void setVersion(short major, short minor) {
+    public void setVersion(int major, int minor) {
+        if (major > 65535 || minor > 65535) {
+            throw new IllegalArgumentException
+                ("Version number element cannot exceed 65535");
+        }
+
         mVersion = (minor << 16) | (major & 0xffff);
 
         String target;
@@ -684,15 +690,15 @@ public class ClassFile {
     /**
      * Returns the major version number of the classfile format.
      */
-    public short getMajorVersion() {
-        return (short) mVersion;
+    public int getMajorVersion() {
+        return mVersion & 0xffff;
     }
 
     /**
      * Returns the minor version number of the classfile format.
      */
-    public short getMinorVersion() {
-        return (short) (mVersion >> 16);
+    public int getMinorVersion() {
+        return (mVersion >> 16) & 0xffff;
     }
 
     /**
