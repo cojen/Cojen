@@ -41,7 +41,7 @@ public class FieldInfo {
     private String mName;
     private TypeDesc mType;
 
-    private int mModifier;
+    private Modifiers mModifiers;
 
     private ConstantUTFInfo mNameConstant;
     private ConstantUTFInfo mDescriptorConstant;
@@ -60,7 +60,7 @@ public class FieldInfo {
         mName = name;
         mType = type;
 
-        mModifier = modifiers.getModifier();
+        mModifiers = modifiers;
         mNameConstant = ConstantUTFInfo.make(mCp, name);
         mDescriptorConstant = ConstantUTFInfo.make(mCp, type.getDescriptor());
     }
@@ -75,7 +75,7 @@ public class FieldInfo {
         mName = nameConstant.getValue();
         mType = TypeDesc.forDescriptor(descConstant.getValue());
 
-        mModifier = modifier;
+        mModifiers = Modifiers.getInstance(modifier);
         mNameConstant = nameConstant;
         mDescriptorConstant = descConstant;
     }
@@ -102,10 +102,10 @@ public class FieldInfo {
     }
     
     /**
-     * Returns a copy of this field's modifiers.
+     * Returns this field's modifiers.
      */
     public Modifiers getModifiers() {
-        return new Modifiers(mModifier);
+        return mModifiers;
     }
 
     /**
@@ -255,7 +255,7 @@ public class FieldInfo {
     }
     
     public void writeTo(DataOutput dout) throws IOException {
-        dout.writeShort(mModifier);
+        dout.writeShort(mModifiers.getBitmask());
         dout.writeShort(mNameConstant.getIndex());
         dout.writeShort(mDescriptorConstant.getIndex());
         
@@ -268,7 +268,7 @@ public class FieldInfo {
     }
 
     public String toString() {
-        String modStr = Modifier.toString(mModifier);
+        String modStr = mModifiers.toString();
         String typeStr;
         if (modStr.length() == 0) {
             return mType.getFullName() + ' ' + getName();

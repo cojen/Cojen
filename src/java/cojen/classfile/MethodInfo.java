@@ -46,7 +46,7 @@ public class MethodInfo {
     private String mName;
     private MethodDesc mDesc;
     
-    private int mModifier;
+    private Modifiers mModifiers;
 
     private ConstantUTFInfo mNameConstant;
     private ConstantUTFInfo mDescriptorConstant;
@@ -66,7 +66,7 @@ public class MethodInfo {
         mName = name;
         mDesc = desc;
         
-        mModifier = modifiers.getModifier();
+        mModifiers = modifiers;
         mNameConstant = ConstantUTFInfo.make(mCp, name);
         mDescriptorConstant = ConstantUTFInfo.make(mCp, desc.toString());
 
@@ -76,7 +76,7 @@ public class MethodInfo {
     }
 
     private MethodInfo(ClassFile parent,
-                       int modifiers,
+                       int modifier,
                        ConstantUTFInfo nameConstant,
                        ConstantUTFInfo descConstant) {
 
@@ -85,7 +85,7 @@ public class MethodInfo {
         mName = nameConstant.getValue();
         mDesc = MethodDesc.forDescriptor(descConstant.getValue());
 
-        mModifier = modifiers;
+        mModifiers = Modifiers.getInstance(modifier);
         mNameConstant = nameConstant;
         mDescriptorConstant = descConstant;
     }
@@ -113,10 +113,10 @@ public class MethodInfo {
     }
 
     /**
-     * Returns a copy of this method's modifiers.
+     * Returns this method's modifiers.
      */
     public Modifiers getModifiers() {
-        return new Modifiers(mModifier);
+        return mModifiers;
     }
     
     /**
@@ -251,7 +251,7 @@ public class MethodInfo {
     }
     
     public void writeTo(DataOutput dout) throws IOException {
-        dout.writeShort(mModifier);
+        dout.writeShort(mModifiers.getBitmask());
         dout.writeShort(mNameConstant.getIndex());
         dout.writeShort(mDescriptorConstant.getIndex());
         
@@ -274,9 +274,8 @@ public class MethodInfo {
     }
 
     public String toString() {
-        String str = mDesc.toMethodSignature
-            (getName(), Modifiers.isVarArgs(mModifier));
-        String modStr = Modifier.toString(mModifier);
+        String str = mDesc.toMethodSignature(getName(), mModifiers.isVarArgs());
+        String modStr = mModifiers.toString();
         if (modStr.length() > 0) {
             str = modStr + ' ' + str;
         }

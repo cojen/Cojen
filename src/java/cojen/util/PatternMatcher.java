@@ -257,11 +257,9 @@ public abstract class PatternMatcher {
             cf.setSourceFile(PatternMatcher.class.getName());
             
             // constructor
-            Modifiers publicAccess = new Modifiers();
-            publicAccess.setPublic(true);
             TypeDesc objectArrayType = TypeDesc.OBJECT.toArrayType();
             TypeDesc[] params = {objectArrayType};
-            MethodInfo mi = cf.addConstructor(publicAccess, params);
+            MethodInfo mi = cf.addConstructor(Modifiers.PUBLIC, params);
             mBuilder = new CodeBuilder(mi);
             mBuilder.loadThis();
             mBuilder.loadLocal(mBuilder.getParameters()[0]);
@@ -278,7 +276,7 @@ public abstract class PatternMatcher {
             // fillMatchResults method
             TypeDesc charArrayType = TypeDesc.CHAR.toArrayType();
             params = new TypeDesc[]{charArrayType, mIntType, mListType};
-            mi = cf.addMethod(publicAccess, "fillMatchResults", null, params);
+            mi = cf.addMethod(Modifiers.PUBLIC, "fillMatchResults", null, params);
             mBuilder = new CodeBuilder(mi);
 
             mLookupLocal = mBuilder.getParameters()[0];
