@@ -143,6 +143,18 @@ public class MethodDesc extends Descriptor implements Serializable {
     }
 
     /**
+     * Returns a method descriptor string, excluding generics.
+     */
+    public String getDescriptor() {
+        return mDescriptor;
+    }
+
+    /**
+     * Returns a method descriptor string, including any generics.
+     */
+    //public abstract String getGenericDescriptor();
+
+    /**
      * Returns the described return type, which is TypeDesc.VOID if void.
      */
     public TypeDesc getReturnType() {
@@ -198,10 +210,8 @@ public class MethodDesc extends Descriptor implements Serializable {
         return buf.append(')').toString();
     }
 
-    /**
-     * Returns this in method descriptor syntax.
-     */
     public String toString() {
+        // TODO: Return generic descriptor
         return mDescriptor;
     }
 
@@ -227,20 +237,20 @@ public class MethodDesc extends Descriptor implements Serializable {
         int length = ret.toString().length() + 2;
         int paramsLength = params.length;
         for (int i=paramsLength; --i >=0; ) {
-            length += params[i].toString().length();
+            length += params[i].getDescriptor().length();
         }
         char[] buf = new char[length];
         buf[0] = '(';
         int index = 1;
         String paramDesc;
         for (int i=0; i<paramsLength; i++) {
-            paramDesc = params[i].toString();
+            paramDesc = params[i].getDescriptor();
             int paramDescLength = paramDesc.length();
             paramDesc.getChars(0, paramDescLength, buf, index);
             index += paramDescLength;
         }
         buf[index++] = ')';
-        paramDesc = ret.toString();
+        paramDesc = ret.getDescriptor();
         paramDesc.getChars(0, paramDesc.length(), buf, index);
         return new String(buf);
     }

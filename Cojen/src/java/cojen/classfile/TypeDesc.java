@@ -22,8 +22,11 @@ import java.io.ObjectOutput;
 import java.io.ObjectInput;
 import java.io.IOException;
 import java.io.ObjectStreamException;
-import java.util.Map;
+import java.lang.ref.SoftReference;
 import java.lang.reflect.Array;
+import java.util.Collections;
+import java.util.Map;
+import cojen.util.SoftValuedHashMap;
 import cojen.util.WeakFlyweightSet;
 import cojen.util.WeakIdentityMap;
 
@@ -51,39 +54,48 @@ public abstract class TypeDesc extends Descriptor implements Serializable {
         INT_CODE = 10,
         LONG_CODE = 11;
 
-    /** primitive type void */
+    /** Primitive type void */
     public final static TypeDesc VOID;
-    /** primitive type boolean */
+    /** Primitive type boolean */
     public final static TypeDesc BOOLEAN;
-    /** primitive type char */
+    /** Primitive type char */
     public final static TypeDesc CHAR;
-    /** primitive type byte */
+    /** Primitive type byte */
     public final static TypeDesc BYTE;
-    /** primitive type short */
+    /** Primitive type short */
     public final static TypeDesc SHORT;
-    /** primitive type int */
+    /** Primitive type int */
     public final static TypeDesc INT;
-    /** primitive type long */
+    /** Primitive type long */
     public final static TypeDesc LONG;
-    /** primitive type float */
+    /** Primitive type float */
     public final static TypeDesc FLOAT;
-    /** primitive type double */
+    /** Primitive type double */
     public final static TypeDesc DOUBLE;
 
-    /** object type java.lang.Object, provided for convenience */
+    /** Object type java.lang.Object, provided for convenience */
     public final static TypeDesc OBJECT;
-    /** object type java.lang.String, provided for convenience */
+    /** Object type java.lang.String, provided for convenience */
     public final static TypeDesc STRING;
 
     // Pool of all shared instances. Ensures identity comparison works.
     final static WeakFlyweightSet cInstances;
 
     // Cache that maps Classes to TypeDescs.
-    final static Map cClassesToInstances;
+    private final static Map cClassesToInstances;
+
+    // Cache that maps String names to TypeDescs.
+    private final static Map cNamesToInstances;
+
+    // Cache that maps String descriptors to TypeDescs.
+    private final static Map cDescriptorsToInstances;
 
     static {
         cInstances = new WeakFlyweightSet();
-        cClassesToInstances = new WeakIdentityMap();
+
+        cClassesToInstances = Collections.synchronizedMap(new WeakIdentityMap());
+        cNamesToInstances = Collections.synchronizedMap(new SoftValuedHashMap());
+        cDescriptorsToInstances = Collections.synchronizedMap(new SoftValuedHashMap());
 
         VOID = intern(new PrimitiveType("V", VOID_CODE));
         BOOLEAN = intern(new PrimitiveType("Z", BOOLEAN_CODE));
@@ -106,7 +118,7 @@ public abstract class TypeDesc extends Descriptor implements Serializable {
     /**
      * Acquire a TypeDesc from any class, including primitives and arrays.
      */
-    public synchronized static TypeDesc forClass(Class clazz) {
+    public static TypeDesc forClass(final Class clazz) {
         if (clazz == null) {
             return null;
         }
@@ -121,29 +133,21 @@ public abstract class TypeDesc extends Descriptor implements Serializable {
         } else if (clazz.isPrimitive()) {
             if (clazz == int.class) {
                 type = INT;
-            }
-            if (clazz == boolean.class) {
+            } else if (clazz == boolean.class) {
                 type = BOOLEAN;
-            }
-            if (clazz == char.class) {
+            } else if (clazz == char.class) {
                 type = CHAR;
-            }
-            if (clazz == byte.class) {
+            } else if (clazz == byte.class) {
                 type = BYTE;
-            }
-            if (clazz == long.class) {
+            } else if (clazz == long.class) {
                 type = LONG;
-            }
-            if (clazz == float.class) {
+            } else if (clazz == float.class) {
                 type = FLOAT;
-            }
-            if (clazz == double.class) {
+            } else if (clazz == double.class) {
                 type = DOUBLE;
-            }
-            if (clazz == short.class) {
+            } else if (clazz == short.class) {
                 type = SHORT;
-            }
-            if (clazz == void.class) {
+            } else if (clazz == void.class) {
                 type = VOID;
             }
         } else {
@@ -159,14 +163,16 @@ public abstract class TypeDesc extends Descriptor implements Serializable {
      * Acquire a TypeDesc from any class name, including primitives and arrays.
      * Primitive and array syntax matches Java declarations.
      */
-    public static TypeDesc forClass(String name)
-        throws IllegalArgumentException
-    {
-        // TODO: Figure out how to cache these. Using a plain WeakIdentityMap
-        // poses a problem. The back reference to the key causes a memory leak.
-
+    public static TypeDesc forClass(final String name) throws IllegalArgumentException {
         if (name.length() < 1) {
             throw invalidName(name);
+        }
+
+        // TODO: Support generics in name.
+
+        TypeDesc type = (TypeDesc)cNamesToInstances.get(name);
+        if (type != null) {
+            return type;
         }
 
         int index1 = name.lastIndexOf('[');
@@ -176,64 +182,80 @@ public abstract class TypeDesc extends Descriptor implements Serializable {
                 throw invalidName(name);
             }
             try {
-                return forClass(name.substring(0, index1)).toArrayType();
+                type = forClass(name.substring(0, index1)).toArrayType();
             } catch (IllegalArgumentException e) {
                 throw invalidName(name);
             }
         } else if (index1 >= 0) {
             throw invalidName(name);
+        } else {
+            setType: {
+                switch (name.charAt(0)) {
+                case 'v':
+                    if (name.equals("void")) {
+                        type = VOID;
+                        break setType;
+                    }
+                    break;
+                case 'b':
+                    if (name.equals("boolean")) {
+                        type = BOOLEAN;
+                        break setType;
+                    } else if (name.equals("byte")) {
+                        type =  BYTE;
+                        break setType;
+                    }
+                    break;
+                case 'c':
+                    if (name.equals("char")) {
+                        type = CHAR;
+                        break setType;
+                    }
+                    break;
+                case 's':
+                    if (name.equals("short")) {
+                        type = SHORT;
+                        break setType;
+                    }
+                    break;
+                case 'i':
+                    if (name.equals("int")) {
+                        type = INT;
+                        break setType;
+                    }
+                    break;
+                case 'l':
+                    if (name.equals("long")) {
+                        type = LONG;
+                        break setType;
+                    }
+                    break;
+                case 'f':
+                    if (name.equals("float")) {
+                        type = FLOAT;
+                        break setType;
+                    }
+                    break;
+                case 'd':
+                    if (name.equals("double")) {
+                        type = DOUBLE;
+                        break setType;
+                    }
+                    break;
+                }
+
+                String desc = generateDescriptor(name);
+                if (name.indexOf('/') < 0) {
+                    type = new ObjectType(desc, name);
+                } else {
+                    type = new ObjectType(desc, name.replace('/', '.'));
+                }
+                type = intern(type);
+            }
         }
 
-        switch (name.charAt(0)) {
-        case 'v':
-            if (name.equals("void")) {
-                return VOID;
-            }
-            break;
-        case 'b':
-            if (name.equals("boolean")) {
-                return BOOLEAN;
-            } else if (name.equals("byte")) {
-                return BYTE;
-            }
-            break;
-        case 'c':
-            if (name.equals("char")) {
-                return CHAR;
-            }
-            break;
-        case 's':
-            if (name.equals("short")) {
-                return SHORT;
-            }
-            break;
-        case 'i':
-            if (name.equals("int")) {
-                return INT;
-            }
-            break;
-        case 'l':
-            if (name.equals("long")) {
-                return LONG;
-            }
-            break;
-        case 'f':
-            if (name.equals("float")) {
-                return FLOAT;
-            }
-            break;
-        case 'd':
-            if (name.equals("double")) {
-                return DOUBLE;
-            }
-            break;
-        }
-
-        String desc = generateDescriptor(name);
-        if (name.indexOf('/') >= 0) {
-            name = name.replace('/', '.');
-        }
-        return intern(new ObjectType(desc, name));
+        cNamesToInstances.put(name, type);
+        return type;
     }
 
     private static IllegalArgumentException invalidName(String name) {
@@ -244,62 +266,64 @@ public abstract class TypeDesc extends Descriptor implements Serializable {
      * Acquire a TypeDesc from a type descriptor. This syntax is described in
      * section 4.3.2, Field Descriptors.
      */
-    public static TypeDesc forDescriptor(String desc)
-        throws IllegalArgumentException
-    {
-        // TODO: Figure out how to cache these. Using a plain WeakIdentityMap
-        // poses a problem. The back reference to the key causes a memory leak.
+    public static TypeDesc forDescriptor(final String desc) throws IllegalArgumentException {
+        TypeDesc type = (TypeDesc)cDescriptorsToInstances.get(desc);
+        if (type != null) {
+            return type;
+        }
 
-        TypeDesc td;
+        // TODO: Support generics in descriptor.
+
+        String rootDesc = desc;
         int cursor = 0;
         int dim = 0;
         try {
             char c;
-            while ((c = desc.charAt(cursor++)) == '[') {
+            while ((c = rootDesc.charAt(cursor++)) == '[') {
                 dim++;
             }
 
             switch (c) {
             case 'V':
-                td = VOID;
+                type = VOID;
                 break;
             case 'Z':
-                td = BOOLEAN;
+                type = BOOLEAN;
                 break;
             case 'C':
-                td = CHAR;
+                type = CHAR;
                 break;
             case 'B':
-                td = BYTE;
+                type = BYTE;
                 break;
             case 'S':
-                td = SHORT;
+                type = SHORT;
                 break;
             case 'I':
-                td = INT;
+                type = INT;
                 break;
             case 'J':
-                td = LONG;
+                type = LONG;
                 break;
             case 'F':
-                td = FLOAT;
+                type = FLOAT;
                 break;
             case 'D':
-                td = DOUBLE;
+                type = DOUBLE;
                 break;
             case 'L':
                 if (dim > 0) {
-                    desc = desc.substring(dim);
+                    rootDesc = rootDesc.substring(dim);
                     cursor = 1;
                 }
-                StringBuffer name = new StringBuffer(desc.length() - 2);
-                while ((c = desc.charAt(cursor++)) != ';') {
+                StringBuffer name = new StringBuffer(rootDesc.length() - 2);
+                while ((c = rootDesc.charAt(cursor++)) != ';') {
                     if (c == '/') {
                         c = '.';
                     }
                     name.append(c);
                 }
-                td = intern(new ObjectType(desc, name.toString()));
+                type = intern(new ObjectType(rootDesc, name.toString()));
                 break;
             default:
                 throw invalidDescriptor(desc);
@@ -310,15 +334,16 @@ public abstract class TypeDesc extends Descriptor implements Serializable {
             throw invalidDescriptor(desc);
         }
 
-        if (cursor != desc.length()) {
+        if (cursor != rootDesc.length()) {
             throw invalidDescriptor(desc);
         }
 
         while (--dim >= 0) {
-            td = td.toArrayType();
+            type = type.toArrayType();
         }
 
-        return td;
+        cDescriptorsToInstances.put(desc, type);
+        return type;
     }
 
     private static IllegalArgumentException invalidDescriptor(String desc) {
@@ -346,6 +371,18 @@ public abstract class TypeDesc extends Descriptor implements Serializable {
     TypeDesc(String desc) {
         mDescriptor = desc;
     }
+
+    /**
+     * Returns a type descriptor string, excluding generics.
+     */
+    public final String getDescriptor() {
+        return mDescriptor;
+    }
+
+    /**
+     * Returns a type descriptor string, including any generics.
+     */
+    //public abstract String getGenericDescriptor();
 
     /**
      * Returns the class name for this descriptor. If the type is primitive,
@@ -416,7 +453,8 @@ public abstract class TypeDesc extends Descriptor implements Serializable {
     /**
      * Returns the primitive peer of this object type, if one exists. For
      * java.lang.Integer, the primitive peer is int. If this type is a
-     * primitive type, it is simply returned. Arrays have no primitive peer.
+     * primitive type, it is simply returned. Arrays have no primitive peer,
+     * and so null is returned instead.
      */
     public abstract TypeDesc toPrimitiveType();
 
@@ -433,10 +471,8 @@ public abstract class TypeDesc extends Descriptor implements Serializable {
      */
     public abstract Class toClass(ClassLoader loader);
 
-    /**
-     * Returns this in type descriptor syntax.
-     */
     public String toString() {
+        // TODO: Return generic descriptor
         return mDescriptor;
     }
 
@@ -607,7 +643,10 @@ public abstract class TypeDesc extends Descriptor implements Serializable {
         private transient final String mName;
         private transient TypeDesc mArrayType;
         private transient TypeDesc mPrimitiveType;
-        private transient Class mClass;
+
+        // Since cClassesToInstances may reference this instance, softly
+        // reference back to class to allow it to be garbage collected.
+        private transient SoftReference mClassRef;
 
         ObjectType(String desc, String name) {
             super(desc);
@@ -719,11 +758,17 @@ public abstract class TypeDesc extends Descriptor implements Serializable {
             return mPrimitiveType;
         }
 
-        public final Class toClass() {
-            if (mClass == null) {
-                mClass = toClass(null);
+        public final synchronized Class toClass() {
+            Class clazz;
+            if (mClassRef != null) {
+                clazz = (Class)mClassRef.get();
+                if (clazz != null) {
+                    return clazz;
+                }
             }
-            return mClass;
+            clazz = toClass(null);
+            mClassRef = new SoftReference(clazz);
+            return clazz;
         }
 
         public Class toClass(ClassLoader loader) {
