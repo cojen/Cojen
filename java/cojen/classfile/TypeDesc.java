@@ -153,6 +153,9 @@ public abstract class TypeDesc extends Descriptor implements Serializable {
         } else {
             String name = clazz.getName();
             type = intern(new ObjectType(generateDescriptor(name), name));
+            if (type.toClass() == null) {
+                ((ObjectType) type).setClass(clazz);
+            }
         }
 
         cClassesToInstances.put(clazz, type);
@@ -812,6 +815,10 @@ public abstract class TypeDesc extends Descriptor implements Serializable {
             } catch (ClassNotFoundException e) {
                 return null;
             }
+        }
+
+        void setClass(Class clazz) {
+            mClassRef = new SoftReference(clazz);
         }
     }
 
