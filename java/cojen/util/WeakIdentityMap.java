@@ -151,6 +151,8 @@ public class WeakIdentityMap extends AbstractMap implements Map, Cloneable {
     }
 
     public int size() {
+        // Cleanup right before, to report a more accurate size.
+        cleanup();
         return this.count;
     }
 
@@ -266,6 +268,31 @@ public class WeakIdentityMap extends AbstractMap implements Map, Cloneable {
         return null;
     }
 
+    private void cleanup() {
+        // Cleanup after cleared References.
+        Entry[] tab = this.table;
+        ReferenceQueue queue = this.queue;
+        Reference ref;
+        while ((ref = queue.poll()) != null) {
+            // Since buckets are single-linked, traverse entire list and
+            // cleanup all cleared references in it.
+            int index = (((Entry) ref).hash & 0x7fffffff) % tab.length;
+            for (Entry e = tab[index], prev = null; e != null; e = e.next) {
+                if (e.get() == null) {
+                    this.modCount++;
+                    if (prev != null) {
+                        prev.next = e.next;
+                    } else {
+                        tab[index] = e.next;
+                    }
+                    this.count--;
+                } else {
+                    prev = e;
+                }
+            }
+        }
+    }
+
     private void rehash() {
         int oldCapacity = this.table.length;
         Entry[] oldMap = this.table;
@@ -305,33 +332,10 @@ public class WeakIdentityMap extends AbstractMap implements Map, Cloneable {
             key = KeyFactory.NULL;
         }
 
+        cleanup();
+
+        // Make sure the key is not already in the WeakIdentityMap.
         Entry[] tab = this.table;
-
-        // Cleanup after cleared References.
-        {
-            ReferenceQueue queue = this.queue;
-            Reference ref;
-            while ((ref = queue.poll()) != null) {
-                // Since buckets are single-linked, traverse entire list and
-                // cleanup all cleared references in it.
-                int index = (((Entry) ref).hash & 0x7fffffff) % tab.length;
-                for (Entry e = tab[index], prev = null; e != null; e = e.next) {
-                    if (e.get() == null) {
-                        this.modCount++;
-                        if (prev != null) {
-                            prev.next = e.next;
-                        } else {
-                            tab[index] = e.next;
-                        }
-                        this.count--;
-                    } else {
-                        prev = e;
-                    }
-                }
-            }
-        }
-
-        // Makes sure the key is not already in the WeakIdentityMap.
         int hash = System.identityHashCode(key);
         int index = (hash & 0x7fffffff) % tab.length;
 
