@@ -27,6 +27,13 @@ import java.util.MissingResourceException;
  * @author Brian S O'Neill
  */
 public interface CodeAssembler {
+    /** Convert floating point values as normal */
+    public final static int CONVERT_FP_NORMAL = 0;
+    /** Convert floating point values as bits (NaN is canonicalized) */
+    public final static int CONVERT_FP_BITS = 1;
+    /** Convert floating point values as raw bits */
+    public final static int CONVERT_FP_RAW_BITS = 2;
+
     /**
      * Returns the amount of parameters that are accepted by the method being
      * built, not including any "this" reference.
@@ -381,6 +388,28 @@ public interface CodeAssembler {
      * @throws IllegalArgumentException if conversion not supported
      */
     void convert(TypeDesc fromType, TypeDesc toType);
+
+    /**
+     * Generates code that converts the value of a primitive type already
+     * on the stack. Conversions between all primitive types are supported as
+     * well as boxing and unboxing conversions. Some example conversions:
+     *
+     * <pre>
+     * int to char
+     * byte to double
+     * Double to double
+     * Float to boolean
+     * long to Long
+     * Double to Short
+     * </pre>
+     * 
+     * In all, 240 conversions are supported.
+     *
+     * @param fpConvertMode controls floating point conversion if converting
+     * float &lt;--&gt; int or double &lt;--&gt; long
+     * @throws IllegalArgumentException if conversion not supported
+     */
+    void convert(TypeDesc fromType, TypeDesc toType, int fpConvertMode);
 
     // invocation style instructions
 

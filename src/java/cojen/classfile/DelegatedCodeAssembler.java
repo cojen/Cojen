@@ -198,6 +198,10 @@ public class DelegatedCodeAssembler implements CodeAssembler {
         mAssembler.convert(fromType, toType);
     }
 
+    public void convert(TypeDesc fromType, TypeDesc toType, int fpConvertMode) {
+        mAssembler.convert(fromType, toType, fpConvertMode);
+    }
+
     public void invoke(Method method) {
         mAssembler.invoke(method);
     }
