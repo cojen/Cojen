@@ -1461,29 +1461,48 @@ public class CodeDisassembler {
             ((mByteCodes[++mAddress] & 0xff) << 0);
     }
 
-    private LocalVariable getLocalVariable(int index, TypeDesc type) {
+    private LocalVariable getLocalVariable(final int index, final TypeDesc type) {
         LocalVariable local;
 
         if (index >= mLocals.size()) {
             mLocals.setSize(index + 1);
-            local = null;
-        } else {
-            local = (LocalVariable)mLocals.elementAt(index);
-            if (local != null) {
-                TypeDesc localType = local.getType();
-                if (type != localType &&
-                    (type.isPrimitive() || localType.isPrimitive())) {
-                    // Existing type at this index isn't compatible.
-                    local = null;
-                }
-            }
-        }
-
-        if (local == null) {
             local = mAssembler.createLocalVariable(null, type);
             mLocals.setElementAt(local, index);
+            return local;
         }
 
+        Object obj = mLocals.elementAt(index);
+
+        if (obj == null) {
+            local = mAssembler.createLocalVariable(null, type);
+            mLocals.setElementAt(local, index);
+            return local;
+        }
+
+        if (obj instanceof LocalVariable) {
+            local = (LocalVariable)obj;
+            if (type == local.getType()) {
+                return local;
+            }
+            // Variable takes on multiple types, so convert entry to a list.
+            List locals = new ArrayList(4);
+            locals.add(local);
+            local = mAssembler.createLocalVariable(null, type);
+            locals.add(local);
+            mLocals.setElementAt(locals, index);
+            return local;
+        }
+        
+        List locals = (List)obj;
+        for (int i=locals.size(); --i>=0; ) {
+            local = (LocalVariable)locals.get(i);
+            if (type == local.getType()) {
+                return local;
+            }
+        }
+        
+        local = mAssembler.createLocalVariable(null, type);
+        locals.add(local);
         return local;
     }
 
