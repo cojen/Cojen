@@ -99,7 +99,7 @@ public class KeyFactory {
         }
     }
 
-    static int booleanArrayHashCode(boolean[] a) {
+    static int hashCode(boolean[] a) {
         int hash = 0;
         for (int i = a.length; --i >= 0; ) {
             hash = (hash << 1) + (a[i] ? 0 : 1);
@@ -107,26 +107,7 @@ public class KeyFactory {
         return hash == 0 ? -1 : hash;
     }
 
-    static int booleanArrayCompare(boolean[] a, boolean[] b) {
-        if (a == b) {
-            return 0;
-        }
-        if (a == null) {
-            return 1;
-        }
-        if (b == null) {
-            return -1;
-        }
-        int length = Math.min(a.length, b.length);
-        for (int i=0; i<length; i++) {
-            int av = a[i] ? 0 : 1;
-            int bv = b[i] ? 0 : 1;
-            return av < bv ? -1 : (av > bv ? 1 : 0);
-        }
-        return a.length < b.length ? -1 : (a.length > b.length ? 1 : 0);
-    }
-
-    static int byteArrayHashCode(byte[] a) {
+    static int hashCode(byte[] a) {
         int hash = 0;
         for (int i = a.length; --i >= 0; ) {
             hash = (hash << 1) + a[i];
@@ -134,26 +115,7 @@ public class KeyFactory {
         return hash == 0 ? -1 : hash;
     }
 
-    static int byteArrayCompare(byte[] a, byte[] b) {
-        if (a == b) {
-            return 0;
-        }
-        if (a == null) {
-            return 1;
-        }
-        if (b == null) {
-            return -1;
-        }
-        int length = Math.min(a.length, b.length);
-        for (int i=0; i<length; i++) {
-            byte av = a[i];
-            byte bv = b[i];
-            return av < bv ? -1 : (av > bv ? 1 : 0);
-        }
-        return a.length < b.length ? -1 : (a.length > b.length ? 1 : 0);
-    }
-
-    static int charArrayHashCode(char[] a) {
+    static int hashCode(char[] a) {
         int hash = 0;
         for (int i = a.length; --i >= 0; ) {
             hash = (hash << 1) + a[i];
@@ -161,26 +123,7 @@ public class KeyFactory {
         return hash == 0 ? -1 : hash;
     }
 
-    static int charArrayCompare(char[] a, char[] b) {
-        if (a == b) {
-            return 0;
-        }
-        if (a == null) {
-            return 1;
-        }
-        if (b == null) {
-            return -1;
-        }
-        int length = Math.min(a.length, b.length);
-        for (int i=0; i<length; i++) {
-            char av = a[i];
-            char bv = b[i];
-            return av < bv ? -1 : (av > bv ? 1 : 0);
-        }
-        return a.length < b.length ? -1 : (a.length > b.length ? 1 : 0);
-    }
-
-    static int doubleArrayHashCode(double[] a) {
+    static int hashCode(double[] a) {
         int hash = 0;
         for (int i = a.length; --i >= 0; ) {
             long v = Double.doubleToLongBits(a[i]);
@@ -189,27 +132,7 @@ public class KeyFactory {
         return hash == 0 ? -1 : hash;
     }
 
-    static int doubleArrayCompare(double[] a, double[] b) {
-        if (a == b) {
-            return 0;
-        }
-        if (a == null) {
-            return 1;
-        }
-        if (b == null) {
-            return -1;
-        }
-        int length = Math.min(a.length, b.length);
-        for (int i=0; i<length; i++) {
-            int v = Double.compare(a[i], b[i]);
-            if (v != 0) {
-                return v;
-            }
-        }
-        return a.length < b.length ? -1 : (a.length > b.length ? 1 : 0);
-    }
-
-    static int floatArrayHashCode(float[] a) {
+    static int hashCode(float[] a) {
         int hash = 0;
         for (int i = a.length; --i >= 0; ) {
             hash = hash * 31 + Float.floatToIntBits(a[i]);
@@ -217,27 +140,7 @@ public class KeyFactory {
         return hash == 0 ? -1 : hash;
     }
 
-    static int floatArrayCompare(float[] a, float[] b) {
-        if (a == b) {
-            return 0;
-        }
-        if (a == null) {
-            return 1;
-        }
-        if (b == null) {
-            return -1;
-        }
-        int length = Math.min(a.length, b.length);
-        for (int i=0; i<length; i++) {
-            int v = Float.compare(a[i], b[i]);
-            if (v != 0) {
-                return v;
-            }
-        }
-        return a.length < b.length ? -1 : (a.length > b.length ? 1 : 0);
-    }
-
-    static int intArrayHashCode(int[] a) {
+    static int hashCode(int[] a) {
         int hash = 0;
         for (int i = a.length; --i >= 0; ) {
             hash = (hash << 1) + a[i];
@@ -245,26 +148,7 @@ public class KeyFactory {
         return hash == 0 ? -1 : hash;
     }
 
-    static int intArrayCompare(int[] a, int[] b) {
-        if (a == b) {
-            return 0;
-        }
-        if (a == null) {
-            return 1;
-        }
-        if (b == null) {
-            return -1;
-        }
-        int length = Math.min(a.length, b.length);
-        for (int i=0; i<length; i++) {
-            int av = a[i];
-            int bv = b[i];
-            return av < bv ? -1 : (av > bv ? 1 : 0);
-        }
-        return a.length < b.length ? -1 : (a.length > b.length ? 1 : 0);
-    }
-
-    static int longArrayHashCode(long[] a) {
+    static int hashCode(long[] a) {
         int hash = 0;
         for (int i = a.length; --i >= 0; ) {
             long v = a[i];
@@ -273,26 +157,7 @@ public class KeyFactory {
         return hash == 0 ? -1 : hash;
     }
 
-    static int longArrayCompare(long[] a, long[] b) {
-        if (a == b) {
-            return 0;
-        }
-        if (a == null) {
-            return 1;
-        }
-        if (b == null) {
-            return -1;
-        }
-        int length = Math.min(a.length, b.length);
-        for (int i=0; i<length; i++) {
-            long av = a[i];
-            long bv = b[i];
-            return av < bv ? -1 : (av > bv ? 1 : 0);
-        }
-        return a.length < b.length ? -1 : (a.length > b.length ? 1 : 0);
-    }
-
-    static int shortArrayHashCode(short[] a) {
+    static int hashCode(short[] a) {
         int hash = 0;
         for (int i = a.length; --i >= 0; ) {
             hash = (hash << 1) + a[i];
@@ -300,35 +165,48 @@ public class KeyFactory {
         return hash == 0 ? -1 : hash;
     }
 
-    static int shortArrayCompare(short[] a, short[] b) {
-        if (a == b) {
-            return 0;
-        }
-        if (a == null) {
-            return 1;
-        }
-        if (b == null) {
-            return -1;
-        }
-        int length = Math.min(a.length, b.length);
-        for (int i=0; i<length; i++) {
-            short av = a[i];
-            short bv = b[i];
-            return av < bv ? -1 : (av > bv ? 1 : 0);
-        }
-        return a.length < b.length ? -1 : (a.length > b.length ? 1 : 0);
-    }
-
-    static int objectArrayHashCode(Object[] a) {
+    static int hashCode(Object[] a) {
         int hash = 0;
         for (int i = a.length; --i >= 0; ) {
-            hash = hash * 31 + objectHashCode(a[i]);
+            hash = hash * 31 + hashCode(a[i]);
         }
         return hash == 0 ? -1 : hash;
     }
 
+    // Compute object or array hashcode and recurses into arrays within.
+    static int hashCode(Object a) {
+        if (a == null) {
+            return -1;
+        }
+        if (!a.getClass().isArray()) {
+            return a.hashCode();
+        }
+        if (a instanceof Object[]) {
+            return hashCode((Object[])a);
+        } else if (a instanceof int[]) {
+            return hashCode((int[])a);
+        } else if (a instanceof float[]) {
+            return hashCode((float[])a);
+        } else if (a instanceof long[]) {
+            return hashCode((long[])a);
+        } else if (a instanceof double[]) {
+            return hashCode((double[])a);
+        } else if (a instanceof byte[]) {
+            return hashCode((byte[])a);
+        } else if (a instanceof char[]) {
+            return hashCode((char[])a);
+        } else if (a instanceof boolean[]) {
+            return hashCode((boolean[])a);
+        } else if (a instanceof short[]) {
+            return hashCode((short[])a);
+        } else {
+            int hash = a.getClass().hashCode();
+            return hash == 0 ? -1 : hash;
+        }
+    }
+
     // Compares object arrays and recurses into arrays within.
-    static boolean objectArrayEquals(Object[] a, Object[] b) {
+    static boolean equals(Object[] a, Object[] b) {
         if (a == b) {
             return true;
         }
@@ -340,68 +218,15 @@ public class KeyFactory {
             return false;
         }
         while (--i >= 0) {
-            if (!objectEquals(a[i], b[i])) {
+            if (!equals(a[i], b[i])) {
                 return false;
             }
         }
         return true;
     }
 
-    // Compares object arrays and recurses into arrays within.
-    static int objectArrayCompare(Object[] a, Object[] b) {
-        if (a == b) {
-            return 0;
-        }
-        if (a == null) {
-            return 1;
-        }
-        if (b == null) {
-            return -1;
-        }
-        int length = Math.min(a.length, b.length);
-        for (int i=0; i<length; i++) {
-            int v = objectCompare(a[i], b[i]);
-            if (v != 0) {
-                return v;
-            }
-        }
-        return a.length < b.length ? -1 : (a.length > b.length ? 1 : 0);
-    }
-
-    // Compute object or array hashcode and recurses into arrays within.
-    static int objectHashCode(Object a) {
-        if (a == null) {
-            return -1;
-        }
-        if (!a.getClass().isArray()) {
-            return a.hashCode();
-        }
-        if (a instanceof Object[]) {
-            return objectArrayHashCode((Object[])a);
-        } else if (a instanceof int[]) {
-            return intArrayHashCode((int[])a);
-        } else if (a instanceof float[]) {
-            return floatArrayHashCode((float[])a);
-        } else if (a instanceof long[]) {
-            return longArrayHashCode((long[])a);
-        } else if (a instanceof double[]) {
-            return doubleArrayHashCode((double[])a);
-        } else if (a instanceof byte[]) {
-            return byteArrayHashCode((byte[])a);
-        } else if (a instanceof char[]) {
-            return charArrayHashCode((char[])a);
-        } else if (a instanceof boolean[]) {
-            return booleanArrayHashCode((boolean[])a);
-        } else if (a instanceof short[]) {
-            return shortArrayHashCode((short[])a);
-        } else {
-            int hash = a.getClass().hashCode();
-            return hash == 0 ? -1 : hash;
-        }
-    }
-
     // Compares objects or arrays and recurses into arrays within.
-    static boolean objectEquals(Object a, Object b) {
+    static boolean equals(Object a, Object b) {
         if (a == b) {
             return true;
         }
@@ -416,7 +241,7 @@ public class KeyFactory {
             return false;
         }
         if (a instanceof Object[]) {
-            return objectArrayEquals((Object[])a, (Object[])b);
+            return equals((Object[])a, (Object[])b);
         } else if (a instanceof int[]) {
             return Arrays.equals((int[])a, (int[])b);
         } else if (a instanceof float[]) {
@@ -438,8 +263,183 @@ public class KeyFactory {
         }
     }
 
+    static int compare(boolean[] a, boolean[] b) {
+        if (a == b) {
+            return 0;
+        }
+        if (a == null) {
+            return 1;
+        }
+        if (b == null) {
+            return -1;
+        }
+        int length = Math.min(a.length, b.length);
+        for (int i=0; i<length; i++) {
+            int av = a[i] ? 0 : 1;
+            int bv = b[i] ? 0 : 1;
+            return av < bv ? -1 : (av > bv ? 1 : 0);
+        }
+        return a.length < b.length ? -1 : (a.length > b.length ? 1 : 0);
+    }
+
+    static int compare(byte[] a, byte[] b) {
+        if (a == b) {
+            return 0;
+        }
+        if (a == null) {
+            return 1;
+        }
+        if (b == null) {
+            return -1;
+        }
+        int length = Math.min(a.length, b.length);
+        for (int i=0; i<length; i++) {
+            byte av = a[i];
+            byte bv = b[i];
+            return av < bv ? -1 : (av > bv ? 1 : 0);
+        }
+        return a.length < b.length ? -1 : (a.length > b.length ? 1 : 0);
+    }
+
+    static int compare(char[] a, char[] b) {
+        if (a == b) {
+            return 0;
+        }
+        if (a == null) {
+            return 1;
+        }
+        if (b == null) {
+            return -1;
+        }
+        int length = Math.min(a.length, b.length);
+        for (int i=0; i<length; i++) {
+            char av = a[i];
+            char bv = b[i];
+            return av < bv ? -1 : (av > bv ? 1 : 0);
+        }
+        return a.length < b.length ? -1 : (a.length > b.length ? 1 : 0);
+    }
+
+    static int compare(double[] a, double[] b) {
+        if (a == b) {
+            return 0;
+        }
+        if (a == null) {
+            return 1;
+        }
+        if (b == null) {
+            return -1;
+        }
+        int length = Math.min(a.length, b.length);
+        for (int i=0; i<length; i++) {
+            int v = Double.compare(a[i], b[i]);
+            if (v != 0) {
+                return v;
+            }
+        }
+        return a.length < b.length ? -1 : (a.length > b.length ? 1 : 0);
+    }
+
+    static int compare(float[] a, float[] b) {
+        if (a == b) {
+            return 0;
+        }
+        if (a == null) {
+            return 1;
+        }
+        if (b == null) {
+            return -1;
+        }
+        int length = Math.min(a.length, b.length);
+        for (int i=0; i<length; i++) {
+            int v = Float.compare(a[i], b[i]);
+            if (v != 0) {
+                return v;
+            }
+        }
+        return a.length < b.length ? -1 : (a.length > b.length ? 1 : 0);
+    }
+
+    static int compare(int[] a, int[] b) {
+        if (a == b) {
+            return 0;
+        }
+        if (a == null) {
+            return 1;
+        }
+        if (b == null) {
+            return -1;
+        }
+        int length = Math.min(a.length, b.length);
+        for (int i=0; i<length; i++) {
+            int av = a[i];
+            int bv = b[i];
+            return av < bv ? -1 : (av > bv ? 1 : 0);
+        }
+        return a.length < b.length ? -1 : (a.length > b.length ? 1 : 0);
+    }
+
+    static int compare(long[] a, long[] b) {
+        if (a == b) {
+            return 0;
+        }
+        if (a == null) {
+            return 1;
+        }
+        if (b == null) {
+            return -1;
+        }
+        int length = Math.min(a.length, b.length);
+        for (int i=0; i<length; i++) {
+            long av = a[i];
+            long bv = b[i];
+            return av < bv ? -1 : (av > bv ? 1 : 0);
+        }
+        return a.length < b.length ? -1 : (a.length > b.length ? 1 : 0);
+    }
+
+    static int compare(short[] a, short[] b) {
+        if (a == b) {
+            return 0;
+        }
+        if (a == null) {
+            return 1;
+        }
+        if (b == null) {
+            return -1;
+        }
+        int length = Math.min(a.length, b.length);
+        for (int i=0; i<length; i++) {
+            short av = a[i];
+            short bv = b[i];
+            return av < bv ? -1 : (av > bv ? 1 : 0);
+        }
+        return a.length < b.length ? -1 : (a.length > b.length ? 1 : 0);
+    }
+
+    // Compares object arrays and recurses into arrays within.
+    static int compare(Object[] a, Object[] b) {
+        if (a == b) {
+            return 0;
+        }
+        if (a == null) {
+            return 1;
+        }
+        if (b == null) {
+            return -1;
+        }
+        int length = Math.min(a.length, b.length);
+        for (int i=0; i<length; i++) {
+            int v = compare(a[i], b[i]);
+            if (v != 0) {
+                return v;
+            }
+        }
+        return a.length < b.length ? -1 : (a.length > b.length ? 1 : 0);
+    }
+
     // Compares objects or arrays and recurses into arrays within.
-    static int objectCompare(Object a, Object b) {
+    static int compare(Object a, Object b) {
         if (a == b) {
             return 0;
         }
@@ -457,23 +457,23 @@ public class KeyFactory {
             throw new ClassCastException();
         }
         if (a instanceof Object[]) {
-            return objectArrayCompare((Object[])a, (Object[])b);
+            return compare((Object[])a, (Object[])b);
         } else if (a instanceof int[]) {
-            return intArrayCompare((int[])a, (int[])b);
+            return compare((int[])a, (int[])b);
         } else if (a instanceof float[]) {
-            return floatArrayCompare((float[])a, (float[])b);
+            return compare((float[])a, (float[])b);
         } else if (a instanceof long[]) {
-            return longArrayCompare((long[])a, (long[])b);
+            return compare((long[])a, (long[])b);
         } else if (a instanceof double[]) {
-            return doubleArrayCompare((double[])a, (double[])b);
+            return compare((double[])a, (double[])b);
         } else if (a instanceof byte[]) {
-            return byteArrayCompare((byte[])a, (byte[])b);
+            return compare((byte[])a, (byte[])b);
         } else if (a instanceof char[]) {
-            return charArrayCompare((char[])a, (char[])b);
+            return compare((char[])a, (char[])b);
         } else if (a instanceof boolean[]) {
-            return booleanArrayCompare((boolean[])a, (boolean[])b);
+            return compare((boolean[])a, (boolean[])b);
         } else if (a instanceof short[]) {
-            return shortArrayCompare((short[])a, (short[])b);
+            return compare((short[])a, (short[])b);
         } else {
             throw new ClassCastException();
         }
@@ -500,7 +500,7 @@ public class KeyFactory {
 
         public int hashCode() {
             int hash = mHash;
-            return hash == 0 ? mHash = booleanArrayHashCode(mArray) : hash;
+            return hash == 0 ? mHash = KeyFactory.hashCode(mArray) : hash;
         }
 
         public boolean equals(Object obj) {
@@ -510,7 +510,7 @@ public class KeyFactory {
         }
 
         public int compareTo(Object obj) {
-            return booleanArrayCompare(mArray, ((BooleanArrayKey) obj).mArray);
+            return compare(mArray, ((BooleanArrayKey) obj).mArray);
         }
     }
 
@@ -524,7 +524,7 @@ public class KeyFactory {
 
         public int hashCode() {
             int hash = mHash;
-            return hash == 0 ? mHash = byteArrayHashCode(mArray) : hash;
+            return hash == 0 ? mHash = KeyFactory.hashCode(mArray) : hash;
         }
 
         public boolean equals(Object obj) {
@@ -534,7 +534,7 @@ public class KeyFactory {
         }
 
         public int compareTo(Object obj) {
-            return byteArrayCompare(mArray, ((ByteArrayKey) obj).mArray);
+            return compare(mArray, ((ByteArrayKey) obj).mArray);
         }
     }
 
@@ -548,7 +548,7 @@ public class KeyFactory {
 
         public int hashCode() {
             int hash = mHash;
-            return hash == 0 ? mHash = charArrayHashCode(mArray) : hash;
+            return hash == 0 ? mHash = KeyFactory.hashCode(mArray) : hash;
         }
 
         public boolean equals(Object obj) {
@@ -558,7 +558,7 @@ public class KeyFactory {
         }
 
         public int compareTo(Object obj) {
-            return charArrayCompare(mArray, ((CharArrayKey) obj).mArray);
+            return compare(mArray, ((CharArrayKey) obj).mArray);
         }
     }
 
@@ -572,7 +572,7 @@ public class KeyFactory {
 
         public int hashCode() {
             int hash = mHash;
-            return hash == 0 ? mHash = doubleArrayHashCode(mArray) : hash;
+            return hash == 0 ? mHash = KeyFactory.hashCode(mArray) : hash;
         }
 
         public boolean equals(Object obj) {
@@ -582,7 +582,7 @@ public class KeyFactory {
         }
 
         public int compareTo(Object obj) {
-            return doubleArrayCompare(mArray, ((DoubleArrayKey) obj).mArray);
+            return compare(mArray, ((DoubleArrayKey) obj).mArray);
         }
     }
 
@@ -596,7 +596,7 @@ public class KeyFactory {
 
         public int hashCode() {
             int hash = mHash;
-            return hash == 0 ? mHash = floatArrayHashCode(mArray) : hash;
+            return hash == 0 ? mHash = KeyFactory.hashCode(mArray) : hash;
         }
 
         public boolean equals(Object obj) {
@@ -606,7 +606,7 @@ public class KeyFactory {
         }
 
         public int compareTo(Object obj) {
-            return floatArrayCompare(mArray, ((FloatArrayKey) obj).mArray);
+            return compare(mArray, ((FloatArrayKey) obj).mArray);
         }
     }
 
@@ -620,7 +620,7 @@ public class KeyFactory {
 
         public int hashCode() {
             int hash = mHash;
-            return hash == 0 ? mHash = intArrayHashCode(mArray) : hash;
+            return hash == 0 ? mHash = KeyFactory.hashCode(mArray) : hash;
         }
 
         public boolean equals(Object obj) {
@@ -630,7 +630,7 @@ public class KeyFactory {
         }
 
         public int compareTo(Object obj) {
-            return intArrayCompare(mArray, ((IntArrayKey) obj).mArray);
+            return compare(mArray, ((IntArrayKey) obj).mArray);
         }
     }
 
@@ -644,7 +644,7 @@ public class KeyFactory {
 
         public int hashCode() {
             int hash = mHash;
-            return hash == 0 ? mHash = longArrayHashCode(mArray) : hash;
+            return hash == 0 ? mHash = KeyFactory.hashCode(mArray) : hash;
         }
 
         public boolean equals(Object obj) {
@@ -654,7 +654,7 @@ public class KeyFactory {
         }
 
         public int compareTo(Object obj) {
-            return longArrayCompare(mArray, ((LongArrayKey) obj).mArray);
+            return compare(mArray, ((LongArrayKey) obj).mArray);
         }
     }
 
@@ -668,7 +668,7 @@ public class KeyFactory {
 
         public int hashCode() {
             int hash = mHash;
-            return hash == 0 ? mHash = shortArrayHashCode(mArray) : hash;
+            return hash == 0 ? mHash = KeyFactory.hashCode(mArray) : hash;
         }
 
         public boolean equals(Object obj) {
@@ -678,7 +678,7 @@ public class KeyFactory {
         }
 
         public int compareTo(Object obj) {
-            return shortArrayCompare(mArray, ((ShortArrayKey) obj).mArray);
+            return compare(mArray, ((ShortArrayKey) obj).mArray);
         }
     }
 
@@ -692,17 +692,17 @@ public class KeyFactory {
 
         public int hashCode() {
             int hash = mHash;
-            return hash == 0 ? mHash = objectArrayHashCode(mArray) : hash;
+            return hash == 0 ? mHash = KeyFactory.hashCode(mArray) : hash;
         }
 
         public boolean equals(Object obj) {
             return this == obj ? true :
                 (obj instanceof ObjectArrayKey ?
-                objectArrayEquals(mArray, ((ObjectArrayKey) obj).mArray) : false);
+                 KeyFactory.equals(mArray, ((ObjectArrayKey) obj).mArray) : false);
         }
 
         public int compareTo(Object obj) {
-            return objectArrayCompare(mArray, ((ObjectArrayKey) obj).mArray);
+            return compare(mArray, ((ObjectArrayKey) obj).mArray);
         }
     }
 }
