@@ -16,8 +16,6 @@
 
 package cojen.util;
 
-import java.beans.IntrospectionException;
-import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
@@ -229,21 +227,15 @@ public class BeanComparator implements Comparator, Serializable {
             }
         }
 
-        PropertyDescriptor desc =
-            (PropertyDescriptor)getProperties().get(propertyName);
+        BeanProperty prop = (BeanProperty)getProperties().get(propertyName);
 
-        if (desc == null) {
+        if (prop == null) {
             throw new IllegalArgumentException
                 ("Property '" + propertyName + "' doesn't exist in '" +
                  mBeanClass.getName() + '\'');
         }
 
-        if (desc.getPropertyType() == null) {
-            throw new IllegalArgumentException
-                ("Property '" + propertyName + "' is only an indexed type");
-        }
-
-        if (desc.getReadMethod() == null) {
+        if (prop.getReadMethod() == null) {
             throw new IllegalArgumentException
                 ("Property '" + propertyName + "' cannot be read");
         }
@@ -260,7 +252,7 @@ public class BeanComparator implements Comparator, Serializable {
         bc.mOrderByName = propertyName;
 
         if (subName != null) {
-            BeanComparator subOrder = forClass(desc.getPropertyType());
+            BeanComparator subOrder = forClass(prop.getType());
             subOrder.mCollator = mCollator;
             bc = bc.using(subOrder.orderBy(subName));
         }
@@ -427,12 +419,7 @@ public class BeanComparator implements Comparator, Serializable {
     
     private Map getProperties() {
         if (mProperties == null) {
-            try {
-                mProperties =
-                    CompleteIntrospector.getAllProperties(mBeanClass);
-            } catch (IntrospectionException e) {
-                throw new RuntimeException(e.toString());
-            }
+            mProperties = BeanIntrospector.getAllProperties(mBeanClass);
         }
         return mProperties;
     }
@@ -678,9 +665,9 @@ public class BeanComparator implements Comparator, Serializable {
         for (int i=1; i<ruleParts.length; i++) {
             bc = ruleParts[i];
 
-            PropertyDescriptor desc = 
-                (PropertyDescriptor)bc.getProperties().get(bc.mOrderByName);
-            Class propertyClass = desc.getPropertyType();
+            BeanProperty prop = 
+                (BeanProperty)bc.getProperties().get(bc.mOrderByName);
+            Class propertyClass = prop.getType();
             TypeDesc propertyType = TypeDesc.forClass(propertyClass);
             
             // Create local variable to hold property values.
@@ -689,10 +676,10 @@ public class BeanComparator implements Comparator, Serializable {
 
             // Access properties and store in local variables.
             builder.loadLocal(obj1);
-            builder.invoke(desc.getReadMethod());
+            builder.invoke(prop.getReadMethod());
             builder.storeLocal(p1);
             builder.loadLocal(obj2);
-            builder.invoke(desc.getReadMethod());
+            builder.invoke(prop.getReadMethod());
             builder.storeLocal(p2);
 
             if ((bc.mFlags & 0x01) != 0) {

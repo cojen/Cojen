@@ -258,17 +258,28 @@ public class MethodInfo {
         dout.writeShort(size);
         for (int i=0; i<size; i++) {
             Attribute attr = (Attribute)mAttributes.get(i);
-            attr.writeTo(dout);
+            try {
+                attr.writeTo(dout);
+            } catch (IllegalStateException e) {
+                IllegalStateException e2 = 
+                    new IllegalStateException(e.getMessage() + ": " + toString());
+                try {
+                    e2.initCause(e);
+                } catch (NoSuchMethodError e3) {
+                }
+                throw e2;
+            }
         }
     }
 
     public String toString() {
+        String str = mDesc.toMethodSignature
+            (getName(), Modifiers.isVarArgs(mModifier));
         String modStr = Modifier.toString(mModifier);
-        if (modStr.length() == 0) {
-            return mDesc.toMethodSignature(getName());
-        } else {
-            return modStr + ' ' + mDesc.toMethodSignature(getName());
+        if (modStr.length() > 0) {
+            str = modStr + ' ' + str;
         }
+        return str;
     }
 
     static MethodInfo readFrom(ClassFile parent, 
