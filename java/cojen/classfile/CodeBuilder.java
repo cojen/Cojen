@@ -393,7 +393,7 @@ public class CodeBuilder implements CodeBuffer, CodeAssembler {
 
     public void loadLocal(LocalVariable local) {
         if (local == null) {
-            throw new NullPointerException("No local variable specified");
+            throw new IllegalArgumentException("No local variable specified");
         }
         int stackAdjust = local.getType().isDoubleWord() ? 2 : 1;
         mInstructions.new LoadLocalInstruction(stackAdjust, local);
@@ -412,7 +412,7 @@ public class CodeBuilder implements CodeBuffer, CodeAssembler {
 
     public void storeLocal(LocalVariable local) {
         if (local == null) {
-            throw new NullPointerException("No local variable specified");
+            throw new IllegalArgumentException("No local variable specified");
         }
         int stackAdjust = local.getType().isDoubleWord() ? -2 : -1;
         mInstructions.new StoreLocalInstruction(stackAdjust, local);
@@ -1359,7 +1359,7 @@ public class CodeBuilder implements CodeBuffer, CodeAssembler {
 
     public void ret(LocalVariable local) {
         if (local == null) {
-            throw new NullPointerException("No local variable specified");
+            throw new IllegalArgumentException("No local variable specified");
         }
 
         mInstructions.new RetInstruction(local);
