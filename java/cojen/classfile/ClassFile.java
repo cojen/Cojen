@@ -711,7 +711,7 @@ public class ClassFile {
         // exception stuff...
         Class[] exceptions = method.getExceptionTypes();
         for (int i=0; i<exceptions.length; i++) {
-            mi.addException(exceptions[i].getName());
+            mi.addException(TypeDesc.forClass(exceptions[i]));
         }
 
         return mi;
