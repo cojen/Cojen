@@ -26,7 +26,7 @@ import java.io.IOException;
  * @author Brian S O'Neill
  */
 public class ConstantFloatInfo extends ConstantInfo {
-    private Float mValue;
+    private float mValue;
     
     /** 
      * Will return either a new ConstantFloatInfo object or one already in
@@ -40,28 +40,25 @@ public class ConstantFloatInfo extends ConstantInfo {
     
     ConstantFloatInfo(float value) {
         super(TAG_FLOAT);
-        mValue = new Float(value);
-    }
-
-    ConstantFloatInfo(Float value) {
-        super(TAG_FLOAT);
         mValue = value;
     }
-    
-    public Float getValue() {
+
+    public float getValue() {
         return mValue;
     }
 
     public int hashCode() {
-        return mValue.hashCode();
+        return Float.floatToIntBits(mValue);
     }
     
     public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
         if (obj instanceof ConstantFloatInfo) {
             ConstantFloatInfo other = (ConstantFloatInfo)obj;
-            return mValue.equals(other.mValue);
+            return mValue == other.mValue;
         }
-        
         return false;
     }
     
@@ -71,10 +68,10 @@ public class ConstantFloatInfo extends ConstantInfo {
 
     public void writeTo(DataOutput dout) throws IOException {
         super.writeTo(dout);
-        dout.writeFloat(mValue.floatValue());
+        dout.writeFloat(mValue);
     }
 
     public String toString() {
-        return "CONSTANT_Float_info: " + getValue();
+        return "CONSTANT_Float_info: " + mValue;
     }
 }
