@@ -39,6 +39,11 @@ import cojen.classfile.ClassFile;
  * Classes defined by ClassInjector may be unloaded, if no references to it
  * exist. Once unloaded, they cannot be loaded again by name since the
  * original bytecode was never preserved.
+ * <p>
+ * Debugging can be enabled via the java command-line option
+ * "-Dcojen.util.ClassInjector.DEBUG=true". This causes all generated classes
+ * to be written to the temp directory, and a message is written to System.out
+ * indicating exactly where.
  *
  * @author Brian S O'Neill
  */
@@ -87,7 +92,7 @@ public class ClassInjector {
             }
         }
 
-        String name;
+        String name = null;
         Loader loader;
 
         synchronized (cRandom) {
@@ -110,11 +115,31 @@ public class ClassInjector {
                 cLoaders.put(parent, new SoftReference(loader));
             }
         
-            while (true) {
-                name = prefix + '$' + (cRandom.nextInt() & 0xffffffffL);
+            for (int tryCount = 0; tryCount < 1000; tryCount++) {
+                name = null;
+
+                long ID = cRandom.nextInt();
+
+                // Use a small identifier if possible, making it easier to read
+                // stack traces and decompiled classes.
+                switch (tryCount) {
+                case 0:
+                    ID &= 0xffL;
+                    break;
+                case 1:
+                    ID &= 0xffffL;
+                    break;
+                default:
+                    ID &= 0xffffffffL;
+                    break;
+                }
+
+                name = prefix + '$' + ID;
+
                 if (!loader.reserveName(name)) {
                     continue;
                 }
+
                 try {
                     if (loader != null) {
                         loader.loadClass(name);
@@ -126,6 +151,10 @@ public class ClassInjector {
                 } catch (LinkageError e) {
                 }
             }
+        }
+
+        if (name == null) {
+            throw new InternalError("Unable to create unique class name");
         }
 
         return new ClassInjector(name, loader);
