@@ -5,8 +5,10 @@ Change History
 
 1.0.2 to 1.0.3
 -------------------------------
-- Bug fix in CodeBuilder.invoke(Constructor).
+- Bug fix in CodeBuilder.invoke(Constructor)
 - CodeBuilder: convert to superclass type is legal
+- Added support for Java 5 annotations
+- Added convenience method to add methods by signature
 
 1.0.1 to 1.0.2
 -------------------------------

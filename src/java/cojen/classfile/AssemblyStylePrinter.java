@@ -22,9 +22,11 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import cojen.classfile.attribute.Annotation;
 import cojen.classfile.attribute.CodeAttr;
 import cojen.classfile.attribute.SignatureAttr;
 import cojen.classfile.constant.ConstantClassInfo;
@@ -37,6 +39,7 @@ import cojen.classfile.constant.ConstantLongInfo;
 import cojen.classfile.constant.ConstantMethodInfo;
 import cojen.classfile.constant.ConstantNameAndTypeInfo;
 import cojen.classfile.constant.ConstantStringInfo;
+import cojen.classfile.constant.ConstantUTFInfo;
 
 /**
  * Disassembles a ClassFile into a pseudo Java assembly language format.
@@ -145,6 +148,9 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
 
             println(indent, " */");
         }
+
+        disassemble(indent, mClassFile.getRuntimeVisibleAnnotations());
+        disassemble(indent, mClassFile.getRuntimeInvisibleAnnotations());
 
         print(indent);
 
@@ -256,6 +262,9 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
             println(indent, " */");
         }
 
+        disassemble(indent, field.getRuntimeVisibleAnnotations());
+        disassemble(indent, field.getRuntimeInvisibleAnnotations());
+
         print(indent);
         disassemble(field.getModifiers());
         disassemble(field.getType());
@@ -284,6 +293,9 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
             }
             println(indent, " */");
         }
+
+        disassemble(indent, method.getRuntimeVisibleAnnotations());
+        disassemble(indent, method.getRuntimeInvisibleAnnotations());
 
         print(indent);
 
@@ -351,6 +363,10 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
     }
 
     private void disassemble(ConstantInfo constant) {
+        disassemble(constant, false);
+    }
+
+    private void disassemble(ConstantInfo constant, boolean showClassLiteral) {
         if (constant instanceof ConstantStringInfo) {
             print("\"");
             String value = ((ConstantStringInfo)constant).getValue();
@@ -388,6 +404,14 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
         } else if (constant instanceof ConstantClassInfo) {
             ConstantClassInfo cci = (ConstantClassInfo)constant;
             disassemble(cci.getType());
+            if (showClassLiteral) {
+                print(".class");
+            }
+        } else if (constant instanceof ConstantUTFInfo) {
+            print("\"");
+            String value = ((ConstantUTFInfo)constant).getValue();
+            print(CodeAssemblerPrinter.escape(value));
+            print("\"");
         } else {
             print(constant);
         }
@@ -395,6 +419,121 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
 
     private void disassemble(TypeDesc type) {
         print(type.getFullName());
+    }
+
+    private void disassemble(String indent, Annotation[] annotations) {
+        for (int i=0; i<annotations.length; i++) {
+            print(indent);
+            disassemble(indent, annotations[i]);
+            println();
+        }
+    }
+
+    private void disassemble(String indent, Annotation ann) {
+        print("@");
+        print(ann.getType().getFullName());
+        Map mvMap = ann.getMemberValues();
+        if (mvMap.size() == 0) {
+            return;
+        }
+        print("(");
+        Iterator it = mvMap.entrySet().iterator();
+        int ordinal = 0;
+        while (it.hasNext()) {
+            if (ordinal++ > 0) {
+                print(", ");
+            }
+            Map.Entry entry = (Map.Entry)it.next();
+            String name = (String)entry.getKey();
+            if (!"value".equals(name)) {
+                print(name);
+                print("=");
+            }
+            disassemble(indent, (Annotation.MemberValue)entry.getValue());
+        }
+        print(")");
+    }
+
+    private void disassemble(String indent, Annotation.MemberValue mv) {
+        Object value = mv.getValue();
+        switch (mv.getTag()) {
+        default:
+            print("?");
+            break;
+        case Annotation.MEMBER_TAG_BOOLEAN:
+            ConstantIntegerInfo ci = (ConstantIntegerInfo)value;
+            print(ci.getValue() == 0 ? "false" : "true");
+            break;
+        case Annotation.MEMBER_TAG_BYTE:
+        case Annotation.MEMBER_TAG_SHORT:
+        case Annotation.MEMBER_TAG_INT:
+        case Annotation.MEMBER_TAG_CHAR:
+        case Annotation.MEMBER_TAG_LONG:
+        case Annotation.MEMBER_TAG_FLOAT:
+        case Annotation.MEMBER_TAG_DOUBLE:
+        case Annotation.MEMBER_TAG_STRING:
+        case Annotation.MEMBER_TAG_CLASS:
+            disassemble((ConstantInfo)value, true);
+            break;
+        case Annotation.MEMBER_TAG_ENUM:
+            Annotation.EnumConstValue ecv = (Annotation.EnumConstValue)value;
+            print(TypeDesc.forDescriptor(ecv.getTypeName().getValue()).getFullName());
+            print(".");
+            print(ecv.getConstName().getValue());
+            break;
+        case Annotation.MEMBER_TAG_ANNOTATION:
+            disassemble(indent, (Annotation)value);
+            break;
+        case Annotation.MEMBER_TAG_ARRAY:
+            Annotation.MemberValue[] mvs = (Annotation.MemberValue[])value;
+
+            String originalIndent = indent;
+            boolean multiLine = false;
+            if (mvs.length > 0) {
+                if (mvs.length > 4 ||
+                    (mvs.length > 1 && mvs[0].getTag() == Annotation.MEMBER_TAG_ENUM) ||
+                    mvs[0].getTag() == Annotation.MEMBER_TAG_ARRAY ||
+                    mvs[0].getTag() == Annotation.MEMBER_TAG_ANNOTATION) {
+
+                    multiLine = true;
+                    indent = indent + "    ";
+                }
+            }
+
+            if (multiLine || mvs.length != 1) {
+                print("{");
+                if (multiLine) {
+                    println();
+                }
+            }
+            
+            for (int j=0; j<mvs.length; j++) {
+                if (multiLine) {
+                    print(indent);
+                }
+                disassemble(indent, mvs[j]);
+                if (j + 1 < mvs.length) {
+                    print(",");
+                    if (!multiLine) {
+                        print(" ");
+                    }
+                }
+                if (multiLine) {
+                    println();
+                }
+            }
+            
+            indent = originalIndent;
+
+            if (multiLine || mvs.length != 1) {
+                if (multiLine) {
+                    print(indent);
+                }
+                print("}");
+            }
+            
+            break;
+        }
     }
 
     private void disassemble(String indent, CodeAttr code) {
@@ -608,7 +747,7 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
                     break;
                 }
 
-                disassemble(getConstant(index));
+                disassemble(getConstant(index), true);
                 break;
 
             case Opcode.NEW:
