@@ -148,6 +148,6 @@ public abstract class AbstractCodeAssembler implements CodeAssembler {
             params[i] = TypeDesc.forClass(paramClasses[i]);
         }
 
-        invokeConstructor(constructor.getDeclaringClass().toString(), params);
+        invokeConstructor(constructor.getDeclaringClass().getName().toString(), params);
     }
 }
