@@ -65,11 +65,16 @@ public class ClassInjector {
     /**
      * Create a ClassInjector for defining one class. The prefix is optional,
      * which is used as the start of the auto-generated class name. If the
-     * parent ClassLoader, if not specified, will default to the ClassLoader of
+     * parent ClassLoader is not specified, it will default to the ClassLoader of
      * the ClassInjector class.
+     * <p>
+     * If the parent loader was used for loading injected classes, the new
+     * class will be loaded by it. This allows auto-generated classes access to
+     * package accessible members, as long as they are defined in the same
+     * package.
      *
      * @param prefix optional class name prefix
-     * @param parent option parent ClassLoader
+     * @param parent optional parent ClassLoader
      */
     public static ClassInjector create(String prefix, ClassLoader parent) {
         if (prefix == null) {
@@ -87,6 +92,12 @@ public class ClassInjector {
 
         synchronized (cRandom) {
             getLoader: {
+                if (parent instanceof Loader) {
+                    // Use the same loader, allowing the new class access to
+                    // same package protected members.
+                    loader = (Loader) parent;
+                    break getLoader;
+                }
                 SoftReference ref = (SoftReference) cLoaders.get(parent);
                 if (ref != null) {
                     loader = (Loader) ref.get();
