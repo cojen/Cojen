@@ -48,8 +48,6 @@ import java.util.Set;
  * @author Brian S O'Neill
  */
 public class WeakIdentityMap extends AbstractMap implements Map, Cloneable {
-    /** An object for masking null */
-    static final Object NULL = new Object();
 
     // Types of Iterators
     static final int KEYS = 0;
@@ -203,7 +201,7 @@ public class WeakIdentityMap extends AbstractMap implements Map, Cloneable {
 
     public boolean containsKey(Object key) {
         if (key == null) {
-            key = NULL;
+            key = KeyFactory.NULL;
         }
 
         Entry[] tab = this.table;
@@ -234,7 +232,7 @@ public class WeakIdentityMap extends AbstractMap implements Map, Cloneable {
 
     public Object get(Object key) {
         if (key == null) {
-            key = NULL;
+            key = KeyFactory.NULL;
         }
 
         Entry[] tab = this.table;
@@ -324,7 +322,7 @@ public class WeakIdentityMap extends AbstractMap implements Map, Cloneable {
 
     public Object put(Object key, Object value) {
         if (key == null) {
-            key = NULL;
+            key = KeyFactory.NULL;
         }
 
         // Makes sure the key is not already in the WeakIdentityMap.
@@ -376,7 +374,7 @@ public class WeakIdentityMap extends AbstractMap implements Map, Cloneable {
 
     public Object remove(Object key) {
         if (key == null) {
-            key = NULL;
+            key = KeyFactory.NULL;
         }
 
         Entry[] tab = this.table;
@@ -638,7 +636,7 @@ public class WeakIdentityMap extends AbstractMap implements Map, Cloneable {
 
         public Object getKey() {
             Object key = Entry.this.get();
-            return key == NULL ? null : key;
+            return key == KeyFactory.NULL ? null : key;
         }
 
         public Object getValue() {
@@ -662,7 +660,7 @@ public class WeakIdentityMap extends AbstractMap implements Map, Cloneable {
             Object thisKey = get();
             if (thisKey == null) {
                 return false;
-            } else if (thisKey == NULL) {
+            } else if (thisKey == KeyFactory.NULL) {
                 thisKey = null;
             }
             return (thisKey == e.getKey()) &&
