@@ -750,11 +750,21 @@ public interface CodeAssembler {
      * on the stack is on the left side of the comparison expression. When
      * comparing objects, only an identity comparison is performed.
      *
+     * <p>When comparing floating point values, treatment of NaN requires
+     * special attention. Ordinarily, it is assumed that the branch location
+     * represents the target of a comparison failure, and that the code to
+     * handle the "true" condition immediately follows the comparison. If this
+     * is not the case, append a 't' suffix to the choice to indicate that the
+     * target location is reached for a "true" condition. This suffix is
+     * ignored if the type is not a float or double.
+     *
      * <p>The generated instruction(s) consumes the two values on the stack.
      *
      * @param location The location to branch to
-     * @param choice One of "==", "!=", "<", ">=", ">" or "<=". Object types
-     * can only be compared for equality.
+
+     * @param choice One of "==", "!=", "<", ">=", ">", "<=", "==t", "!=t",
+     * "<t", ">=t", ">t", or "<=t". Object types can only be compared for
+     * equality.
      * @param type Type to expect on the stack
      * @throws IllegalArgumentException When the choice is not valid
      */

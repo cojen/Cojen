@@ -32,8 +32,14 @@ public abstract class AbstractCodeAssembler implements CodeAssembler {
     protected AbstractCodeAssembler() {
     }
 
-    static int line = 0;
     public void ifComparisonBranch(Location location, String choice, TypeDesc type) {
+        boolean trueBranch = false;
+        int length = choice.length();
+        if (choice.charAt(length - 1) == 't') {
+            trueBranch = true;
+            choice = choice.substring(0, length - 1);
+        }
+
         choice = choice.intern();
 
         switch (type.getTypeCode()) {
@@ -61,11 +67,13 @@ public abstract class AbstractCodeAssembler implements CodeAssembler {
             break;
 
         case TypeDesc.FLOAT_CODE:
-            math((choice == ">" || choice == ">=") ? Opcode.FCMPG : Opcode.FCMPL);
+            math((choice == (trueBranch ? "<=" : ">") || choice == (trueBranch ? "<" : ">=")) 
+                 ? Opcode.FCMPG : Opcode.FCMPL);
             break;
 
         case TypeDesc.DOUBLE_CODE:
-            math((choice == ">" || choice == ">=") ? Opcode.DCMPG : Opcode.DCMPL);
+            math((choice == (trueBranch ? "<=" : ">") || choice == (trueBranch ? "<" : ">=")) 
+                 ? Opcode.DCMPG : Opcode.DCMPL);
             break;
         }
 
