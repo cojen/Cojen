@@ -721,6 +721,18 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
             unbox(fromType, fromPrimitiveType);
         }
 
+        if (toType.toClass() == Number.class) {
+            switch (fromTypeCode) {
+            case TypeDesc.INT_CODE:
+            case TypeDesc.BYTE_CODE:
+            case TypeDesc.SHORT_CODE:
+            case TypeDesc.LONG_CODE:
+            case TypeDesc.FLOAT_CODE:
+            case TypeDesc.DOUBLE_CODE:
+                toType = fromType.toObjectType();
+            }
+        }
+
         TypeDesc toPrimitiveType = toType.toPrimitiveType();
         if (toPrimitiveType == null) {
             throw invalidConversion(fromType, toType);
