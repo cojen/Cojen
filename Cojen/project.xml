@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project>
+  <pomVersion>3</pomVersion>
+  <id>cojen</id>
+  <name>Cojen</name>
+  <groupId>cojen</groupId>
+  <currentVersion>1.0</currentVersion>
+  <organization>
+    <name>Brian S O'Neill</name>
+    <url>http://sourceforge.net/projects/cojen/</url>
+    <logo>http://sourceforge.net/sflogo.php?group_id=104490&amp;type=2</logo>
+  </organization>
+  <inceptionYear>2004</inceptionYear>
+  <package>cojen</package>
+  <logo>/images/cojen.png</logo>
+
+  <description>
+    Dynamic Java bytecode generation and disassembly tools.
+  </description>
+  <shortDescription>Cojen</shortDescription>
+  <url>http://cojen.sourceforge.net/</url>
+  
+  <issueTrackingUrl>http://sourceforge.net/tracker/?atid=638258&amp;group_id=104490&amp;func=browse</issueTrackingUrl>
+  
+  <siteAddress>shell.sourceforge.net</siteAddress>
+  <siteDirectory>/home/groups/c/co/cojen/htdocs/</siteDirectory>
+  <distributionDirectory>home/groups/c/co/cojen/htdocs/repository</distributionDirectory>
+  
+  <repository>
+    <connection>scm:cvs:pserver:anonymous@cvs.sourceforge.net:/cvsroot/cojen:Cojen</connection>
+    <url>http://cvs.sourceforge.net/viewcvs.py/cojen/Cojen/</url>
+  </repository>
+  
+  <mailingLists>
+    <mailingList>
+      <name>Cojen Interest list</name>
+      <subscribe>http://sourceforge.net/mail/?group_id=104490</subscribe>
+      <unsubscribe>http://sourceforge.net/mail/?group_id=104490</unsubscribe>
+      <!-- archive>http://sourceforge.net/mailarchive/forum.php?forum_id=8530</archive  -->
+    </mailingList>
+  </mailingLists>
+
+  <developers>
+    <developer>
+      <name>Brian S O'Neill</name>
+      <id>broneill</id>
+      <email>broneill@users.sourceforge.net</email>
+      <organization></organization>
+      <roles>
+        <role>Project Lead</role>
+      </roles>
+    </developer>
+  </developers>
+  
+  <contributors>
+  </contributors>
+
+  <dependencies>
+  </dependencies>
+
+  <build>
+    <sourceDirectory>src/java</sourceDirectory>
+    <unitTestSourceDirectory>src/test</unitTestSourceDirectory>
+    <unitTest>
+    </unitTest>
+  </build>
+
+  <reports>
+     <report>maven-changelog-plugin</report>
+     <report>maven-changes-plugin</report>
+     <!-- report>maven-checkstyle-plugin</report -->
+     <!-- <report>maven-clover-plugin</report> -->
+     <!-- report>maven-jcoverage-plugin</report -->
+     <report>maven-developer-activity-plugin</report>
+     <report>maven-file-activity-plugin</report>
+     <report>maven-javadoc-plugin</report>
+     <!-- <report>maven-jellydoc-plugin</report> -->
+     <!-- report>maven-junit-report-plugin</report -->
+     <report>maven-jxr-plugin</report>
+     <report>maven-license-plugin</report>
+     <!--report>maven-linkcheck-plugin</report-->
+     <!--report>maven-statcvs-plugin</report-->
+     <!--report>maven-tasklist-plugin</report-->
+  </reports>
+
+</project>

@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<document>
+
+ <properties>
+  <title>Home</title>
+  <author email="broneill@users.sourceforge.net">Brian S O'Neill</author>
+ </properties>
+
+<body>
+
+<section name="Cojen - Java bytecode generation and disassembly tools">
+
+<p>
+Cojen's primary goal is making raw Java classfile generation easy, without
+hiding any of the advanced features. Basic knowledge of how Java classfiles are
+structured is still required, however. The <a href="http://java.sun.com/docs/books/vmspec/">
+Virtual Machine Specification</a> is an excellent reference.
+</p>
+
+<p>
+Method bytecode is constructed via a
+<a href="apidocs/cojen/classfile/CodeBuilder.html">builder</a>, in which virtual
+machine opcodes are represented as slightly higher level instructions. It takes
+care of selecting optimal opcodes, managing branch labels, computing operand
+stack depth, choosing local variable registers, and reducing register usage by
+liveness analysis. In addition, it supports long branches, pushing large string
+constants onto the stack, boxing and unboxing conversions, and
+<a href="apidocs/cojen/classfile/CodeAssembler.html#inline(java.lang.Object)">inlining</a>
+of Java code.
+</p>
+
+<p>
+The builder is represented by an
+<a href="apidocs/cojen/classfile/CodeAssembler.html">interface</a>, which can
+be used as a visitor into a code
+<a href="apidocs/cojen/classfile/CodeDisassembler.html">disassembler</a>. This feature
+can be used for just-in-time method mutation, and to aid in understanding how to use the
+code building facilities.
+</p>
+
+<p>
+A simple "Hello World" <a href="example.html">example</a> is provided which demonstrates
+the major class generation and loading features. <a href="disassembly.html">Disassembly</a>
+tools which can be run from the command line show how any class can be used as an example
+for class generation.
+</p>
+
+</section>
+
+<section name="ClassFile object">
+
+<p>
+Defining a new class begins with the construction of a
+<a href="apidocs/cojen/classfile/ClassFile.html">ClassFile</a> object.
+Use the
+  ClassFile
+instance to add fields, methods, constructors, inner classes, and to to specify
+implemented interfaces.
+</p>
+
+<p>
+Adding a method causes a MethodInfo object to be returned. Although raw bytecodes can
+be put into its code attribute, creating a CodeBuilder makes things much easier.
+Constructing a CodeBuilder around a MethodInfo causes it to take over this responsibility.
+</p>
+
+<p>
+ClassFile objects are also used for loading and representing existing classes. Reading
+a class into a ClassFile object is the first step in disassembling a class. Call one of
+the defined static readFrom methods to read a class from an input stream. Additional
+parameters can be supplied to enable reading inner classes and custom attributes.
+</p>
+
+</section>
+
+<section name="Transient classes">
+
+<p>
+A "transient" class from Cojen's perspective is one that is dynamically
+created, never leaves the confines of the current virtual machine process, and
+whose bytecode is lost when it is unloaded. The <a href="apidocs/cojen/util/ClassInjector.html">
+ClassInjector</a> is used for creating such classes. Internally, it uses a ClassLoader which
+defines classes, but it never remembers the bytecode used to construct them.
+</p>
+
+<p>
+As long as references to the generated class or instances of it still exist, the class
+will not be unloaded. Once all such references are gone, the class may be unloaded, but
+it cannot be loaded again by name. It would need to be regenerated.
+</p>
+
+</section>
+
+<section name="Utilities">
+
+<p>
+Cojen provides several powerful utility classes which also serve as examples of how to
+dynamically generate classes. <a href="apidocs/cojen/util/BeanComparator.html">BeanComparator</a>
+enables fast custom sorting of Java objects by properties,
+<a href="apidocs/cojen/util/BeanPropertyAccessor.html">BeanPropertyAccessor</a> allows
+object properties to be quickly accessed, and
+<a href="apidocs/cojen/util/PatternMatcher.html">PatternMatcher</a> supports rapid string
+comparison to patterns containing wildcards.
+</p>
+
+</section>
+
+<section name="History">
+
+<p>
+Although Cojen is a new project, it is a fork of the
+<a href="http://sourceforge.net/projects/teatrove/">TeaTrove</a> classfile API, which
+is relatively old and reliable. The TeaTrove project contains many internal components,
+which are best separated. TeaTrove will eventually get updated to use Cojen instead.
+</p>
+
+</section>
+
+</body>
+</document>
