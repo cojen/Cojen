@@ -9,6 +9,9 @@ Change History
 - CodeBuilder: convert to superclass type is legal
 - Added support for Java 5 annotations
 - Added convenience method to add methods by signature
+- Added createExplicit method to ClassInjector
+- Fixed minor bug in TypeDesc where class loaded from non-system class loader
+  would get lost
 
 1.0.1 to 1.0.2
 -------------------------------
