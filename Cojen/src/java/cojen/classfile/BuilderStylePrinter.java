@@ -389,7 +389,9 @@ class BuilderStylePrinter implements DisassemblyTool.Printer {
         }
         TypeDesc[] exceptions = mi.getExceptions();
         for (int j=0; j<exceptions.length; j++) {
-            println("mi.addException(\"" + exceptions[j] + "\");");
+            print("mi.addException(");
+            print(exceptions[j]);
+            println(");");
         }
 
         if (mi.getCodeAttr() != null) {
