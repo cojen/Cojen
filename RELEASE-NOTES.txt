@@ -1,7 +1,23 @@
-Cojen version 1.0.1
+Cojen version 1.0.2
 -------------------------------
 
 Change History
+
+1.0.1 to 1.0.2
+-------------------------------
+- ClassFile: revert to using '$' in generated inner class names
+- CodeAssembler: support for converting floating point values by bits
+- CodeBuilder: don't throw NullPointerException during generated conversion
+  when converting a null boxed primitive to another boxed primitive
+- InstructionList: bug fix in allocating double word variables
+- ClassInjector: try to use smaller auto-generated classnames
+- ClassInjector: try to load injected classes using parent classloader
+- WeakIdentityMap: performance enhancements for cleanup of cleared weak
+  references
+- WeakFlyweightSet: performance enhancements for cleanup of cleared weak
+  references
+- WeakFlyweightSet: deprecated and replaced with WeakCanonicalSet
+- WeakCanonicalSet: replacement for WeakFlyweightSet
 
 1.0 to 1.0.1
 -------------------------------
