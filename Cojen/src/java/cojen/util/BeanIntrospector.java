@@ -31,7 +31,7 @@ import java.util.Map;
  * @author Brian S O'Neill
  */
 public class BeanIntrospector {
-    // Weakly maps Class objects to softly referenced BeanDescriptor maps.
+    // Weakly maps Class objects to softly referenced BeanProperty maps.
     private static Map cPropertiesCache = new WeakIdentityMap();
 
     public static void main(String[] args) throws Exception {
