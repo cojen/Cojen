@@ -494,6 +494,7 @@ public class BeanComparator implements Comparator, Serializable {
     private static ClassFile generateClassFile(String className, Rules rules) {
         ClassFile cf = new ClassFile(className);
         cf.markSynthetic();
+        cf.setSourceFile(BeanComparator.class.getName());
 
         cf.addInterface(Comparator.class);
         cf.addInterface(Serializable.class);

@@ -84,6 +84,7 @@ public abstract class BeanPropertyAccessor {
 
         ClassFile cf = new ClassFile(className, BeanPropertyAccessor.class);
         cf.markSynthetic();
+        cf.setSourceFile(BeanPropertyAccessor.class.getName());
         try {
             cf.setTarget(System.getProperty("java.specification.version"));
         } catch (Exception e) {
