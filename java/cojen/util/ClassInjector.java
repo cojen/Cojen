@@ -235,7 +235,9 @@ public class ClassInjector {
         }
 
         Class define(String name, byte[] b) {
-            return defineClass(name, b, 0, b.length);
+            Class clazz = defineClass(name, b, 0, b.length);
+            resolveClass(clazz);
+            return clazz;
         }
     }
 }
