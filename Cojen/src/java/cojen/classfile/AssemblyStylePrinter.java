@@ -663,8 +663,7 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
                 print(nameAndType.getName());
 
                 print("(");
-                TypeDesc[] params = 
-                    ((MethodDesc)type).getParameterTypes();
+                TypeDesc[] params = ((MethodDesc)type).getParameterTypes();
                 for (int i=0; i<params.length; i++) {
                     if (i > 0) {
                         print(", ");
