@@ -733,10 +733,6 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
             }
         }
 
-        if (!fromType.isPrimitive()) {
-            unbox(fromType, fromPrimitiveType);
-        }
-
         TypeDesc toPrimitiveType = toType.toPrimitiveType();
         if (toPrimitiveType == null) {
             throw invalidConversion(fromType, toType);
@@ -780,6 +776,9 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
                 op = Opcode.NOP;
                 break;
             case TypeDesc.BOOLEAN_CODE:
+                if (!fromType.isPrimitive()) {
+                    unbox(fromType, fromPrimitiveType);
+                }
                 toBoolean(!toType.isPrimitive());
                 return;
             default:
@@ -810,6 +809,9 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
                 op = Opcode.NOP;
                 break;
             case TypeDesc.BOOLEAN_CODE:
+                if (!fromType.isPrimitive()) {
+                    unbox(fromType, fromPrimitiveType);
+                }
                 loadConstant(0L);
                 math(Opcode.LCMP);
                 toBoolean(!toType.isPrimitive());
@@ -842,6 +844,9 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
                 op = Opcode.NOP;
                 break;
             case TypeDesc.BOOLEAN_CODE:
+                if (!fromType.isPrimitive()) {
+                    unbox(fromType, fromPrimitiveType);
+                }
                 loadConstant(0.0f);
                 math(Opcode.FCMPG);
                 toBoolean(!toType.isPrimitive());
@@ -874,6 +879,9 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
                 op = Opcode.NOP;
                 break;
             case TypeDesc.BOOLEAN_CODE:
+                if (!fromType.isPrimitive()) {
+                    unbox(fromType, fromPrimitiveType);
+                }
                 loadConstant(0.0d);
                 math(Opcode.DCMPG);
                 toBoolean(!toType.isPrimitive());
@@ -885,6 +893,10 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
             
         default:
             throw invalidConversion(fromType, toType);
+        }
+
+        if (!fromType.isPrimitive()) {
+            unbox(fromType, fromPrimitiveType);
         }
 
         if (toType.isPrimitive()) {
