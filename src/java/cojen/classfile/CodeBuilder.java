@@ -717,10 +717,6 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
         }
         int fromTypeCode = fromPrimitiveType.getTypeCode();
 
-        if (!fromType.isPrimitive()) {
-            unbox(fromType, fromPrimitiveType);
-        }
-
         if (toType.toClass() == Number.class) {
             switch (fromTypeCode) {
             case TypeDesc.INT_CODE:
@@ -729,8 +725,16 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
             case TypeDesc.LONG_CODE:
             case TypeDesc.FLOAT_CODE:
             case TypeDesc.DOUBLE_CODE:
-                toType = fromType.toObjectType();
+                if (fromType.isPrimitive()) {
+                    toType = fromType.toObjectType();
+                } else {
+                    return;
+                }
             }
+        }
+
+        if (!fromType.isPrimitive()) {
+            unbox(fromType, fromPrimitiveType);
         }
 
         TypeDesc toPrimitiveType = toType.toPrimitiveType();
