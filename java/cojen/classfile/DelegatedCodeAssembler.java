@@ -16,6 +16,9 @@
 
 package cojen.classfile;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+
 /**
  * Delegates all method calls to another CodeAssembler. Override any method to
  * track activity or change the way code is generated.
@@ -26,6 +29,9 @@ public class DelegatedCodeAssembler implements CodeAssembler {
     protected final CodeAssembler mAssembler;
 
     public DelegatedCodeAssembler(CodeAssembler assembler) {
+        if (assembler == null) {
+            throw new IllegalArgumentException();
+        }
         mAssembler = assembler;
     }
 
@@ -54,6 +60,10 @@ public class DelegatedCodeAssembler implements CodeAssembler {
     
     public void mapLineNumber(int lineNumber) {
         mAssembler.mapLineNumber(lineNumber);
+    }
+
+    public void inline(Object code) {
+        mAssembler.inline(code);
     }
 
     public void loadConstant(String value) {
@@ -180,6 +190,10 @@ public class DelegatedCodeAssembler implements CodeAssembler {
         mAssembler.convert(fromType, toType);
     }
 
+    public void invoke(Method method) {
+        mAssembler.invoke(method);
+    }
+
     public void invokeVirtual(String methodName,
                               TypeDesc ret,
                               TypeDesc[] params) {
@@ -240,6 +254,10 @@ public class DelegatedCodeAssembler implements CodeAssembler {
         mAssembler.invokePrivate(methodName, ret, params);
     }
 
+    public void invokeSuper(Method method) {
+        mAssembler.invokeSuper(method);
+    }
+
     public void invokeSuper(String superClassName,
                             String methodName,
                             TypeDesc ret,
@@ -252,6 +270,10 @@ public class DelegatedCodeAssembler implements CodeAssembler {
                             TypeDesc ret,
                             TypeDesc[] params) {
         mAssembler.invokeSuper(superClassDesc, methodName, ret, params);
+    }
+
+    public void invoke(Constructor constructor) {
+        mAssembler.invoke(constructor);
     }
 
     public void invokeConstructor(TypeDesc[] params) {

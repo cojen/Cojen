@@ -46,6 +46,8 @@ public class CodeDisassembler {
     // True if the method being decompiled still has a "this" reference.
     private boolean mHasThis;
 
+    private Location mReturnLocation;
+
     // Maps Integer address keys to itself, but to Label objects after first
     // needed.
     private Map mLabels;
@@ -56,11 +58,16 @@ public class CodeDisassembler {
     // Current address being decompiled.
     private int mAddress;
 
-    public CodeDisassembler(MethodInfo method) {
+    /**
+     * @throws IllegalArgumentException if method has no code
+     */
+    public CodeDisassembler(MethodInfo method) throws IllegalArgumentException {
         mMethod = method;
         mEnclosingClassName = method.getClassFile().getClassName();
         mSuperClassName = method.getClassFile().getSuperClassName();
-        mCode = method.getCodeAttr();
+        if ((mCode = method.getCodeAttr()) == null) {
+            throw new IllegalArgumentException("Method defines no code");
+        }
         mCp = mCode.getConstantPool();
         CodeBuffer buffer = mCode.getCodeBuffer();
         mByteCodes = buffer.getByteCodes();
@@ -72,23 +79,61 @@ public class CodeDisassembler {
      *
      * @see CodeAssemblerPrinter
      */
-    public synchronized void disassemble(CodeAssembler assembler) {
+    public void disassemble(CodeAssembler assembler) {
+        disassemble(assembler, null, null);
+    }
+
+    /**
+     * Disassemble the MethodInfo into the given assembler.
+     *
+     * @param params if not null, override the local variables which hold parameter values
+     * @param returnLocation if not null, disasseble will branch to this location upon seeing
+     * a return, leaving any arguments on the stack
+     * @see CodeAssemblerPrinter
+     */
+    public synchronized void disassemble(CodeAssembler assembler,
+                                         LocalVariable[] params, Location returnLocation) {
         mAssembler = assembler;
         mLocals = new Vector();
-        mHasThis = !mMethod.getModifiers().isStatic();
+        if (mHasThis = !mMethod.getModifiers().isStatic()) {
+            // Reserve a slot for "this" parameter.
+            mLocals.add(null);
+        }
 
         gatherLabels();
 
         // Gather the local variables of the parameters.
-        int paramCount = assembler.getParameterCount();
-        for (int i=0; i<paramCount; i++) {
-            LocalVariable paramVar = assembler.getParameter(i);
-            int number = paramVar.getNumber();
-            if (number >= mLocals.size()) {
-                mLocals.setSize(number + 1);
+        {
+            TypeDesc[] paramTypes = mMethod.getMethodDescriptor().getParameterTypes();
+            
+            if (params == null) {
+                params = new LocalVariable[assembler.getParameterCount()];
+                for (int i=params.length; --i>=0; ) {
+                    params[i] = assembler.getParameter(i);
+                }
             }
-            mLocals.setElementAt(paramVar, number);
+            if (paramTypes.length != params.length) {
+                throw new IllegalArgumentException
+                    ("Method parameter count doesn't match given parameter count: "
+                     + paramTypes.length + " != " + params.length);
+            }
+        
+            for (int i=0; i<paramTypes.length; i++) {
+                LocalVariable paramVar = params[i];
+                if (!compatibleType(paramTypes[i], paramVar.getType())) {
+                    throw new IllegalArgumentException
+                        ("Method parameter type is not compatible with given type: "
+                         + paramTypes[i] + " != " + paramVar.getType());
+                }
+                mLocals.add(paramVar);
+                if (paramVar.getType().isDoubleWord()) {
+                    // Reserve slot for least significant word.
+                    mLocals.add(null);
+                }
+            }
         }
+
+        mReturnLocation = returnLocation;
 
         Location currentLoc = new Location() {
             public int getLocation() {
@@ -294,22 +339,35 @@ public class CodeDisassembler {
                 break;
 
             case Opcode.IRETURN:
-                assembler.returnValue(TypeDesc.INT);
-                break;
             case Opcode.LRETURN:
-                assembler.returnValue(TypeDesc.LONG);
-                break;
             case Opcode.FRETURN:
-                assembler.returnValue(TypeDesc.FLOAT);
-                break;
             case Opcode.DRETURN:
-                assembler.returnValue(TypeDesc.DOUBLE);
-                break;
             case Opcode.ARETURN:
-                assembler.returnValue(TypeDesc.OBJECT);
-                break;
             case Opcode.RETURN:
-                assembler.returnVoid();
+                if (mReturnLocation != null) {
+                    assembler.branch(mReturnLocation);
+                } else {
+                    switch (opcode) {
+                    case Opcode.IRETURN:
+                        assembler.returnValue(TypeDesc.INT);
+                        break;
+                    case Opcode.LRETURN:
+                        assembler.returnValue(TypeDesc.LONG);
+                        break;
+                    case Opcode.FRETURN:
+                        assembler.returnValue(TypeDesc.FLOAT);
+                        break;
+                    case Opcode.DRETURN:
+                        assembler.returnValue(TypeDesc.DOUBLE);
+                        break;
+                    case Opcode.ARETURN:
+                        assembler.returnValue(TypeDesc.OBJECT);
+                        break;
+                    case Opcode.RETURN:
+                        assembler.returnVoid();
+                        break;
+                    }
+                }
                 break;
 
             case Opcode.IALOAD:
@@ -617,51 +675,47 @@ public class CodeDisassembler {
                 if (ret == TypeDesc.VOID) {
                     ret = null;
                 }
-                TypeDesc[] params = ((MethodDesc)desc).getParameterTypes();
-                if (params.length == 0) {
-                    params = null;
+                TypeDesc[] paramTypes = ((MethodDesc)desc).getParameterTypes();
+                if (paramTypes.length == 0) {
+                    paramTypes = null;
                 }
 
                 switch (opcode) {
                 case Opcode.INVOKEVIRTUAL:
                     if (className == null) {
-                        assembler.invokeVirtual(methodName, ret, params);
+                        assembler.invokeVirtual(methodName, ret, paramTypes);
                     } else {
-                        assembler.invokeVirtual
-                            (className, methodName, ret, params);
+                        assembler.invokeVirtual(className, methodName, ret, paramTypes);
                     }
                     break;
                 case Opcode.INVOKESPECIAL:
                     if ("<init>".equals(methodName)) {
                         if (className == null) {
-                            assembler.invokeConstructor(params);
+                            assembler.invokeConstructor(paramTypes);
                         } else {
                             if (className.equals(mSuperClassName)) {
-                                assembler.invokeSuperConstructor(params);
+                                assembler.invokeSuperConstructor(paramTypes);
                             } else {
-                                assembler.invokeConstructor(className, params);
+                                assembler.invokeConstructor(className, paramTypes);
                             }
                         }
                     } else {
                         if (className == null) {
-                            assembler.invokePrivate(methodName, ret, params);
+                            assembler.invokePrivate(methodName, ret, paramTypes);
                         } else {
-                            assembler.invokeSuper
-                                (className, methodName, ret, params);
+                            assembler.invokeSuper(className, methodName, ret, paramTypes);
                         }
                     }
                     break;
                 case Opcode.INVOKESTATIC:
                     if (className == null) {
-                        assembler.invokeStatic(methodName, ret, params);
+                        assembler.invokeStatic(methodName, ret, paramTypes);
                     } else {
-                        assembler.invokeStatic
-                            (className, methodName, ret, params);
+                        assembler.invokeStatic(className, methodName, ret, paramTypes);
                     }
                     break;
                 case Opcode.INVOKEINTERFACE:
-                    assembler.invokeInterface
-                        (className, methodName, ret, params);
+                    assembler.invokeInterface(className, methodName, ret, paramTypes);
                     break;
                 }
                 break;
@@ -1467,21 +1521,21 @@ public class CodeDisassembler {
         if (index >= mLocals.size()) {
             mLocals.setSize(index + 1);
             local = mAssembler.createLocalVariable(null, type);
-            mLocals.setElementAt(local, index);
+            mLocals.set(index, local);
             return local;
         }
 
-        Object obj = mLocals.elementAt(index);
+        Object obj = mLocals.get(index);
 
         if (obj == null) {
             local = mAssembler.createLocalVariable(null, type);
-            mLocals.setElementAt(local, index);
+            mLocals.set(index, local);
             return local;
         }
 
         if (obj instanceof LocalVariable) {
             local = (LocalVariable)obj;
-            if (type == local.getType()) {
+            if (compatibleType(type, local.getType())) {
                 return local;
             }
             // Variable takes on multiple types, so convert entry to a list.
@@ -1489,14 +1543,14 @@ public class CodeDisassembler {
             locals.add(local);
             local = mAssembler.createLocalVariable(null, type);
             locals.add(local);
-            mLocals.setElementAt(locals, index);
+            mLocals.set(index, locals);
             return local;
         }
         
         List locals = (List)obj;
         for (int i=locals.size(); --i>=0; ) {
             local = (LocalVariable)locals.get(i);
-            if (type == local.getType()) {
+            if (compatibleType(type, local.getType())) {
                 return local;
             }
         }
@@ -1504,6 +1558,10 @@ public class CodeDisassembler {
         local = mAssembler.createLocalVariable(null, type);
         locals.add(local);
         return local;
+    }
+
+    private boolean compatibleType(TypeDesc a, TypeDesc b) {
+        return a == b || (!a.isPrimitive() && !b.isPrimitive());
     }
 
     private void locateLabel() {

@@ -16,6 +16,10 @@
 
 package cojen.classfile;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.util.MissingResourceException;
+
 /**
  * CodeAssembler is a high-level interface for assembling Java Virtual Machine
  * byte code. It can also be used as a visitor to a disassembler.
@@ -84,6 +88,19 @@ public interface CodeAssembler {
      * generated code.
      */
     void mapLineNumber(int lineNumber);
+
+    /**
+     * Allows code to disassembled and copied straight in. The code object
+     * passed in must have a single method named "define" whose arguments match
+     * the type and order of values expected on the operand stack. If a return
+     * value is provided, it will pushed onto the stack. The define method can
+     * have any access modifier.
+     *
+     * @throws IllegalArgumentException if define method not found, or if
+     * multiple are found
+     * @throws MissingResourceException if define code not found
+     */
+    void inline(Object code) throws IllegalArgumentException, MissingResourceException;
 
     // load-constant-to-stack style instructions
 
@@ -351,6 +368,13 @@ public interface CodeAssembler {
     // invocation style instructions
 
     /**
+     * Generates code to invoke a method. If the method is static, the method's
+     * argument(s) must be on the stack. If the method is non-static, then the
+     * object reference must also be on the stack, prior to the arguments.
+     */
+    void invoke(Method method);
+
+    /**
      * Generates code to invoke a virtual method in this class. The object
      * reference and the method's argument(s) must be on the stack.
      *
@@ -464,6 +488,12 @@ public interface CodeAssembler {
     /**
      * Generates code to invoke a method in the super class.
      * The object reference and the method's argument(s) must be on the stack.
+     */
+    void invokeSuper(Method method);
+
+    /**
+     * Generates code to invoke a method in the super class.
+     * The object reference and the method's argument(s) must be on the stack.
      *
      * @param ret May be null if method returns void.
      * @param params May be null if method takes no parameters.
@@ -486,6 +516,12 @@ public interface CodeAssembler {
                      String methodName,
                      TypeDesc ret,
                      TypeDesc[] params);
+
+    /**
+     * Generates code to invoke a class constructor in any class. The object
+     * reference and the constructor's argument(s) must be on the stack.
+     */
+    void invoke(Constructor constructor);
 
     /**
      * Generates code to invoke a class constructor in this class. The object 
