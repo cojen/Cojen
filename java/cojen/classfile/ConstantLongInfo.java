@@ -26,7 +26,7 @@ import java.io.IOException;
  * @author Brian S O'Neill
  */
 public class ConstantLongInfo extends ConstantInfo {
-    private Long mValue;
+    private long mValue;
     
     /** 
      * Will return either a new ConstantLongInfo object or one already in
@@ -40,28 +40,25 @@ public class ConstantLongInfo extends ConstantInfo {
     
     ConstantLongInfo(long value) {
         super(TAG_LONG);
-        mValue = new Long(value);
-    }
-    
-    ConstantLongInfo(Long value) {
-        super(TAG_LONG);
         mValue = value;
     }
     
-    public Long getValue() {
+    public long getValue() {
         return mValue;
     }
 
     public int hashCode() {
-        return mValue.hashCode();
+        return (int)(mValue ^ (mValue >>> 32));
     }
     
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj instanceof ConstantLongInfo) {
             ConstantLongInfo other = (ConstantLongInfo)obj;
-            return mValue.equals(other.mValue);
+            return mValue == other.mValue;
         }
-
         return false;
     }
     
@@ -71,10 +68,10 @@ public class ConstantLongInfo extends ConstantInfo {
 
     public void writeTo(DataOutput dout) throws IOException {
         super.writeTo(dout);
-        dout.writeLong(mValue.longValue());
+        dout.writeLong(mValue);
     }
 
     public String toString() {
-        return "CONSTANT_Long_info: " + getValue();
+        return "CONSTANT_Long_info: " + mValue;
     }
 }

@@ -137,7 +137,7 @@ public class CodeDisassembler {
             switch (opcode) {
 
             default:
-                error(opcode, "Unknown opcode");
+                error(opcode, "Unknown opcode: " + (opcode & 0xff));
                 break;
 
                 // Opcodes with no operands...
@@ -403,20 +403,15 @@ public class CodeDisassembler {
                 }
 
                 if (ci instanceof ConstantStringInfo) {
-                    assembler.loadConstant
-                        (((ConstantStringInfo)ci).getValue());
+                    assembler.loadConstant(((ConstantStringInfo)ci).getValue());
                 } else if (ci instanceof ConstantIntegerInfo) {
-                    assembler.loadConstant
-                        (((ConstantIntegerInfo)ci).getValue().intValue());
+                    assembler.loadConstant(((ConstantIntegerInfo)ci).getValue());
                 } else if (ci instanceof ConstantLongInfo) {
-                    assembler.loadConstant
-                        (((ConstantLongInfo)ci).getValue().longValue());
+                    assembler.loadConstant(((ConstantLongInfo)ci).getValue());
                 } else if (ci instanceof ConstantFloatInfo) {
-                    assembler.loadConstant
-                        (((ConstantFloatInfo)ci).getValue().floatValue());
+                    assembler.loadConstant(((ConstantFloatInfo)ci).getValue());
                 } else if (ci instanceof ConstantDoubleInfo) {
-                    assembler.loadConstant
-                        (((ConstantDoubleInfo)ci).getValue().doubleValue());
+                    assembler.loadConstant(((ConstantDoubleInfo)ci).getValue());
                 } else {
                     error(opcode, "Invalid constant type for load: " + ci);
                 }
@@ -489,7 +484,7 @@ public class CodeDisassembler {
             case Opcode.INSTANCEOF:
                 index = readUnsignedShort();
                 try {
-                    ci = mCp.getConstant(readUnsignedShort());
+                    ci = mCp.getConstant(index);
                 } catch (IndexOutOfBoundsException e) {
                     error(opcode, "Undefined constant at index: " + index);
                     break;
@@ -1198,7 +1193,7 @@ public class CodeDisassembler {
             switch (opcode) {
 
             default:
-                error(opcode, "Unknown opcode");
+                error(opcode, "Unknown opcode: " + (opcode & 0xff));
                 break;
 
                 // Opcodes that use labels.
@@ -1390,7 +1385,6 @@ public class CodeDisassembler {
             case Opcode.DLOAD: case Opcode.DSTORE:
             case Opcode.ALOAD: case Opcode.ASTORE:
             case Opcode.RET:
-            case Opcode.IINC:
             case Opcode.BIPUSH:
             case Opcode.NEWARRAY:
                 mAddress += 1;
@@ -1412,6 +1406,7 @@ public class CodeDisassembler {
             case Opcode.INVOKESPECIAL:
             case Opcode.INVOKESTATIC:
             case Opcode.SIPUSH:
+            case Opcode.IINC:
                 mAddress += 2;
                 break;
 

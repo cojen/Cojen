@@ -341,8 +341,8 @@ public class ClassFile {
      * This constructor creates a ClassFile for a class that extends
      * java.lang.Object.
      * <p>
-     * Use the {@link #getModifiers modifiers} to change the default
-     * modifiers for this class or to turn it into an interface.
+     * Use the {@link #setModifiers} method to change the access modifiers of
+     * this class or to turn it into an interface.
      *
      * @param className Full class name of the form ex: "java.lang.String".
      */
@@ -353,8 +353,8 @@ public class ClassFile {
     /** 
      * By default, the ClassFile defines public, non-final, concrete classes.
      * <p>
-     * Use the {@link #getModifiers modifiers} to change the default
-     * modifiers for this class or to turn it into an interface.
+     * Use the {@link #setModifiers} method to change the access modifiers of
+     * this class or to turn it into an interface.
      *
      * @param className Full class name of the form ex: "java.lang.String".
      * @param superClass Super class.
@@ -366,8 +366,8 @@ public class ClassFile {
     /** 
      * By default, the ClassFile defines public, non-final, concrete classes.
      * <p>
-     * Use the {@link #getModifiers modifiers} to change the default
-     * modifiers for this class or to turn it into an interface.
+     * Use the {@link #setModifiers} method to change the access modifiers of
+     * this class or to turn it into an interface.
      *
      * @param className Full class name of the form ex: "java.lang.String".
      * @param superClassName Full super class name.
@@ -624,7 +624,11 @@ public class ClassFile {
     public ConstantPool getConstantPool() {
         return mCp;
     }
-    
+
+    public void setModifiers(Modifiers modifiers) {
+        mModifiers = modifiers;
+    }
+
     /**
      * Add an interface that this class implements.
      *
