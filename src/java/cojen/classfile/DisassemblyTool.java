@@ -52,19 +52,31 @@ import cojen.classfile.attr.SignatureAttr;
  */
 public class DisassemblyTool {
     /**
-     * Disassembles a class file, sending the results to standard out. Accepts
-     * the following arguments:
+     * Disassembles a class file, sending the results to standard out.
+     *
      * <pre>
-     * args[0]: name of class or file
-     * args[1]: output format, assembly (default) or builder
+     * DisassemblyTool [-f &lt;format style&gt;] &lt;file or class name&gt;
      * </pre>
+     * 
+     * The format style may be "assembly" (the default) or "builder".
      */
     public static void main(String[] args) throws Exception {
+        String style;
+        String name;
+
+        if ("-f".equals(args[0])) {
+            style = args[1];
+            name = args[2];
+        } else {
+            style = "assembly";
+            name = args[0];
+        }
+
         ClassFileDataLoader loader;
         InputStream in;
 
         try {
-            final File file = new File(args[0]);
+            final File file = new File(name);
             in = new FileInputStream(file);
             loader = new ClassFileDataLoader() {
                 public InputStream getClassData(String name)
@@ -81,13 +93,13 @@ public class DisassemblyTool {
                 }
             };
         } catch (FileNotFoundException e) {
-            if (args[0].endsWith(".class")) {
+            if (name.endsWith(".class")) {
                 System.err.println(e);
                 return;
             }
 
             loader = new ResourceClassFileDataLoader();
-            in = loader.getClassData(args[0]);
+            in = loader.getClassData(name);
 
             if (in == null) {
                 System.err.println(e);
@@ -99,11 +111,6 @@ public class DisassemblyTool {
         ClassFile cf = ClassFile.readFrom(in, loader, null);
 
         PrintWriter out = new PrintWriter(System.out);
-
-        String style = null;
-        if (args.length > 1) {
-            style = args[1];
-        }
 
         Printer p;
         if (style == null || style.equals("assembly")) {
