@@ -182,6 +182,25 @@ class InstructionList implements CodeBuffer {
 
         livenessAnalysis(liveIn, liveOut);
 
+        // Register number -> list of variables that use that register.
+        List registerUsers = new ArrayList();
+
+        // First fill up list with variables that have a fixed number.
+        for (int v=0; v<size; v++) {
+            LocalVariableImpl var = (LocalVariableImpl)mLocalVariables.get(v);
+            if (var.isFixedNumber()) {
+                addRegisterUser(registerUsers, var);
+                // Ensure that max locals is large enough to hold parameters.
+                int num = var.getNumber();
+                if (var.isDoubleWord()) {
+                    num++;
+                }
+                if (num >= mMaxLocals) {
+                    mMaxLocals = num + 1;
+                }
+            }
+        }        
+
         // Merge bit lists together.
         BitList[] live = liveIn;
         for (int v=0; v<size; v++) {
@@ -191,19 +210,6 @@ class InstructionList implements CodeBuffer {
                 live[v] = null;
             }
         }
-
-        // Register number -> list of variables that use that register.
-        List registerUsers = new ArrayList();
-
-        // First fill up list with variables that have a fixed number.
-        for (int v=0; v<size; v++) {
-            if (live[v] != null) {
-                LocalVariableImpl var = (LocalVariableImpl)mLocalVariables.get(v);
-                if (var.isFixedNumber()) {
-                    addRegisterUser(registerUsers, var);
-                }
-            }
-        }        
 
         for (int v=0; v<size; v++) {
             if (live[v] == null) {
@@ -228,7 +234,7 @@ class InstructionList implements CodeBuffer {
             addRegisterUser(registerUsers, var);
         }
 
-        mMaxLocals = registerUsers.size();
+        mMaxLocals = Math.max(mMaxLocals, registerUsers.size());
 
         // Perform stack flow analysis to determine the max stack size.
 
@@ -322,8 +328,7 @@ class InstructionList implements CodeBuffer {
     }
 
     private void livenessAnalysis(BitList[] liveIn, BitList[] liveOut) {
-        // Exception handlers require no special treatment since they have no
-        // live variables upon entry.
+        // TODO: Follow exception handlers.
 
         boolean passAgain;
         do {
