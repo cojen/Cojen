@@ -16,7 +16,10 @@
 
 package cojen.util;
 
+import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
+
 import java.util.AbstractCollection;
 import java.util.AbstractMap;
 import java.util.AbstractSet;
@@ -112,6 +115,7 @@ public class WeakIdentityMap extends AbstractMap implements Map, Cloneable {
     private transient int count;
     private int threshold;
     private final float loadFactor;
+    private final ReferenceQueue queue;
     private transient volatile int modCount;
 
     // Views
@@ -130,6 +134,7 @@ public class WeakIdentityMap extends AbstractMap implements Map, Cloneable {
         this.loadFactor = loadFactor;
         this.table = new Entry[initialCapacity];
         this.threshold = (int)(initialCapacity * loadFactor);
+        this.queue = new ReferenceQueue();
     }
 
     public WeakIdentityMap(int initialCapacity) {
@@ -261,31 +266,6 @@ public class WeakIdentityMap extends AbstractMap implements Map, Cloneable {
         return null;
     }
 
-    /**
-     * Scans the contents of this map, removing all entries that have a
-     * cleared weak key.
-     */
-    private void cleanup() {
-        Entry[] tab = this.table;
-
-        for (int i = tab.length ; i-- > 0 ;) {
-            for (Entry e = tab[i], prev = null; e != null; e = e.next) {
-                if (e.get() == null) {
-                    // Clean up after a cleared Reference.
-                    this.modCount++;
-                    if (prev != null) {
-                        prev.next = e.next;
-                    } else {
-                        tab[i] = e.next;
-                    }
-                    this.count--;
-                } else {
-                    prev = e;
-                }
-            }
-        }
-    }
-
     private void rehash() {
         int oldCapacity = this.table.length;
         Entry[] oldMap = this.table;
@@ -325,8 +305,33 @@ public class WeakIdentityMap extends AbstractMap implements Map, Cloneable {
             key = KeyFactory.NULL;
         }
 
-        // Makes sure the key is not already in the WeakIdentityMap.
         Entry[] tab = this.table;
+
+        // Cleanup after cleared References.
+        {
+            ReferenceQueue queue = this.queue;
+            Reference ref;
+            while ((ref = queue.poll()) != null) {
+                // Since buckets are single-linked, traverse entire list and
+                // cleanup all cleared references in it.
+                int index = (((Entry) ref).hash & 0x7fffffff) % tab.length;
+                for (Entry e = tab[index], prev = null; e != null; e = e.next) {
+                    if (e.get() == null) {
+                        this.modCount++;
+                        if (prev != null) {
+                            prev.next = e.next;
+                        } else {
+                            tab[index] = e.next;
+                        }
+                        this.count--;
+                    } else {
+                        prev = e;
+                    }
+                }
+            }
+        }
+
+        // Makes sure the key is not already in the WeakIdentityMap.
         int hash = System.identityHashCode(key);
         int index = (hash & 0x7fffffff) % tab.length;
 
@@ -354,11 +359,6 @@ public class WeakIdentityMap extends AbstractMap implements Map, Cloneable {
         this.modCount++;
 
         if (this.count >= this.threshold) {
-            // Cleanup the table if the threshold is exceeded.
-            cleanup();
-        }
-
-        if (this.count >= this.threshold) {
             // Rehash the table if the threshold is still exceeded.
             rehash();
             tab = this.table;
@@ -366,7 +366,7 @@ public class WeakIdentityMap extends AbstractMap implements Map, Cloneable {
         }
 
         // Creates the new entry.
-        Entry e = new Entry(hash, key, value, tab[index]);
+        Entry e = new Entry(hash, key, this.queue, value, tab[index]);
         tab[index] = e;
         this.count++;
         return null;
@@ -436,7 +436,7 @@ public class WeakIdentityMap extends AbstractMap implements Map, Cloneable {
             t.table = new Entry[this.table.length];
             for (int i = this.table.length ; i-- > 0 ; ) {
                 t.table[i] = (this.table[i] != null) 
-                    ? (Entry)this.table[i].clone() : null;
+                    ? (Entry)this.table[i].copy(this.queue) : null;
             }
             t.keySet = null;
             t.entrySet = null;
@@ -600,9 +600,6 @@ public class WeakIdentityMap extends AbstractMap implements Map, Cloneable {
      * @return a string version of the map
      */
     public String toString() {
-        // Cleanup stale entries first, so as not to allocate a larger than
-        // necessary StringBuffer.
-        cleanup();
         return toString(this);
     }
 
@@ -622,8 +619,8 @@ public class WeakIdentityMap extends AbstractMap implements Map, Cloneable {
         Object value;
         Entry next;
 
-        Entry(int hash, Object key, Object value, Entry next) {
-            super(key);
+        Entry(int hash, Object key, ReferenceQueue queue, Object value, Entry next) {
+            super(key, queue);
             this.hash = hash;
             this.value = value;
             this.next = next;
@@ -675,9 +672,9 @@ public class WeakIdentityMap extends AbstractMap implements Map, Cloneable {
             return getKey() + "=" + this.value;
         }
 
-        protected Object clone() {
-            return new Entry(this.hash, get(), this.value,
-                             (this.next == null ? null : (Entry)this.next.clone()));
+        protected Object copy(ReferenceQueue queue) {
+            return new Entry(this.hash, get(), queue, this.value,
+                             (this.next == null ? null : (Entry)this.next.copy(queue)));
         }
     }
 
