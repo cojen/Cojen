@@ -197,6 +197,7 @@ public class ClassInjector {
             }
             try {
                 file.getParentFile().mkdirs();
+                System.out.println("ClassInjector writing to " + file);
                 OutputStream out = new FileOutputStream(file);
                 out.write(bytes);
                 out.close();
