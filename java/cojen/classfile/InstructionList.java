@@ -495,8 +495,7 @@ class InstructionList implements CodeBuffer {
 
             if (instr.isFlowThrough()) {
                 if ((next = instr.mNext) == null) {
-                    throw new IllegalStateException
-                        ("Execution flows through end of method");
+                    throw new IllegalStateException("Execution flows through end of method");
                 }
             }
 
@@ -504,8 +503,7 @@ class InstructionList implements CodeBuffer {
             if (stackDepth > mMaxStack) {
                 mMaxStack = stackDepth;
             } else if (stackDepth < 0) {
-                throw new IllegalStateException("Stack depth is negative: " + 
-                                                stackDepth);
+                throw new IllegalStateException("Stack depth is negative: " + stackDepth);
             }
 
             Location[] targets = instr.getBranchTargets();
@@ -975,11 +973,9 @@ class InstructionList implements CodeBuffer {
             int loc; 
             if ((loc = mLocation) < 0) {
                 if (mPrev == null && mNext == null) {
-                    throw new IllegalStateException
-                        ("Label location is not set");
+                    throw new IllegalStateException("Label location is not set");
                 }
             }
-
             return loc;
         }
 
@@ -1290,8 +1286,7 @@ class InstructionList implements CodeBuffer {
             int varNum = mLocal.getNumber();
             
             if (varNum < 0) {
-                throw new IllegalStateException
-                    ("Local variable number not resolved");
+                throw new IllegalStateException("Local variable number not resolved");
             }
             
             return varNum;
@@ -1736,8 +1731,7 @@ class InstructionList implements CodeBuffer {
             int lastCase = 0;
             for (int i=0; i<mCases.length; i++) {
                 if (i > 0 && mCases[i] == lastCase) {
-                    throw new IllegalStateException("Duplicate switch cases: " +
-                                                    lastCase);
+                    throw new IllegalArgumentException("Duplicate switch cases: " + lastCase);
                 }
                 lastCase = mCases[i];
             }
