@@ -5,7 +5,7 @@
   <id>cojen</id>
   <name>Cojen</name>
   <groupId>cojen</groupId>
-  <currentVersion>1.1.0</currentVersion>
+  <currentVersion>1.1.1</currentVersion>
   <organization>
     <name>Brian S O'Neill</name>
     <url>http://sourceforge.net/projects/cojen/</url>
@@ -54,6 +54,9 @@
   </developers>
   
   <contributors>
+    <contributor>
+      <name>Emilio Lopez Gabeiras</name>
+    </contributor>
   </contributors>
 
   <dependencies>
