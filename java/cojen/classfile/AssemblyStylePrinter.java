@@ -140,7 +140,7 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
                     println(indent, " * ");
                     addBreak = false;
                 }
-                println(indent, " * @signature " + sig.getSignature());
+                println(indent, " * @signature " + sig.getSignature().getValue());
             }
 
             println(indent, " */");
@@ -251,7 +251,7 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
                 println(indent, " * @synthetic");
             }
             if (sig != null) {
-                println(indent, " * @signature " + sig.getSignature());
+                println(indent, " * @signature " + sig.getSignature().getValue());
             }
             println(indent, " */");
         }
@@ -280,7 +280,7 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
                 println(indent, " * @synthetic");
             }
             if (sig != null) {
-                println(indent, " * @signature " + sig.getSignature());
+                println(indent, " * @signature " + sig.getSignature().getValue());
             }
             println(indent, " */");
         }
