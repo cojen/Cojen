@@ -35,9 +35,6 @@ import cojen.classfile.Modifiers;
 import cojen.classfile.Opcode;
 import cojen.classfile.TypeDesc;
 
-// TODO: Create replacement for this
-import com.go.trove.util.MultiKey;
-
 /**
  * Provides fast matching of strings against patterns containing wildcards.
  * An ordinary map must be supplied in order to create a PatternMatcher. The
@@ -210,8 +207,7 @@ public abstract class PatternMatcher {
         private int mReferenceLine;
 
         Maker(Map patternMap) {
-            String[] keys =
-                (String[])patternMap.keySet().toArray(new String[0]);
+            String[] keys = (String[])patternMap.keySet().toArray(new String[0]);
 
             for (int i=0; i<keys.length; i++) {
                 String key = keys[i];
@@ -244,7 +240,7 @@ public abstract class PatternMatcher {
 
             mMaxWildPerKey = mPatternRoot.getMaxWildcardCount();
 
-            mKey = new MultiKey(keys);
+            mKey = KeyFactory.createKey(keys);
         }
 
         public Object getKey() {

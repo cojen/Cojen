@@ -254,7 +254,7 @@ public class BeanComparator implements Comparator, Serializable {
 
         return reverse ? bc.reverse() : bc;
     }
-    
+
     /**
      * Specifiy a Comparator to use on just the last {@link #orderBy order-by}
      * property. This is good for comparing properties that are not
@@ -400,7 +400,7 @@ public class BeanComparator implements Comparator, Serializable {
     public boolean equals(Object obj) {
         if (obj instanceof BeanComparator) {
             BeanComparator bc = (BeanComparator)obj;
-         
+ 
             return mFlags == bc.mFlags &&
                 equalTest(mBeanClass, bc.mBeanClass) &&
                 equalTest(mOrderByName, bc.mOrderByName) &&
@@ -411,7 +411,7 @@ public class BeanComparator implements Comparator, Serializable {
             return false;
         }
     }
-    
+
     private Map getProperties() {
         if (mProperties == null) {
             mProperties = BeanIntrospector.getAllProperties(mBeanClass);
@@ -430,7 +430,7 @@ public class BeanComparator implements Comparator, Serializable {
 
         synchronized (cGeneratedComparatorCache) {
             Object c = cGeneratedComparatorCache.get(rules);
-            
+
             if (c == null) {
                 clazz = generateComparatorClass(rules);
                 cGeneratedComparatorCache.put(rules, clazz);
@@ -457,7 +457,7 @@ public class BeanComparator implements Comparator, Serializable {
                     singleton = false;
                 }
             }
-            
+
             try {
                 Constructor ctor = clazz.getDeclaredConstructor
                     (new Class[] {Comparator[].class, Comparator[].class});
@@ -474,7 +474,7 @@ public class BeanComparator implements Comparator, Serializable {
             } catch (InvocationTargetException e) {
                 throw new InternalError(e.getTargetException().toString());
             }
-            
+
             if (singleton) {
                 // Can save and re-use instance since it obeys the requirements
                 // for a singleton.
@@ -620,7 +620,7 @@ public class BeanComparator implements Comparator, Serializable {
                 (BeanProperty)bc.getProperties().get(bc.mOrderByName);
             Class propertyClass = prop.getType();
             TypeDesc propertyType = TypeDesc.forClass(propertyClass);
-            
+
             // Create local variable to hold property values.
             LocalVariable p1 = builder.createLocalVariable("p1", propertyType);
             LocalVariable p2 = builder.createLocalVariable("p2", propertyType);
@@ -986,7 +986,7 @@ public class BeanComparator implements Comparator, Serializable {
             if (ruleParts1.length != ruleParts2.length) {
                 return false;
             }
-            
+
             for (int i=0; i<ruleParts1.length; i++) {
                 BeanComparator bc1 = ruleParts1[i];
                 BeanComparator bc2 = ruleParts2[i];
@@ -1011,12 +1011,12 @@ public class BeanComparator implements Comparator, Serializable {
 
             return true;
         }
-    
+
         private BeanComparator[] reduceRules(BeanComparator bc) {
             // Reduce the ordering rules by returning BeanComparators
             // that are at the end of the chain or before an order-by rule.
             List rules = new ArrayList();
-            
+
             rules.add(bc);
             String name = bc.mOrderByName;
 
@@ -1027,14 +1027,14 @@ public class BeanComparator implements Comparator, Serializable {
                     name = bc.mOrderByName;
                 }
             }
-            
+
             int size = rules.size();
             BeanComparator[] bcs = new BeanComparator[size];
             // Reverse rules so that they are in forward order.
             for (int i=0; i<size; i++) {
                 bcs[size - i - 1] = (BeanComparator)rules.get(i);
             }
-            
+
             return bcs;
         }
     }
