@@ -123,6 +123,10 @@ public class MethodInfo {
     public Modifiers getModifiers() {
         return mModifiers;
     }
+
+    public void setModifiers(Modifiers modifiers) {
+        mModifiers = modifiers;
+    }
     
     /**
      * Returns a constant from the constant pool with this method's name.
