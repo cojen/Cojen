@@ -24,9 +24,15 @@ package cojen.classfile;
  */
 public abstract class Descriptor {
     /**
-     * Returns the descriptor string.
+     * Returns a descriptor string, excluding generics.
      */
-    public abstract String toString();
+    public abstract String getDescriptor();
+
+    /**
+     * Returns a descriptor string, including any generics.
+     */
+    // TODO
+    //public abstract String getGenericDescriptor();
 
     public static Descriptor parse(String desc) 
         throws IllegalArgumentException {
