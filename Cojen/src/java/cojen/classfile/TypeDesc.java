@@ -27,7 +27,7 @@ import java.lang.reflect.Array;
 import java.util.Collections;
 import java.util.Map;
 import cojen.util.SoftValuedHashMap;
-import cojen.util.WeakFlyweightSet;
+import cojen.util.WeakCanonicalSet;
 import cojen.util.WeakIdentityMap;
 
 /**
@@ -79,7 +79,7 @@ public abstract class TypeDesc extends Descriptor implements Serializable {
     public final static TypeDesc STRING;
 
     // Pool of all shared instances. Ensures identity comparison works.
-    final static WeakFlyweightSet cInstances;
+    final static WeakCanonicalSet cInstances;
 
     // Cache that maps Classes to TypeDescs.
     private final static Map cClassesToInstances;
@@ -91,7 +91,7 @@ public abstract class TypeDesc extends Descriptor implements Serializable {
     private final static Map cDescriptorsToInstances;
 
     static {
-        cInstances = new WeakFlyweightSet();
+        cInstances = new WeakCanonicalSet();
 
         cClassesToInstances = Collections.synchronizedMap(new WeakIdentityMap());
         cNamesToInstances = Collections.synchronizedMap(new SoftValuedHashMap());
