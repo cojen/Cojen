@@ -32,6 +32,46 @@ public abstract class AbstractCodeAssembler implements CodeAssembler {
     protected AbstractCodeAssembler() {
     }
 
+    static int line = 0;
+    public void ifComparisonBranch(Location location, String choice, TypeDesc type) {
+        choice = choice.intern();
+
+        switch (type.getTypeCode()) {
+        default:
+            if (choice == "==") {
+                ifEqualBranch(location, true);
+            } else if (choice == "!=") {
+                ifEqualBranch(location, false);
+            } else {
+                throw new IllegalArgumentException
+                    ("Comparison not allowed on object types: " + choice);
+            }
+            return;
+
+        case TypeDesc.BOOLEAN_CODE:
+        case TypeDesc.CHAR_CODE:
+        case TypeDesc.BYTE_CODE:
+        case TypeDesc.SHORT_CODE:
+        case TypeDesc.INT_CODE:
+            ifComparisonBranch(location, choice);
+            return;
+
+        case TypeDesc.LONG_CODE:
+            math(Opcode.LCMP);
+            break;
+
+        case TypeDesc.FLOAT_CODE:
+            math((choice == ">" || choice == ">=") ? Opcode.FCMPG : Opcode.FCMPL);
+            break;
+
+        case TypeDesc.DOUBLE_CODE:
+            math((choice == ">" || choice == ">=") ? Opcode.DCMPG : Opcode.DCMPL);
+            break;
+        }
+
+        ifZeroComparisonBranch(location, choice);
+    }
+
     public void inline(Object code) {
         // First load the class for the inlined code.
 

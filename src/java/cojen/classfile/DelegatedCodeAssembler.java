@@ -374,6 +374,11 @@ public class DelegatedCodeAssembler implements CodeAssembler {
         mAssembler.ifComparisonBranch(location, choice);
     }
 
+    public void ifComparisonBranch(Location location, String choice, TypeDesc type)
+        throws IllegalArgumentException {
+        mAssembler.ifComparisonBranch(location, choice, type);
+    }
+
     public void switchBranch(int[] cases, 
                              Location[] locations, Location defaultLocation) {
         mAssembler.switchBranch(cases, locations, defaultLocation);
