@@ -18,6 +18,17 @@ package cojen.classfile;
 
 import java.io.PrintWriter;
 
+import cojen.classfile.constant.ConstantClassInfo;
+import cojen.classfile.constant.ConstantDoubleInfo;
+import cojen.classfile.constant.ConstantFieldInfo;
+import cojen.classfile.constant.ConstantFloatInfo;
+import cojen.classfile.constant.ConstantIntegerInfo;
+import cojen.classfile.constant.ConstantInterfaceMethodInfo;
+import cojen.classfile.constant.ConstantLongInfo;
+import cojen.classfile.constant.ConstantMethodInfo;
+import cojen.classfile.constant.ConstantNameAndTypeInfo;
+import cojen.classfile.constant.ConstantStringInfo;
+
 /**
  * Disassembles a ClassFile into a Java source file, which when run, produces
  * the original class.
@@ -366,9 +377,9 @@ class BuilderStylePrinter implements DisassemblyTool.Printer {
         if (mi.isDeprecated()) {
             println("mi.markDeprecated();");
         }
-        String[] exceptions = mi.getExceptions();
+        TypeDesc[] exceptions = mi.getExceptions();
         for (int j=0; j<exceptions.length; j++) {
-            println("mi.addException(\"" + escape(exceptions[j]) + "\");");
+            println("mi.addException(\"" + exceptions[j] + "\");");
         }
 
         if (mi.getCodeAttr() != null) {

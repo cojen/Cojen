@@ -31,11 +31,12 @@ import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import cojen.classfile.attr.DeprecatedAttr;
-import cojen.classfile.attr.InnerClassesAttr;
-import cojen.classfile.attr.SignatureAttr;
-import cojen.classfile.attr.SourceFileAttr;
-import cojen.classfile.attr.SyntheticAttr;
+import cojen.classfile.attribute.DeprecatedAttr;
+import cojen.classfile.attribute.InnerClassesAttr;
+import cojen.classfile.attribute.SignatureAttr;
+import cojen.classfile.attribute.SourceFileAttr;
+import cojen.classfile.attribute.SyntheticAttr;
+import cojen.classfile.constant.ConstantClassInfo;
 
 /**
  * A class used to create Java class files. Call the writeTo method
@@ -209,7 +210,7 @@ public class ClassFile {
                 if (thisClass.equals(info.getInnerClass())) {
                     // This class is an inner class.
                     if (info.getInnerClassName() != null) {
-                        cf.mInnerClassName = info.getInnerClassName();
+                        cf.mInnerClassName = info.getInnerClassName().getValue();
                     }
                     ConstantClassInfo outer = info.getOuterClass();
                     if (cf.mOuterClass == null && outer != null) {
@@ -231,8 +232,7 @@ public class ClassFile {
                         
                         if (innerClass != null) {
                             if (innerClass.getInnerClassName() == null) {
-                                innerClass.mInnerClassName =
-                                    info.getInnerClassName();
+                                innerClass.mInnerClassName = info.getInnerClassName().getValue();
                             }
                             if (cf.mInnerClasses == null) {
                                 cf.mInnerClasses = new ArrayList();
@@ -384,8 +384,8 @@ public class ClassFile {
         // public, non-final, concrete class
         mModifiers = Modifiers.PUBLIC;
 
-        mThisClass = ConstantClassInfo.make(mCp, className);
-        mSuperClass = ConstantClassInfo.make(mCp, superClassName);
+        mThisClass = mCp.addConstantClass(className);
+        mSuperClass = mCp.addConstantClass(superClassName);
 
         mClassName = className;
         mSuperClassName = superClassName;
@@ -577,7 +577,7 @@ public class ClassFile {
         if (mSource == null) {
             return null;
         } else {
-            return mSource.getFileName();
+            return mSource.getFileName().getValue();
         }
     }
 
@@ -636,7 +636,7 @@ public class ClassFile {
      */
     public void addInterface(String interfaceName) {
         if (!mInterfaceSet.contains(interfaceName)) {
-            mInterfaces.add(ConstantClassInfo.make(mCp, interfaceName));
+            mInterfaces.add(mCp.addConstantClass(interfaceName));
             mInterfaceSet.add(interfaceName);
         }
     }

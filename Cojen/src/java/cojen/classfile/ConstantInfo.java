@@ -28,17 +28,18 @@ import java.io.IOException;
  * @author Brian S O'Neill
  */
 public abstract class ConstantInfo {
-    final static int TAG_UTF8 = 1;
-    final static int TAG_INTEGER = 3;
-    final static int TAG_FLOAT = 4;
-    final static int TAG_LONG = 5;
-    final static int TAG_DOUBLE = 6;
-    final static int TAG_CLASS = 7;
-    final static int TAG_STRING = 8;
-    final static int TAG_FIELD = 9;
-    final static int TAG_METHOD = 10;
-    final static int TAG_INTERFACE_METHOD = 11;
-    final static int TAG_NAME_AND_TYPE = 12;
+
+    public static final int TAG_UTF8 = 1;
+    public static final int TAG_INTEGER = 3;
+    public static final int TAG_FLOAT = 4;
+    public static final int TAG_LONG = 5;
+    public static final int TAG_DOUBLE = 6;
+    public static final int TAG_CLASS = 7;
+    public static final int TAG_STRING = 8;
+    public static final int TAG_FIELD = 9;
+    public static final int TAG_METHOD = 10;
+    public static final int TAG_INTERFACE_METHOD = 11;
+    public static final int TAG_NAME_AND_TYPE = 12;
 
     // mIndex is manipulated by ConstantPool
     int mIndex = -1;
