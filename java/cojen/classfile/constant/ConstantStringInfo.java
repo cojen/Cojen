@@ -59,7 +59,7 @@ public class ConstantStringInfo extends ConstantInfo {
         return false;
     }
     
-    boolean hasPriority() {
+    protected boolean hasPriority() {
         return true;
     }
 
