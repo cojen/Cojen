@@ -34,12 +34,9 @@ public class TestClassGC {
             ClassInjector ci = ClassInjector.create(name, null);
             ClassFile cf = new ClassFile(ci.getClassName());
 
-            Modifiers pub = new Modifiers();
-            pub.setPublic(true);
-            
             cf.addDefaultConstructor();
             
-            MethodInfo mi = cf.addMethod(pub, "getStuff", TypeDesc.STRING, null);
+            MethodInfo mi = cf.addMethod(Modifiers.PUBLIC, "getStuff", TypeDesc.STRING, null);
             CodeBuilder b = new CodeBuilder(mi);
             b.loadConstant("Stuff!!!");
             b.returnValue(TypeDesc.STRING);

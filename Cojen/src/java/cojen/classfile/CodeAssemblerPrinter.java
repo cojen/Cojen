@@ -38,6 +38,8 @@ public class CodeAssemblerPrinter implements CodeAssembler {
     private final String mLineSuffix;
     private final String mBulder;
 
+    private boolean mNeedSeparatorLine;
+
     private int mLocalCounter;
     private int mLabelCounter;
 
@@ -126,6 +128,7 @@ public class CodeAssemblerPrinter implements CodeAssembler {
     }
     
     public void mapLineNumber(int lineNumber) {
+        separatorLine();
         println(mBulder + "mapLineNumber(" + lineNumber + ')');
     }
 
@@ -190,6 +193,14 @@ public class CodeAssemblerPrinter implements CodeAssembler {
                 getTypeDescName(type) + ')');
     }
 
+    public void loadField(TypeDesc classDesc,
+                          String fieldName,
+                          TypeDesc type) {
+        println(mBulder + "loadField(\"" + getTypeDescName(classDesc) + "\", \""
+                + fieldName + "\", " +
+                getTypeDescName(type) + ')');
+    }
+
     public void loadStaticField(String fieldName,
                                 TypeDesc type) {
         println(mBulder + "loadStaticField(\"" + fieldName + "\", " +
@@ -200,6 +211,14 @@ public class CodeAssemblerPrinter implements CodeAssembler {
                                 String fieldName,
                                 TypeDesc type) {
         println(mBulder + "loadStaticField(\"" + className + "\", \"" +
+                fieldName + "\", " +
+                getTypeDescName(type) + ')');
+    }
+
+    public void loadStaticField(TypeDesc classDesc,
+                                String fieldName,
+                                TypeDesc type) {
+        println(mBulder + "loadStaticField(\"" + getTypeDescName(classDesc) + "\", \"" +
                 fieldName + "\", " +
                 getTypeDescName(type) + ')');
     }
@@ -217,6 +236,14 @@ public class CodeAssemblerPrinter implements CodeAssembler {
                 getTypeDescName(type) + ')');
     }
 
+    public void storeField(TypeDesc classDesc,
+                           String fieldName,
+                           TypeDesc type) {
+        println(mBulder + "storeField(\"" + getTypeDescName(classDesc) + "\", \"" +
+                fieldName + "\", " +
+                getTypeDescName(type) + ')');
+    }
+
     public void storeStaticField(String fieldName,
                                  TypeDesc type) {
         println(mBulder + "storeStaticField(\"" + fieldName + "\", " +
@@ -227,6 +254,14 @@ public class CodeAssemblerPrinter implements CodeAssembler {
                                  String fieldName,
                                  TypeDesc type) {
         println(mBulder + "storeStaticField(\"" + className + "\", \"" +
+                fieldName + "\", " +
+                getTypeDescName(type) + ')');
+    }
+
+    public void storeStaticField(TypeDesc classDesc,
+                                 String fieldName,
+                                 TypeDesc type) {
+        println(mBulder + "storeStaticField(\"" + getTypeDescName(classDesc) + "\", \"" +
                 fieldName + "\", " +
                 getTypeDescName(type) + ')');
     }
@@ -263,6 +298,16 @@ public class CodeAssemblerPrinter implements CodeAssembler {
                 getTypeDescArrayName(params) + ')');
     }
 
+    public void invokeVirtual(TypeDesc classDesc,
+                              String methodName,
+                              TypeDesc ret,
+                              TypeDesc[] params) {
+        println(mBulder + "invokeVirtual(\"" + getTypeDescName(classDesc) + "\", \"" +
+                methodName + "\", " +
+                getTypeDescName(ret) + ", " +
+                getTypeDescArrayName(params) + ')');
+    }
+
     public void invokeStatic(String methodName,
                              TypeDesc ret,
                              TypeDesc[] params) {
@@ -281,11 +326,31 @@ public class CodeAssemblerPrinter implements CodeAssembler {
                 getTypeDescArrayName(params) + ')');
     }
 
+    public void invokeStatic(TypeDesc classDesc,
+                             String methodName,
+                             TypeDesc ret,
+                             TypeDesc[] params) {
+        println(mBulder + "invokeStatic(\"" + getTypeDescName(classDesc) + "\", \"" +
+                methodName + "\", " +
+                getTypeDescName(ret) + ", " +
+                getTypeDescArrayName(params) + ')');
+    }
+
     public void invokeInterface(String className,
                                 String methodName,
                                 TypeDesc ret,
                                 TypeDesc[] params) {
         println(mBulder + "invokeInterface(\"" + className + "\", \"" +
+                methodName + "\", " +
+                getTypeDescName(ret) + ", " +
+                getTypeDescArrayName(params) + ')');
+    }
+
+    public void invokeInterface(TypeDesc classDesc,
+                                String methodName,
+                                TypeDesc ret,
+                                TypeDesc[] params) {
+        println(mBulder + "invokeInterface(\"" + getTypeDescName(classDesc) + "\", \"" +
                 methodName + "\", " +
                 getTypeDescName(ret) + ", " +
                 getTypeDescArrayName(params) + ')');
@@ -309,6 +374,16 @@ public class CodeAssemblerPrinter implements CodeAssembler {
                 getTypeDescArrayName(params) + ')');
     }
 
+    public void invokeSuper(TypeDesc superClassDesc,
+                            String methodName,
+                            TypeDesc ret,
+                            TypeDesc[] params) {
+        println(mBulder + "invokeSuper(\"" + getTypeDescName(superClassDesc) + "\", \"" +
+                methodName + "\", " +
+                getTypeDescName(ret) + ", " +
+                getTypeDescArrayName(params) + ')');
+    }
+
     public void invokeConstructor(TypeDesc[] params) {
         println(mBulder + "invokeConstructor(" +
                 getTypeDescArrayName(params) + ')');
@@ -316,6 +391,11 @@ public class CodeAssemblerPrinter implements CodeAssembler {
 
     public void invokeConstructor(String className, TypeDesc[] params) {
         println(mBulder + "invokeConstructor(\"" + className + "\", " +
+                getTypeDescArrayName(params) + ')');
+    }
+
+    public void invokeConstructor(TypeDesc classDesc, TypeDesc[] params) {
+        println(mBulder + "invokeConstructor(\"" + getTypeDescName(classDesc) + "\", " +
                 getTypeDescArrayName(params) + ')');
     }
 
@@ -484,7 +564,15 @@ public class CodeAssemblerPrinter implements CodeAssembler {
         println(mBulder + "breakpoint()");
     }
 
+    private void separatorLine() {
+        if (mNeedSeparatorLine) {
+            mWriter.println();
+            mNeedSeparatorLine = false;
+        }
+    }
+
     private void println(String str) {
+        mNeedSeparatorLine = true;
         if (mLinePrefix != null) {
             mWriter.print(mLinePrefix);
         }

@@ -322,7 +322,7 @@ public class DisassemblyTool {
             boolean varargs = modifiers.isVarArgs();
             if (varargs) {
                 // Don't display the modifier.
-                modifiers.setVarArgs(false);
+                modifiers = modifiers.toVarArgs(false);
             }
             disassemble(modifiers);
             print(md.toMethodSignature(method.getName(), varargs));
@@ -368,7 +368,7 @@ public class DisassemblyTool {
 
     private void disassemble(Modifiers modifiers) {
         print(modifiers);
-        if (modifiers.getModifier() != 0) {
+        if (modifiers.getBitmask() != 0) {
             print(" ");
         }
     }
