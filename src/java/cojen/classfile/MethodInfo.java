@@ -22,12 +22,14 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
-import cojen.classfile.attr.CodeAttr;
-import cojen.classfile.attr.DeprecatedAttr;
-import cojen.classfile.attr.ExceptionsAttr;
-import cojen.classfile.attr.SignatureAttr;
-import cojen.classfile.attr.SourceFileAttr;
-import cojen.classfile.attr.SyntheticAttr;
+import cojen.classfile.attribute.CodeAttr;
+import cojen.classfile.attribute.DeprecatedAttr;
+import cojen.classfile.attribute.ExceptionsAttr;
+import cojen.classfile.attribute.SignatureAttr;
+import cojen.classfile.attribute.SourceFileAttr;
+import cojen.classfile.attribute.SyntheticAttr;
+import cojen.classfile.constant.ConstantClassInfo;
+import cojen.classfile.constant.ConstantUTFInfo;
 
 /**
  * This class corresponds to the method_info data structure as defined in
@@ -67,8 +69,8 @@ public class MethodInfo {
         mDesc = desc;
         
         mModifiers = modifiers;
-        mNameConstant = ConstantUTFInfo.make(mCp, name);
-        mDescriptorConstant = ConstantUTFInfo.make(mCp, desc.toString());
+        mNameConstant = mCp.addConstantUTF(name);
+        mDescriptorConstant = mCp.addConstantUTF(desc.getDescriptor());
 
         if (!modifiers.isAbstract() && !modifiers.isNative()) {
             addAttribute(new CodeAttr(mCp));
@@ -138,12 +140,18 @@ public class MethodInfo {
     /**
      * Returns the exceptions that this method is declared to throw.
      */
-    public String[] getExceptions() {
+    public TypeDesc[] getExceptions() {
         if (mExceptions == null) {
-            return new String[0];
-        } else {
-            return mExceptions.getExceptions();
+            return new TypeDesc[0];
         }
+
+        ConstantClassInfo[] classes = mExceptions.getExceptions();
+        TypeDesc[] types = new TypeDesc[classes.length];
+        for (int i=0; i<types.length; i++) {
+            types[i] = classes[i].getType();
+        }
+
+        return types;
     }
 
     /**
@@ -197,7 +205,7 @@ public class MethodInfo {
             addAttribute(new ExceptionsAttr(mCp));
         }
 
-        ConstantClassInfo cci = ConstantClassInfo.make(mCp, className);
+        ConstantClassInfo cci = mCp.addConstantClass(className);
         mExceptions.addException(cci);
     }
 

@@ -22,10 +22,11 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
-import cojen.classfile.attr.ConstantValueAttr;
-import cojen.classfile.attr.DeprecatedAttr;
-import cojen.classfile.attr.SignatureAttr;
-import cojen.classfile.attr.SyntheticAttr;
+import cojen.classfile.attribute.ConstantValueAttr;
+import cojen.classfile.attribute.DeprecatedAttr;
+import cojen.classfile.attribute.SignatureAttr;
+import cojen.classfile.attribute.SyntheticAttr;
+import cojen.classfile.constant.ConstantUTFInfo;
 
 /**
  * This class corresponds to the field_info structure as defined in
@@ -61,8 +62,8 @@ public class FieldInfo {
         mType = type;
 
         mModifiers = modifiers;
-        mNameConstant = ConstantUTFInfo.make(mCp, name);
-        mDescriptorConstant = ConstantUTFInfo.make(mCp, type.getDescriptor());
+        mNameConstant = mCp.addConstantUTF(name);
+        mDescriptorConstant = mCp.addConstantUTF(type.getDescriptor());
     }
     
     private FieldInfo(ClassFile parent,
@@ -174,40 +175,35 @@ public class FieldInfo {
      * Set the constant value for this field as an int.
      */
     public void setConstantValue(int value) {
-        addAttribute(new ConstantValueAttr
-                     (mCp, ConstantIntegerInfo.make(mCp, value)));
+        addAttribute(new ConstantValueAttr(mCp, mCp.addConstantInteger(value)));
     }
 
     /**
      * Set the constant value for this field as a float.
      */
     public void setConstantValue(float value) {
-        addAttribute(new ConstantValueAttr
-                     (mCp, ConstantFloatInfo.make(mCp, value)));
+        addAttribute(new ConstantValueAttr(mCp, mCp.addConstantFloat(value)));
     }
 
     /**
      * Set the constant value for this field as a long.
      */
     public void setConstantValue(long value) {
-        addAttribute(new ConstantValueAttr
-                     (mCp, ConstantLongInfo.make(mCp, value)));
+        addAttribute(new ConstantValueAttr(mCp, mCp.addConstantLong(value)));
     }
 
     /**
      * Set the constant value for this field as a double.
      */
     public void setConstantValue(double value) {
-        addAttribute(new ConstantValueAttr
-                     (mCp, ConstantDoubleInfo.make(mCp, value)));
+        addAttribute(new ConstantValueAttr(mCp, mCp.addConstantDouble(value)));
     }
 
     /**
      * Set the constant value for this field as a string.
      */
     public void setConstantValue(String value) {
-        addAttribute(new ConstantValueAttr
-                     (mCp, ConstantStringInfo.make(mCp, value)));
+        addAttribute(new ConstantValueAttr(mCp, mCp.addConstantString(value)));
     }
     
     /**

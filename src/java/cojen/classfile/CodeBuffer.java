@@ -18,7 +18,7 @@ package cojen.classfile;
 
 /**
  * An interface that abstracts bytecode from a
- * {@link cojen.classfile.attr.CodeAttr}.
+ * {@link cojen.classfile.attribute.CodeAttr}.
  *
  * @author Brian S O'Neill
  * @see Opcode

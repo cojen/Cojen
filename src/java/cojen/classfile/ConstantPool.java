@@ -26,6 +26,17 @@ import java.util.Vector;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import cojen.classfile.constant.ConstantClassInfo;
+import cojen.classfile.constant.ConstantDoubleInfo;
+import cojen.classfile.constant.ConstantFieldInfo;
+import cojen.classfile.constant.ConstantFloatInfo;
+import cojen.classfile.constant.ConstantIntegerInfo;
+import cojen.classfile.constant.ConstantInterfaceMethodInfo;
+import cojen.classfile.constant.ConstantLongInfo;
+import cojen.classfile.constant.ConstantMethodInfo;
+import cojen.classfile.constant.ConstantNameAndTypeInfo;
+import cojen.classfile.constant.ConstantStringInfo;
+import cojen.classfile.constant.ConstantUTFInfo;
 
 /**
  * This class corresponds to the constant_pool structure as defined in
@@ -70,15 +81,17 @@ public class ConstantPool {
     }
 
     /**
-     * Returns a constant from the pool by index, or throws an exception if not
-     * found. If this constant pool has not yet been written or was not created
-     * by the read method, indexes are not assigned.
+     * Returns a constant from the pool by index, or null if not found. If this
+     * constant pool has not yet been written or was not created by the read
+     * method, indexes are not assigned, and an IllegalStateException is
+     * thrown.
      *
      * @throws ArrayIndexOutOfBoundsException if index is out of range.
+     * @throws IllegalStateException if indexes are not assigned
      */
     public ConstantInfo getConstant(int index) {
         if (mIndexedConstants == null) {
-            throw new ArrayIndexOutOfBoundsException
+            throw new IllegalStateException
                 ("Constant pool indexes have not been assigned");
         }
 
@@ -103,7 +116,7 @@ public class ConstantPool {
      * Get or create a constant from the constant pool representing a class.
      */
     public ConstantClassInfo addConstantClass(String className) {
-        return ConstantClassInfo.make(this, className);
+        return (ConstantClassInfo)addConstant(new ConstantClassInfo(this, className));
     }
 
     /**
@@ -113,14 +126,14 @@ public class ConstantPool {
      * @param dim Number of array dimensions.
      */
     public ConstantClassInfo addConstantClass(String className, int dim) {
-        return ConstantClassInfo.make(this, className, dim);
+        return (ConstantClassInfo)addConstant(new ConstantClassInfo(this, className, dim));
     }
     
     /**
      * Get or create a constant from the constant pool representing a class.
      */
     public ConstantClassInfo addConstantClass(TypeDesc type) {
-        return ConstantClassInfo.make(this, type);
+        return (ConstantClassInfo)addConstant(new ConstantClassInfo(this, type));
     }
 
     /**
@@ -130,10 +143,9 @@ public class ConstantPool {
     public ConstantFieldInfo addConstantField(String className,
                                               String fieldName, 
                                               TypeDesc type) {
-        return ConstantFieldInfo.make
-            (this, 
-             ConstantClassInfo.make(this, className),
-             ConstantNameAndTypeInfo.make(this, fieldName, type));
+        ConstantInfo ci = new ConstantFieldInfo
+            (addConstantClass(className), addConstantNameAndType(fieldName, type));
+        return (ConstantFieldInfo)addConstant(ci);
     }
 
     /**
@@ -146,29 +158,24 @@ public class ConstantPool {
                                                 TypeDesc[] params) {
         
         MethodDesc md = MethodDesc.forArguments(ret, params);
-
-        return ConstantMethodInfo.make
-            (this,
-             ConstantClassInfo.make(this, className),
-             ConstantNameAndTypeInfo.make(this, methodName, md));
+        ConstantInfo ci = new ConstantMethodInfo
+            (addConstantClass(className), addConstantNameAndType(methodName, md));
+        return (ConstantMethodInfo)addConstant(ci);
     }
     
     /**
      * Get or create a constant from the constant pool representing an
      * interface method in any interface.
      */
-    public ConstantInterfaceMethodInfo addConstantInterfaceMethod
-        (String className,
-         String methodName,
-         TypeDesc ret,
-         TypeDesc[] params) {
+    public ConstantInterfaceMethodInfo addConstantInterfaceMethod(String className,
+                                                                  String methodName,
+                                                                  TypeDesc ret,
+                                                                  TypeDesc[] params) {
         
         MethodDesc md = MethodDesc.forArguments(ret, params);
-        
-        return ConstantInterfaceMethodInfo.make
-            (this,
-             ConstantClassInfo.make(this, className),
-             ConstantNameAndTypeInfo.make(this, methodName, md));
+        ConstantInfo ci = new ConstantInterfaceMethodInfo
+            (addConstantClass(className), addConstantNameAndType(methodName, md));
+        return (ConstantInterfaceMethodInfo)addConstant(ci);
     }
 
     /**
@@ -184,42 +191,42 @@ public class ConstantPool {
      * Get or create a constant integer from the constant pool.
      */
     public ConstantIntegerInfo addConstantInteger(int value) {
-        return ConstantIntegerInfo.make(this, value);
+        return (ConstantIntegerInfo)addConstant(new ConstantIntegerInfo(value));
     }
 
     /**
      * Get or create a constant long from the constant pool.
      */
     public ConstantLongInfo addConstantLong(long value) {
-        return ConstantLongInfo.make(this, value);
+        return (ConstantLongInfo)addConstant(new ConstantLongInfo(value));
     }
 
     /**
      * Get or create a constant float from the constant pool.
      */
     public ConstantFloatInfo addConstantFloat(float value) {
-        return ConstantFloatInfo.make(this, value);
+        return (ConstantFloatInfo)addConstant(new ConstantFloatInfo(value));
     }
 
     /**
      * Get or create a constant double from the constant pool.
      */
     public ConstantDoubleInfo addConstantDouble(double value) {
-        return ConstantDoubleInfo.make(this, value);
+        return (ConstantDoubleInfo)addConstant(new ConstantDoubleInfo(value));
     }
 
     /**
      * Get or create a constant string from the constant pool.
      */
     public ConstantStringInfo addConstantString(String str) {
-        return ConstantStringInfo.make(this, str);
+        return (ConstantStringInfo)addConstant(new ConstantStringInfo(this, str));
     }
 
     /**
      * Get or create a constant UTF string from the constant pool.
      */
     public ConstantUTFInfo addConstantUTF(String str) {
-        return ConstantUTFInfo.make(this, str);
+        return (ConstantUTFInfo)addConstant(new ConstantUTFInfo(str));
     }
 
     /**
@@ -227,7 +234,7 @@ public class ConstantPool {
      */
     public ConstantNameAndTypeInfo addConstantNameAndType(String name,
                                                           Descriptor type) {
-        return ConstantNameAndTypeInfo.make(this, name, type);
+        return (ConstantNameAndTypeInfo)addConstant(new ConstantNameAndTypeInfo(this, name, type));
     }
 
     /** 
