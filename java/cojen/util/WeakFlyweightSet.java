@@ -16,7 +16,10 @@
 
 package cojen.util;
 
+import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
+
 import java.util.AbstractSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -38,6 +41,7 @@ public class WeakFlyweightSet extends AbstractSet {
     private int count;
     private int threshold;
     private final float loadFactor;
+    private final ReferenceQueue queue;
 
     public WeakFlyweightSet() {
         final int initialCapacity = 101;
@@ -45,6 +49,7 @@ public class WeakFlyweightSet extends AbstractSet {
         this.loadFactor = loadFactor;
         this.table = new Entry[initialCapacity];
         this.threshold = (int)(initialCapacity * loadFactor);
+        this.queue = new ReferenceQueue();
     }
 
     /**
@@ -63,6 +68,30 @@ public class WeakFlyweightSet extends AbstractSet {
         }
 
         Entry[] tab = this.table;
+
+        // Cleanup after cleared References.
+        {
+            ReferenceQueue queue = this.queue;
+            Reference ref;
+            while ((ref = queue.poll()) != null) {
+                // Since buckets are single-linked, traverse entire list and
+                // cleanup all cleared references in it.
+                int index = (((Entry) ref).hash & 0x7fffffff) % tab.length;
+                for (Entry e = tab[index], prev = null; e != null; e = e.next) {
+                    if (e.get() == null) {
+                        if (prev != null) {
+                            prev.next = e.next;
+                        } else {
+                            tab[index] = e.next;
+                        }
+                        this.count--;
+                    } else {
+                        prev = e;
+                    }
+                }
+            }
+        }
+
         int hash = hashCode(obj);
         int index = (hash & 0x7fffffff) % tab.length;
 
@@ -77,8 +106,8 @@ public class WeakFlyweightSet extends AbstractSet {
                 }
                 this.count--;
             } else if (e.hash == hash &&
-					   obj.getClass() == iobj.getClass() &&
-					   equals(obj, iobj)) {
+                       obj.getClass() == iobj.getClass() &&
+                       equals(obj, iobj)) {
                 // Found flyweight instance.
                 return iobj;
             } else {
@@ -87,19 +116,14 @@ public class WeakFlyweightSet extends AbstractSet {
         }
 
         if (this.count >= this.threshold) {
-            // Cleanup the table if the threshold is exceeded.
-            cleanup();
-        }
-
-        if (this.count >= this.threshold) {
-            // Rehash the table if the threshold is still exceeded.
+            // Rehash the table if the threshold is exceeded.
             rehash();
             tab = this.table;
             index = (hash & 0x7fffffff) % tab.length;
         }
 
         // Create a new entry.
-        tab[index] = new Entry(obj, hash, tab[index]);
+        tab[index] = new Entry(obj, this.queue, hash, tab[index]);
         this.count++;
         return obj;
     }
@@ -156,25 +180,6 @@ public class WeakFlyweightSet extends AbstractSet {
         return a.equals(b);
     }
 
-    private void cleanup() {
-        Entry[] tab = this.table;
-        for (int i = tab.length; i-- > 0; ) {
-            for (Entry e = tab[i], prev = null; e != null; e = e.next) {
-                if (e.get() == null) {
-                    // Clean up after a cleared Reference.
-                    if (prev != null) {
-                        prev.next = e.next;
-                    } else {
-                        tab[i] = e.next;
-                    }
-                    this.count--;
-                } else {
-                    prev = e;
-                }
-            }
-        }
-    }
-
     private void rehash() {
         int oldCapacity = this.table.length;
         Entry[] tab = this.table;
@@ -206,8 +211,8 @@ public class WeakFlyweightSet extends AbstractSet {
         int hash;
         Entry next;
 
-        Entry(Object flyweight, int hash, Entry next) {
-            super(flyweight);
+        Entry(Object flyweight, ReferenceQueue queue, int hash, Entry next) {
+            super(flyweight, queue);
             this.hash = hash;
             this.next = next;
         }
