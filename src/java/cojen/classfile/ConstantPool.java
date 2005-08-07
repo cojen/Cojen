@@ -265,6 +265,7 @@ public class ConstantPool {
             int size = mIndexedConstants.size();
             mIndexedConstants.setSize(size + entryCount);
             mIndexedConstants.set(size, constant);
+            constant.mIndex = size;
         }
 
         mConstants.put(constant, constant);

@@ -79,9 +79,9 @@ public class Annotation {
     /** Member value is represented by an Annotation */
     public static final char MEMBER_TAG_ANNOTATION = '@';
 
-    private ConstantPool mCp;
+    private final ConstantPool mCp;
     private ConstantUTFInfo mType;
-    private Map mMemberValues;
+    private final Map mMemberValues;
     
     public Annotation(ConstantPool cp) {
         mCp = cp;
@@ -89,6 +89,7 @@ public class Annotation {
     }
     
     public Annotation(ConstantPool cp, DataInput din) throws IOException {
+        mCp = cp;
         mType = (ConstantUTFInfo)cp.getConstant(din.readUnsignedShort());
 
         int memberCount = din.readUnsignedShort();
