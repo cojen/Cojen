@@ -660,6 +660,8 @@ class InstructionList implements CodeBuffer {
         // Indicates the address of this instruction is, or -1 if not known.
         int mLocation = -1;
 
+        private Set mExceptionHandlers;
+
         /**
          * Newly created instructions are automatically added to the
          * InstructionList.
@@ -818,14 +820,20 @@ class InstructionList implements CodeBuffer {
          * or null if none.
          */
         public Iterator getExceptionHandlers() {
-            return null;
+            if (mExceptionHandlers == null) {
+                return null;
+            }
+            return mExceptionHandlers.iterator();
         }
 
         /**
-         * Adds an exception handler that wraps this instruction, if it can
-         * throw an exception.
+         * Adds an exception handler that wraps this instruction.
          */
         public void addExceptionHandler(ExceptionHandler handler) {
+            if (mExceptionHandlers == null) {
+                mExceptionHandlers = new HashSet(4);
+            }
+            mExceptionHandlers.add(handler);
         }
 
         /**
@@ -1023,28 +1031,6 @@ class InstructionList implements CodeBuffer {
             mBytes = bytes;
         }
 
-        public Iterator getExceptionHandlers() {
-            if (mExceptionHandlers == null) {
-                return null;
-            }
-            return mExceptionHandlers.iterator();
-        }
-
-        public void addExceptionHandler(ExceptionHandler handler) {
-            byte opcode;
-            if (mBytes != null) {
-                opcode = mBytes[0];
-            } else {
-                opcode = getBytes()[0];
-            }
-            if (Opcode.canThrowException(opcode)) {
-                if (mExceptionHandlers == null) {
-                    mExceptionHandlers = new HashSet(4);
-                }
-                mExceptionHandlers.add(handler);
-            }
-        }
-
         public boolean isFlowThrough() {
             if (mBytes != null && mBytes.length > 0) {
                 switch (mBytes[0]) {
@@ -1133,13 +1119,6 @@ class InstructionList implements CodeBuffer {
 
         public Location[] getBranchTargets() {
             return new Location[] {mTarget};
-        }
-
-        public Iterator getExceptionHandlers() {
-            return null;
-        }
-
-        public void addExceptionHandler(ExceptionHandler handler) {
         }
 
         public boolean isSubroutineCall() {
@@ -1263,13 +1242,6 @@ class InstructionList implements CodeBuffer {
             mWideOnly = wideOnly;
         }
 
-        public Iterator getExceptionHandlers() {
-            return null;
-        }
-
-        public void addExceptionHandler(ExceptionHandler handler) {
-        }
-
         public boolean isFlowThrough() {
             return true;
         }
@@ -1316,13 +1288,6 @@ class InstructionList implements CodeBuffer {
         public LocalOperandInstruction(int stackAdjust, LocalVariable local) {
             super(stackAdjust);
             mLocal = (LocalVariableImpl)local;
-        }
-
-        public Iterator getExceptionHandler() {
-            return null;
-        }
-
-        public void addExceptionHandler(ExceptionHandler handler) {
         }
 
         public boolean isResolved() {
@@ -1868,13 +1833,6 @@ class InstructionList implements CodeBuffer {
             targets[targets.length - 1] = mDefaultLocation;
 
             return targets;
-        }
-
-        public Iterator getExceptionHandlers() {
-            return null;
-        }
-
-        public void addExceptionHandler(ExceptionHandler handler) {
         }
 
         public boolean isFlowThrough() {
