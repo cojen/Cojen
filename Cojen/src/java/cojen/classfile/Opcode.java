@@ -322,6 +322,7 @@ public class Opcode {
         case PUTFIELD:
         case INVOKEVIRTUAL:
         case INVOKESPECIAL:
+        case INVOKESTATIC:
         case INVOKEINTERFACE:
         case NEWARRAY:
         case ANEWARRAY:

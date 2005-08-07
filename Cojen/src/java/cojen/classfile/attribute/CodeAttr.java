@@ -47,6 +47,9 @@ public class CodeAttr extends Attribute {
     private LineNumberTableAttr mLineNumberTable;
     private LocalVariableTableAttr mLocalVariableTable;
 
+    private LineNumberTableAttr mOldLineNumberTable;
+    private LocalVariableTableAttr mOldLocalVariableTable;
+
     public CodeAttr(ConstantPool cp) {
         super(cp, CODE);
     }
@@ -55,7 +58,8 @@ public class CodeAttr extends Attribute {
         super(cp, name);
     }
     
-    public CodeAttr(ConstantPool cp, String name, int length, DataInput din, AttributeFactory attrFactory)
+    public CodeAttr(ConstantPool cp, String name, int length,
+                    DataInput din, AttributeFactory attrFactory)
         throws IOException
     {
         super(cp, name);
@@ -105,8 +109,18 @@ public class CodeAttr extends Attribute {
         return mCodeBuffer;
     }
 
+    /**
+     * As a side effect of calling this method, new line number and local
+     * variable tables are created.
+     */
     public void setCodeBuffer(CodeBuffer code) {
         mCodeBuffer = code;
+        mOldLineNumberTable = mLineNumberTable;
+        mOldLocalVariableTable = mLocalVariableTable;
+        mAttributes.remove(mLineNumberTable);
+        mAttributes.remove(mLocalVariableTable);
+        mLineNumberTable = null;
+        mLocalVariableTable = null;
     }
     
     /**
@@ -116,10 +130,15 @@ public class CodeAttr extends Attribute {
      * @return -1 if no line number is mapped for the start_pc.
      */
     public int getLineNumber(Location start) {
-        if (mLineNumberTable == null || start.getLocation() < 0) {
+        LineNumberTableAttr table = mOldLineNumberTable;
+        if (table == null) {
+            table = mLineNumberTable;
+        }
+
+        if (table == null || start.getLocation() < 0) {
             return -1;
         } else {
-            return mLineNumberTable.getLineNumber(start);
+            return table.getLineNumber(start);
         }
     }
 
@@ -131,7 +150,6 @@ public class CodeAttr extends Attribute {
         if (mLineNumberTable == null) {
             addAttribute(new LineNumberTableAttr(getConstantPool()));
         }
-
         mLineNumberTable.addEntry(start, line_number);
     }
 
@@ -145,7 +163,6 @@ public class CodeAttr extends Attribute {
         if (mLocalVariableTable == null) {
             addAttribute(new LocalVariableTableAttr(getConstantPool()));
         }
-
         mLocalVariableTable.addEntry(localVar);
     }
 
@@ -224,5 +241,8 @@ public class CodeAttr extends Attribute {
             Attribute attr = (Attribute)mAttributes.get(i);
             attr.writeTo(dout);
         }
+
+        mOldLineNumberTable = null;
+        mOldLocalVariableTable = null;
     }
 }

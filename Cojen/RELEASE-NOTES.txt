@@ -1,7 +1,15 @@
-Cojen version 1.1.1
+Cojen version 1.1.2
 -------------------------------
 
 Change History
+
+1.1.1 to 1.1.2
+-------------------------------
+- Fixes for various bugs which prevented Cojen from being used to dynamically
+  add instrumentation code to existing classes.
+- Exception handling for liveness analysis covers all instructions, including
+  those that aren't excepted to throw exceptions. This ensures proper coverage
+  of asynchronous exceptions injected by Thread.stop.
 
 1.1.0 to 1.1.1
 -------------------------------
