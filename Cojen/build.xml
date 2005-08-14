@@ -22,7 +22,7 @@
   <property name="component.title"         value="Cojen"/>
 
   <!-- The current version number of this component -->
-  <property name="component.version"       value="1.1.1"/>
+  <property name="component.version"       value="1.1.2"/>
 
   <!-- The current version number of this component -->
   <property name="component.fullname"      value="${component.name}-${component.version}"/>
