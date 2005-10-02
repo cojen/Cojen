@@ -705,7 +705,8 @@ public class CodeDisassembler {
                         if (className == null) {
                             assembler.invokeConstructor(paramTypes);
                         } else {
-                            if (className.equals(mSuperClassName)) {
+                            if ("<init>".equals(mMethod.getName())
+                                && className.equals(mSuperClassName)) {
                                 assembler.invokeSuperConstructor(paramTypes);
                             } else {
                                 assembler.invokeConstructor(className, paramTypes);
