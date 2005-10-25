@@ -112,7 +112,7 @@ comparison to patterns containing wildcards.
 Although Cojen is a new project, it is a fork of the
 <a href="http://sourceforge.net/projects/teatrove/">TeaTrove</a> classfile API, which
 is relatively old and reliable. The TeaTrove project contains many internal components,
-which are best separated. TeaTrove will eventually get updated to use Cojen instead.
+which are best separated.
 </p>
 
 </section>
