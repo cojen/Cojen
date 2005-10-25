@@ -240,7 +240,7 @@ public class Annotation {
     
     public MemberValue makeMemberValue(TypeDesc enumType, String enumName) {
         return new MemberValue(MEMBER_TAG_ENUM,
-                               new EnumConstValue(mCp.addConstantUTF(enumType.getFullName()),
+                               new EnumConstValue(mCp.addConstantUTF(enumType.getDescriptor()),
                                                   mCp.addConstantUTF(enumName)));
     }
 
