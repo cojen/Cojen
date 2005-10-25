@@ -1,7 +1,12 @@
-Cojen version 1.1.2
+Cojen version 1.1.3
 -------------------------------
 
 Change History
+
+Cojen version 1.1.3
+-------------------------------
+- Fixed bug in defining annotations with Enum constants.
+- ClassFile can accept interface as superclass.
 
 1.1.1 to 1.1.2
 -------------------------------

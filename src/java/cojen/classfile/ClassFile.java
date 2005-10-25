@@ -368,10 +368,13 @@ public class ClassFile {
      * this class or to turn it into an interface.
      *
      * @param className Full class name of the form ex: "java.lang.String".
-     * @param superClass Super class.
+     * @param superClass Super class or interface.
      */
     public ClassFile(String className, Class superClass) {
-        this(className, superClass.getName());
+        this(className, superClass.isInterface() ? null : superClass.getName());
+        if (superClass.isInterface()) {
+            addInterface(superClass);
+        }
     }
 
     /** 
