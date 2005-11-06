@@ -724,11 +724,15 @@ public class CodeAssemblerPrinter extends AbstractCodeAssembler implements CodeA
     }
 
     static String escape(String value) {
+        return escape(value, false);
+    }
+
+    static String escape(String value, boolean forChar) {
         int length = value.length();
         int i = 0;
         for (; i < length; i++) {
             char c = value.charAt(i);
-            if (c < 32 || c > 126 || c == '"' || c == '\\') {
+            if (c < 32 || c > 126 || c == '"' || c == '\\' || (forChar && c == '\'')) {
                 break;
             }
         }
@@ -740,7 +744,7 @@ public class CodeAssemblerPrinter extends AbstractCodeAssembler implements CodeA
         StringBuffer buf = new StringBuffer(length + 16);
         for (i=0; i<length; i++) {
             char c = value.charAt(i);
-            if (c >= 32 && c <= 126 && c != '"' && c != '\\') {
+            if (c >= 32 && c <= 126 && c != '"' && c != '\\' && (!forChar || c != '\'')) {
                 buf.append(c);
                 continue;
             }
@@ -751,6 +755,9 @@ public class CodeAssemblerPrinter extends AbstractCodeAssembler implements CodeA
                 break;
             case '"':
                 buf.append("\\\"");
+                break;
+            case '\'':
+                buf.append("\\'");
                 break;
             case '\\':
                 buf.append("\\\\");
