@@ -123,9 +123,18 @@ public abstract class TypeDesc extends Descriptor implements Serializable {
             return null;
         }
 
-        TypeDesc type = (TypeDesc)cClassesToInstances.get(clazz);
-        if (type != null) {
-            return type;
+        TypeDesc type;
+
+        synchronized (cClassesToInstances) {
+            type = (TypeDesc)cClassesToInstances.get(clazz);
+            if (type != null) {
+                if (type.toClass() != clazz) {
+                    type = new ObjectType(type.getDescriptor(), clazz.getName());
+                    ((ObjectType) type).setClass(clazz);
+                    cClassesToInstances.put(clazz, type);
+                }
+                return type;
+            }
         }
 
         if (clazz.isArray()) {
@@ -153,9 +162,7 @@ public abstract class TypeDesc extends Descriptor implements Serializable {
         } else {
             String name = clazz.getName();
             type = intern(new ObjectType(generateDescriptor(name), name));
-            if (type.toClass() == null) {
-                ((ObjectType) type).setClass(clazz);
-            }
+            ((ObjectType) type).setClass(clazz);
         }
 
         cClassesToInstances.put(clazz, type);
