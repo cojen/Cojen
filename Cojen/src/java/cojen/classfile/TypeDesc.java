@@ -123,49 +123,50 @@ public abstract class TypeDesc extends Descriptor implements Serializable {
             return null;
         }
 
-        TypeDesc type;
+        TypeDesc type = (TypeDesc)cClassesToInstances.get(clazz);
 
-        synchronized (cClassesToInstances) {
-            type = (TypeDesc)cClassesToInstances.get(clazz);
-            if (type != null) {
-                if (type.toClass() != clazz) {
-                    type = new ObjectType(type.getDescriptor(), clazz.getName());
-                    ((ObjectType) type).setClass(clazz);
+        if (type == null || type.toClass() != clazz) {
+            if (clazz.isArray()) {
+                type = forClass(clazz.getComponentType()).toArrayType();
+            } else if (clazz.isPrimitive()) {
+                if (clazz == int.class) {
+                    type = INT;
+                } else if (clazz == boolean.class) {
+                    type = BOOLEAN;
+                } else if (clazz == char.class) {
+                    type = CHAR;
+                } else if (clazz == byte.class) {
+                    type = BYTE;
+                } else if (clazz == long.class) {
+                    type = LONG;
+                } else if (clazz == float.class) {
+                    type = FLOAT;
+                } else if (clazz == double.class) {
+                    type = DOUBLE;
+                } else if (clazz == short.class) {
+                    type = SHORT;
+                } else if (clazz == void.class) {
+                    type = VOID;
+                }
+            } else {
+                String name = clazz.getName();
+                type = intern(new ObjectType(generateDescriptor(name), name));
+            }
+        
+            if (type.toClass() != clazz) {
+                type = new ObjectType(type.getDescriptor(), clazz.getName());
+                ((ObjectType) type).setClass(clazz);
+            }
+
+            synchronized (cClassesToInstances) {
+                if (cClassesToInstances.containsKey(clazz)) {
+                    type = (TypeDesc)cClassesToInstances.get(clazz);
+                } else {
                     cClassesToInstances.put(clazz, type);
                 }
-                return type;
             }
         }
 
-        if (clazz.isArray()) {
-            type = forClass(clazz.getComponentType()).toArrayType();
-        } else if (clazz.isPrimitive()) {
-            if (clazz == int.class) {
-                type = INT;
-            } else if (clazz == boolean.class) {
-                type = BOOLEAN;
-            } else if (clazz == char.class) {
-                type = CHAR;
-            } else if (clazz == byte.class) {
-                type = BYTE;
-            } else if (clazz == long.class) {
-                type = LONG;
-            } else if (clazz == float.class) {
-                type = FLOAT;
-            } else if (clazz == double.class) {
-                type = DOUBLE;
-            } else if (clazz == short.class) {
-                type = SHORT;
-            } else if (clazz == void.class) {
-                type = VOID;
-            }
-        } else {
-            String name = clazz.getName();
-            type = intern(new ObjectType(generateDescriptor(name), name));
-            ((ObjectType) type).setClass(clazz);
-        }
-
-        cClassesToInstances.put(clazz, type);
         return type;
     }
 

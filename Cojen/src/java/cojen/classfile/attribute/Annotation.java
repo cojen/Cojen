@@ -235,7 +235,7 @@ public class Annotation {
     }
 
     public MemberValue makeMemberValue(TypeDesc value) {
-        return new MemberValue(MEMBER_TAG_CLASS, mCp.addConstantClass(value));
+        return new MemberValue(MEMBER_TAG_CLASS, mCp.addConstantUTF(value.getDescriptor()));
     }
     
     public MemberValue makeMemberValue(TypeDesc enumType, String enumName) {
@@ -329,10 +329,10 @@ public class Annotation {
                 break;
 
             case MEMBER_TAG_CLASS:
-                if (value instanceof ConstantClassInfo) {
+                if (value instanceof ConstantUTFInfo) {
                     mValue = value;
                 } else {
-                    throw new IllegalArgumentException("Value must be ConstantClassInfo");
+                    throw new IllegalArgumentException("Value must be ConstantUTFInfo");
                 }
                 break;
 

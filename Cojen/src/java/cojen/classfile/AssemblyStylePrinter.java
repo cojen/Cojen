@@ -467,7 +467,6 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
         case Annotation.MEMBER_TAG_BYTE:
         case Annotation.MEMBER_TAG_SHORT:
         case Annotation.MEMBER_TAG_INT:
-        case Annotation.MEMBER_TAG_CHAR:
         case Annotation.MEMBER_TAG_LONG:
         case Annotation.MEMBER_TAG_FLOAT:
         case Annotation.MEMBER_TAG_DOUBLE:
@@ -475,6 +474,13 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
         case Annotation.MEMBER_TAG_CLASS:
             disassemble((ConstantInfo)value, true);
             break;
+        case Annotation.MEMBER_TAG_CHAR: {
+            print("'");
+            char c = (char) ((ConstantIntegerInfo)value).getValue();
+            print(CodeAssemblerPrinter.escape(String.valueOf(c), true));
+            print("'");
+            break;
+        }
         case Annotation.MEMBER_TAG_ENUM:
             Annotation.EnumConstValue ecv = (Annotation.EnumConstValue)value;
             print(TypeDesc.forDescriptor(ecv.getTypeName().getValue()).getFullName());
