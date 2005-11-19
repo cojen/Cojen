@@ -34,13 +34,11 @@ import java.io.Serializable;
  *
  * @author Brian S O'Neill
  */
-public class IntHashMap<V> extends AbstractMap<Integer, V>
-    implements Map<Integer, V>, Cloneable, Serializable
-{
+public class IntHashMap extends AbstractMap implements Map, Cloneable, Serializable {
     /**
      * The hash table data.
      */
-    private transient Entry<V> table[];
+    private transient Entry table[];
 
     /**
      * The total number of mappings in the hash table.
@@ -126,7 +124,7 @@ public class IntHashMap<V> extends AbstractMap<Integer, V>
      * the given map or 11 (whichever is greater), and a default load factor,
      * which is <tt>0.75</tt>.
      */
-    public IntHashMap(Map<Integer, ? extends V> t) {
+    public IntHashMap(Map t) {
         this(Math.max(2 * t.size(), 11), 0.75f);
         putAll(t);
     }
@@ -158,11 +156,11 @@ public class IntHashMap<V> extends AbstractMap<Integer, V>
      *         specified value.
      */
     public boolean containsValue(Object value) {
-        Entry<V> tab[] = table;
+        Entry tab[] = table;
         
         if (value == null) {
             for (int i = tab.length ; i-- > 0 ;) {
-                for (Entry<V> e = tab[i] ; e != null ; e = e.next) {
+                for (Entry e = tab[i] ; e != null ; e = e.next) {
                     if (e.value == null) {
                         return true;
                     }
@@ -170,7 +168,7 @@ public class IntHashMap<V> extends AbstractMap<Integer, V>
             }
         } else {
             for (int i = tab.length ; i-- > 0 ;) {
-                for (Entry<V> e = tab[i] ; e != null ; e = e.next) {
+                for (Entry e = tab[i] ; e != null ; e = e.next) {
                     if (value.equals(e.value)) {
                         return true;
                     }
@@ -202,10 +200,10 @@ public class IntHashMap<V> extends AbstractMap<Integer, V>
      * @param key key whose presence in this Map is to be tested.
      */
     public boolean containsKey(int key) {
-        Entry<V> tab[] = table;
+        Entry tab[] = table;
 
         int index = (key & 0x7fffffff) % tab.length;
-        for (Entry<V> e = tab[index]; e != null; e = e.next) {
+        for (Entry e = tab[index]; e != null; e = e.next) {
             if (e.key == key) {
                 return true;
             }
@@ -225,7 +223,7 @@ public class IntHashMap<V> extends AbstractMap<Integer, V>
      * @return the value to which this map maps the specified key.
      * @param key key whose associated value is to be returned.
      */
-    public V get(Integer key) {
+    public Object get(Integer key) {
         return get(key.intValue());
     }
 
@@ -240,11 +238,11 @@ public class IntHashMap<V> extends AbstractMap<Integer, V>
      * @return the value to which this map maps the specified key.
      * @param key key whose associated value is to be returned.
      */
-    public V get(int key) {
-        Entry<V> tab[] = table;
+    public Object get(int key) {
+        Entry tab[] = table;
         
         int index = (key & 0x7fffffff) % tab.length;
-        for (Entry<V> e = tab[index]; e != null; e = e.next) {
+        for (Entry e = tab[index]; e != null; e = e.next) {
             if (e.key == key) {
                 return e.value;
             }
@@ -260,18 +258,18 @@ public class IntHashMap<V> extends AbstractMap<Integer, V>
      */
     private void rehash() {
         int oldCapacity = table.length;
-        Entry<V> oldMap[] = table;
+        Entry oldMap[] = table;
         
         int newCapacity = oldCapacity * 2 + 1;
-        Entry<V> newMap[] = new Entry[newCapacity];
+        Entry newMap[] = new Entry[newCapacity];
         
         modCount++;
         threshold = (int)(newCapacity * loadFactor);
         table = newMap;
         
         for (int i = oldCapacity ; i-- > 0 ;) {
-            for (Entry<V> old = oldMap[i] ; old != null ; ) {
-                Entry<V> e = old;
+            for (Entry old = oldMap[i] ; old != null ; ) {
+                Entry e = old;
                 old = old.next;
                 
                 int index = (e.key & 0x7fffffff) % newCapacity;
@@ -293,7 +291,7 @@ public class IntHashMap<V> extends AbstractMap<Integer, V>
      *         also indicate that the IntHashMap previously associated
      *         <tt>null</tt> with the specified key.
      */
-    public V put(Integer key, V value) {
+    public Object put(Integer key, Object value) {
         return put(key.intValue(), value);
     }
 
@@ -309,15 +307,15 @@ public class IntHashMap<V> extends AbstractMap<Integer, V>
      *         also indicate that the IntHashMap previously associated
      *         <tt>null</tt> with the specified key.
      */
-    public V put(int key, V value) {
+    public Object put(int key, Object value) {
         // Makes sure the key is not already in the IntHashMap.
-        Entry<V> tab[] = table;
+        Entry tab[] = table;
         int index = 0;
         
         index = (key & 0x7fffffff) % tab.length;
-        for (Entry<V> e = tab[index] ; e != null ; e = e.next) {
+        for (Entry e = tab[index] ; e != null ; e = e.next) {
             if (e.key == key) {
-                V old = e.value;
+                Object old = e.value;
                 e.value = value;
                 return old;
             }
@@ -333,7 +331,7 @@ public class IntHashMap<V> extends AbstractMap<Integer, V>
         }
         
         // Creates the new entry.
-        Entry<V> e = new Entry<V>(key, value, tab[index]);
+        Entry e = new Entry(key, value, tab[index]);
         tab[index] = e;
         count++;
         return null;
@@ -348,7 +346,7 @@ public class IntHashMap<V> extends AbstractMap<Integer, V>
      *         also indicate that the map previously associated <tt>null</tt>
      *         with the specified key.
      */
-    public V remove(Integer key) {
+    public Object remove(Integer key) {
         return remove(key.intValue());
     }
 
@@ -361,12 +359,12 @@ public class IntHashMap<V> extends AbstractMap<Integer, V>
      *         also indicate that the map previously associated <tt>null</tt>
      *         with the specified key.
      */
-    public V remove(int key) {
-        Entry<V> tab[] = table;
+    public Object remove(int key) {
+        Entry tab[] = table;
         
         int index = (key & 0x7fffffff) % tab.length;
         
-        for (Entry<V> e = tab[index], prev = null; e != null; prev = e, e = e.next) {
+        for (Entry e = tab[index], prev = null; e != null; prev = e, e = e.next) {
             if (e.key == key) {
                 modCount++;
                 if (prev != null) {
@@ -376,7 +374,7 @@ public class IntHashMap<V> extends AbstractMap<Integer, V>
                 }
                 
                 count--;
-                V oldValue = e.value;
+                Object oldValue = e.value;
                 e.value = null;
                 return oldValue;
             }
@@ -389,7 +387,7 @@ public class IntHashMap<V> extends AbstractMap<Integer, V>
      * Removes all mappings from this map.
      */
     public void clear() {
-        Entry<V> tab[] = table;
+        Entry tab[] = table;
         modCount++;
         for (int index = tab.length; --index >= 0; ) {
             tab[index] = null;
@@ -405,10 +403,10 @@ public class IntHashMap<V> extends AbstractMap<Integer, V>
      */
     public Object clone() {
         try { 
-            IntHashMap<V> t = (IntHashMap<V>) super.clone();
+            IntHashMap t = (IntHashMap) super.clone();
             t.table = new Entry[table.length];
             for (int i = table.length ; i-- > 0 ; ) {
-                t.table[i] = (table[i] != null) ? (Entry<V>) table[i].clone() : null;
+                t.table[i] = (table[i] != null) ? (Entry) table[i].clone() : null;
             }
             t.keySet = null;
             t.entrySet = null;
@@ -423,9 +421,9 @@ public class IntHashMap<V> extends AbstractMap<Integer, V>
     
     // Views
     
-    private transient Set<Integer> keySet = null;
-    private transient Set<Map.Entry<Integer, V>> entrySet = null;
-    private transient Collection<V> values = null;
+    private transient Set keySet = null;
+    private transient Set entrySet = null;
+    private transient Collection values = null;
     
     /**
      * Returns a set view of the keys contained in this map.  The set is
@@ -438,11 +436,11 @@ public class IntHashMap<V> extends AbstractMap<Integer, V>
      *
      * @return a set view of the keys contained in this map.
      */
-    public Set<Integer> keySet() {
+    public Set keySet() {
         if (keySet == null) {
-            keySet = new AbstractSet<Integer>() {
-                public Iterator<Integer> iterator() {
-                    return (Iterator<Integer>) new IntHashIterator(KEYS);
+            keySet = new AbstractSet() {
+                public Iterator iterator() {
+                    return new IntHashIterator(KEYS);
                 }
                 public int size() {
                     return count;
@@ -472,11 +470,11 @@ public class IntHashMap<V> extends AbstractMap<Integer, V>
      *
      * @return a collection view of the values contained in this map.
      */
-    public Collection<V> values() {
+    public Collection values() {
         if (values==null) {
-            values = new AbstractCollection<V>() {
-                public Iterator<V> iterator() {
-                    return (Iterator<V>) new IntHashIterator(VALUES);
+            values = new AbstractCollection() {
+                public Iterator iterator() {
+                    return (Iterator) new IntHashIterator(VALUES);
                 }
                 public int size() {
                     return count;
@@ -504,19 +502,19 @@ public class IntHashMap<V> extends AbstractMap<Integer, V>
      *
      * @return a collection view of the mappings contained in this map.
      */
-    public Set<Map.Entry<Integer, V>> entrySet() {
+    public Set entrySet() {
         if (entrySet==null) {
-            entrySet = new AbstractSet<Map.Entry<Integer, V>>() {
-                public Iterator<Map.Entry<Integer, V>> iterator() {
-                    return (Iterator<Map.Entry<Integer, V>>) new IntHashIterator(ENTRIES);
+            entrySet = new AbstractSet() {
+                public Iterator iterator() {
+                    return (Iterator) new IntHashIterator(ENTRIES);
                 }
                 
                 public boolean contains(Object o) {
                     if (!(o instanceof Map.Entry)) {
                         return false;
                     }
-                    Map.Entry<Integer, V> entry = (Map.Entry<Integer, V>) o;
-                    Integer key = entry.getKey();
+                    Map.Entry entry = (Map.Entry) o;
+                    Integer key = (Integer) entry.getKey();
                     Entry tab[] = table;
                     int hash = (key == null ? 0 : key.hashCode());
                     int index = (hash & 0x7fffffff) % tab.length;
@@ -533,13 +531,13 @@ public class IntHashMap<V> extends AbstractMap<Integer, V>
                     if (!(o instanceof Map.Entry)) {
                         return false;
                     }
-                    Map.Entry<Integer, V> entry = (Map.Entry<Integer, V>) o;
-                    Integer key = entry.getKey();
-                    Entry<V> tab[] = table;
+                    Map.Entry entry = (Map.Entry) o;
+                    Integer key = (Integer) entry.getKey();
+                    Entry tab[] = table;
                     int hash = (key == null ? 0 : key.hashCode());
                     int index = (hash & 0x7fffffff) % tab.length;
                     
-                    for (Entry<V> e = tab[index], prev = null; e != null; prev = e, e = e.next) {
+                    for (Entry e = tab[index], prev = null; e != null; prev = e, e = e.next) {
                         if (e.key == hash && e.equals(entry)) {
                             modCount++;
                             if (prev != null) {
@@ -572,34 +570,34 @@ public class IntHashMap<V> extends AbstractMap<Integer, V>
     /**
      * IntHashMap collision list entry.
      */
-    private static class Entry<V> implements Map.Entry<Integer, V> {
+    private static class Entry implements Map.Entry {
         int key;
-        V value;
-        Entry<V> next;
+        Object value;
+        Entry next;
         private Integer objectKey;
         
-        Entry(int key, V value, Entry<V> next) {
+        Entry(int key, Object value, Entry next) {
             this.key = key;
             this.value = value;
             this.next = next;
         }
         
         protected Object clone() {
-            return new Entry<V>(key, value, (next == null ? null : (Entry<V>) next.clone()));
+            return new Entry(key, value, (next == null ? null : (Entry) next.clone()));
         }
         
         // Map.Entry Ops 
         
-        public Integer getKey() {
-            return (objectKey != null) ? objectKey : (objectKey = key);
+        public Object getKey() {
+            return (objectKey != null) ? objectKey : (objectKey = new Integer(key));
         }
         
-        public V getValue() {
+        public Object getValue() {
             return value;
         }
         
-        public V setValue(V value) {
-            V oldValue = this.value;
+        public Object setValue(Object value) {
+            Object oldValue = this.value;
             this.value = value;
             return oldValue;
         }
@@ -608,7 +606,7 @@ public class IntHashMap<V> extends AbstractMap<Integer, V>
             if (!(o instanceof Map.Entry)) {
                 return false;
             }
-            Map.Entry<Integer, V> e = (Map.Entry<Integer, V>) o;
+            Map.Entry e = (Map.Entry) o;
             
             return (getKey().equals(e.getKey())) &&
                 (value==null ? e.getValue()==null : value.equals(e.getValue()));
@@ -628,11 +626,11 @@ public class IntHashMap<V> extends AbstractMap<Integer, V>
     private static final int VALUES = 1;
     private static final int ENTRIES = 2;
     
-    private class IntHashIterator implements Iterator<Object> {
-        Entry<V>[] table = IntHashMap.this.table;
+    private class IntHashIterator implements Iterator {
+        Entry[] table = IntHashMap.this.table;
         int index = table.length;
-        Entry<V> entry;
-        Entry<V> lastReturned;
+        Entry entry;
+        Entry lastReturned;
         int type;
         
         /**
@@ -664,7 +662,7 @@ public class IntHashMap<V> extends AbstractMap<Integer, V>
             }
             
             if (entry != null) {
-                Entry<V> e = lastReturned = entry;
+                Entry e = lastReturned = entry;
                 entry = e.next;
                 return type == KEYS ? e.getKey() : (type == VALUES ? e.value : e);
             }
@@ -679,10 +677,10 @@ public class IntHashMap<V> extends AbstractMap<Integer, V>
                 throw new ConcurrentModificationException();
             }
             
-            Entry<V>[] tab = IntHashMap.this.table;
+            Entry[] tab = IntHashMap.this.table;
             int index = (lastReturned.key & 0x7fffffff) % tab.length;
             
-            for (Entry<V> e = tab[index], prev = null; e != null; prev = e, e = e.next) {
+            for (Entry e = tab[index], prev = null; e != null; prev = e, e = e.next) {
                 if (e == lastReturned) {
                     modCount++;
                     expectedModCount++;
@@ -753,7 +751,7 @@ public class IntHashMap<V> extends AbstractMap<Integer, V>
         // Read the keys and values, and put the mappings in the IntHashMap
         for (int i=0; i<size; i++) {
             int key = s.readInt();
-            V value = (V) s.readObject();
+            Object value = s.readObject();
             put(key, value);
         }
     }
