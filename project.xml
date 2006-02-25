@@ -27,10 +27,12 @@
   <siteDirectory>/home/groups/c/co/cojen/htdocs/</siteDirectory>
   <distributionDirectory>home/groups/c/co/cojen/htdocs/repository</distributionDirectory>
   
+  <!--
   <repository>
     <connection>scm:cvs:pserver:anonymous@cvs.sourceforge.net:/cvsroot/cojen:Cojen</connection>
     <url>http://cvs.sourceforge.net/viewcvs.py/cojen/Cojen/</url>
   </repository>
+  -->
   
   <mailingLists>
     <mailingList>
