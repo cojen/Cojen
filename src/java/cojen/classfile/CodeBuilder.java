@@ -76,6 +76,8 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
             mTarget = 0x00010004;
         } else if ("1.5".equals(target)) {
             mTarget = 0x00010005;
+        } else if ("1.6".equals(target)) {
+            mTarget = 0x00010006;
         } else {
             mTarget = 0x00010000;
         }
