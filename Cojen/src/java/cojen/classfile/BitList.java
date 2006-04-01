@@ -29,18 +29,18 @@ final class BitList implements Cloneable {
      * @param capacity initial amount of bits to store
      */    
     public BitList(int capacity) {
-        mData = new int[(capacity + 31) / 32];
+        mData = new int[(capacity + 31) >> 5];
     }
 
     public boolean get(int index) {
-        return (mData[index / 32] & (0x80000000 >>> index)) != 0;
+        return (mData[index >> 5] & (0x80000000 >>> index)) != 0;
     }
 
     /**
      * @return true if any change made
      */
     public boolean set(int index) {
-        int i = index / 32;
+        int i = index >> 5;
         int v = mData[i];
         return v != (mData[i] = v | (0x80000000 >>> index));
     }
@@ -101,7 +101,7 @@ final class BitList implements Cloneable {
     }
 
     public int capacity() {
-        return mData.length * 32;
+        return mData.length << 5;
     }
 
     public boolean equals(Object obj) {
@@ -139,7 +139,7 @@ final class BitList implements Cloneable {
     }
 
     private boolean ensureCapacity(int capacity) {
-        int len = (capacity + 31) / 32;
+        int len = (capacity + 31) >> 5;
         if (len > mData.length) {
             int[] newData = new int[len];
             System.arraycopy(mData, 0, newData, 0, mData.length);
