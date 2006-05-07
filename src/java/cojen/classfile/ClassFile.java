@@ -1065,10 +1065,17 @@ public class ClassFile {
     public void writeTo(DataOutput dout) throws IOException {
         dout.writeInt(MAGIC);
         dout.writeInt(mVersion);
-        
+
         mCp.writeTo(dout);
-        
-        dout.writeShort(mModifiers.getBitmask() | Modifier.SYNCHRONIZED);
+
+        {
+            int flags = mModifiers.getBitmask();
+            if (!mModifiers.isInterface()) {
+                // Set the ACC_SUPER flag for classes only.
+                flags |= Modifier.SYNCHRONIZED;
+            }
+            dout.writeShort(flags);
+        }
 
         dout.writeShort(mThisClass.getIndex());
         if (mSuperClass != null) {
