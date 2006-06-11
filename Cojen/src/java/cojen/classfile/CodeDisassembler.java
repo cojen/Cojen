@@ -585,8 +585,7 @@ public class CodeDisassembler {
                 }
 
                 ConstantFieldInfo field = (ConstantFieldInfo)ci;
-                String className =
-                    field.getParentClass().getType().getRootName();
+                String className = field.getParentClass().getType().getFullName();
                 if (mEnclosingClassName.equals(className)) {
                     className = null;
                 }
@@ -657,20 +656,16 @@ public class CodeDisassembler {
                         error(opcode, "Invalid constant type for method invocation: " + ci);
                         break;
                     }
-                    ConstantInterfaceMethodInfo method = 
-                        (ConstantInterfaceMethodInfo)ci;
-                    className =
-                        method.getParentClass().getType().getRootName();
+                    ConstantInterfaceMethodInfo method = (ConstantInterfaceMethodInfo)ci;
+                    className = method.getParentClass().getType().getFullName();
                     nameAndType = method.getNameAndType();
                 } else {
                     if (!(ci instanceof ConstantMethodInfo)) {
                         error(opcode, "Invalid constant type for method invocation: " + ci);
                         break;
                     }
-                    ConstantMethodInfo method = 
-                        (ConstantMethodInfo)ci;
-                    className =
-                        method.getParentClass().getType().getRootName();
+                    ConstantMethodInfo method = (ConstantMethodInfo)ci;
+                    className = method.getParentClass().getType().getFullName();
                     if (mEnclosingClassName.equals(className)) {
                         className = null;
                     }
@@ -1574,7 +1569,25 @@ public class CodeDisassembler {
     }
 
     private boolean compatibleType(TypeDesc a, TypeDesc b) {
-        return a == b || (!a.isPrimitive() && !b.isPrimitive());
+        if (a == b  || (!a.isPrimitive() && !b.isPrimitive())) {
+            return true;
+        }
+        if (isIntType(a) && isIntType(b)) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isIntType(TypeDesc type) {
+        switch (type.getTypeCode()) {
+        case TypeDesc.INT_CODE:
+        case TypeDesc.BOOLEAN_CODE:
+        case TypeDesc.BYTE_CODE:
+        case TypeDesc.SHORT_CODE:
+        case TypeDesc.CHAR_CODE:
+            return true;
+        }
+        return false;
     }
 
     private void locateLabel() {
@@ -1602,8 +1615,7 @@ public class CodeDisassembler {
                 if (handler.getCatchType() == null) {
                     catchClassName = null;
                 } else {
-                    catchClassName =
-                        handler.getCatchType().getType().getRootName();
+                    catchClassName = handler.getCatchType().getType().getFullName();
                 }
                 mAssembler.exceptionHandler(start, end, catchClassName);
             }
