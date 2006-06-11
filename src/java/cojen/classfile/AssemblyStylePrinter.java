@@ -793,7 +793,7 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
                         print(type);
                     }
                     print(" ");
-                    print(field.getParentClass().getType().getRootName());
+                    print(field.getParentClass().getType().getFullName());
                     print(".");
                     print(field.getNameAndType().getName());
                 } else {
@@ -820,7 +820,7 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
                     ConstantInterfaceMethodInfo method = 
                         (ConstantInterfaceMethodInfo)constant;
                     className =
-                        method.getParentClass().getType().getRootName();
+                        method.getParentClass().getType().getFullName();
                     nameAndType = method.getNameAndType();
                 } else {
                     if (!(constant instanceof ConstantMethodInfo)) {
@@ -829,7 +829,7 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
                     }
                     ConstantMethodInfo method = (ConstantMethodInfo)constant;
                     className =
-                        method.getParentClass().getType().getRootName();
+                        method.getParentClass().getType().getFullName();
                     nameAndType = method.getNameAndType();
                 }
 
