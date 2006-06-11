@@ -484,7 +484,7 @@ class BuilderStylePrinter implements DisassemblyTool.Printer {
         }
 
         if (type.isPrimitive()) {
-            print("TypeDesc.".concat(type.getRootName().toUpperCase()));
+            print("TypeDesc.".concat(type.getFullName().toUpperCase()));
             return;
         } else if (type == TypeDesc.OBJECT) {
             print("TypeDesc.OBJECT");
