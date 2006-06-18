@@ -38,10 +38,6 @@ public class TestHandler extends ScopedTraceHandler {
         cHandler = this;
     }
 
-    public TraceModes getTraceModes(String className) {
-        return TraceModes.ALL_USER;
-    }
-
     protected void report(Scope scope) {
         List<MethodData> mdList = scope.getMethodData();
         System.out.println("--------------------");

@@ -47,10 +47,10 @@ public abstract class ScopedTraceHandler implements TraceHandler {
     }
 
     /**
-     * Always returns true.
+     * Always returns {@link TraceModes.ALL_USER}.
      */
-    public boolean allowTracing(String className) {
-        return true;
+    public TraceModes getTraceModes(String className) {
+        return TraceModes.ALL_USER;
     }
 
     public void enterMethod(int mid) {
