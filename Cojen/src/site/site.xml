@@ -15,20 +15,25 @@
     </links>
 
     <menu name="Cojen">
-      <item name="Overview" href="/index.html"/>
-      <item name="Example" href="/example.html"/>
-      <item name="Disassembly" href="/disassembly.html"/>
-      <item name="Javadoc" href="/apidocs/index.html"/>
+      <item name="Overview" href="index.html"/>
+      <item name="Example" href="example.html"/>
+      <item name="Disassembly" href="disassembly.html"/>
+      <item name="Javadoc" href="apidocs/index.html"/>
       <item name="Download" href="http://sourceforge.net/project/showfiles.php?group_id=104490"/>
       <item name="Subversion" href="http://svn.sourceforge.net/viewvc/cojen/trunk/Cojen/"/>
       <item name="Sourceforge" href="http://sourceforge.net/projects/cojen/"/>
-      <item name="Project Info" href="/project-info.html"/>
+      <item name="License" href="license.html"/>
     </menu>
 
     <menu name="Alternatives">
       <item name="Link page" href="http://java-source.net/Wiki.jsp?page=JavaOpenSourceByteCode"/>
       <item name="cglib" href="http://cglib.sourceforge.net/"/>
       <item name="BCEL" href="http://jakarta.apache.org/bcel/"/>
+    </menu>
+
+    <menu name="Project Documentation">
+      <item name="Project Info" href="project-info.html"/>
+      <item name="Source Xref" href="xref/index.html"/>
     </menu>
   </body>
 </project>

@@ -5,7 +5,7 @@
   <artifactId>cojen</artifactId>
   <packaging>jar</packaging>
   <name>Cojen</name>
-  <version>1.1.5-SNAPSHOT</version>
+  <version>1.1.4</version>
   <description>
     Dynamic Java bytecode generation and disassembly tools.
   </description>
@@ -20,7 +20,7 @@
   <licenses>
     <license>
       <name>Apache License Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
     </license>
   </licenses>
 
@@ -69,4 +69,41 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+          <configuration>
+            <aggregate>true</aggregate>
+            <links>
+              <link>http://java.sun.com/j2se/1.5.0/docs/api</link>
+            </links>
+          </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jxr-plugin</artifactId>
+        <configuration>
+          <aggregate>true</aggregate>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>project-team</report>
+	      <report>mailing-list</report>
+              <report>issue-tracking</report>
+              <report>scm</report>
+              <report>license</report>
+	    </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+    </plugins>
+  </reporting>
 </project>
