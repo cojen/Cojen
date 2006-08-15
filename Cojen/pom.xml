@@ -5,7 +5,7 @@
   <artifactId>cojen</artifactId>
   <packaging>jar</packaging>
   <name>Cojen</name>
-  <version>1.2</version>
+  <version>2.0</version>
   <description>
     Dynamic Java bytecode generation and disassembly tools.
   </description>

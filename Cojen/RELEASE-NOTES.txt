@@ -1,9 +1,9 @@
-Cojen version 1.2
+Cojen version 2.0
 -------------------------------
 
 Change History
 
-1.1.4 to 1.2
+1.1.4 to 2.0
 -------------------------------
 - Repackaged as org.cojen.
 
