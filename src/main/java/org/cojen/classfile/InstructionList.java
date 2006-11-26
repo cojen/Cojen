@@ -1816,7 +1816,7 @@ class InstructionList implements CodeBuffer {
 
             mSmallest = mCases[0];
             mLargest = mCases[mCases.length - 1];
-            int tSize = 12 + 4 * (mLargest - mSmallest + 1);
+            long tSize = 12 + 4 * ((long) mLargest - mSmallest + 1);
 
             int lSize = 8 + 8 * mCases.length;
 
