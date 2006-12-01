@@ -4,7 +4,7 @@
 
 Class disassembly
 
- A {{{href="apidocs/cojen/classfile/DisassemblyTool.html}disassembly}} tool is provided
+ A {{{href="apidocs/org/cojen/classfile/DisassemblyTool.html}disassembly}} tool is provided
  which serves as a generic class disassembler. It also supports an output format which
  demonstrates how to use the Cojen API.
 
