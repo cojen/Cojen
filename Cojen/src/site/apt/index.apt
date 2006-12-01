@@ -11,19 +11,19 @@ Cojen - Java bytecode generation and disassembly tools
  is an excellent reference.
 
  Method bytecode is constructed via a
- {{{apidocs/cojen/classfile/CodeBuilder.html}builder}}, in which virtual
+ {{{apidocs/org/cojen/classfile/CodeBuilder.html}builder}}, in which virtual
  machine opcodes are represented as slightly higher level instructions. It takes
  care of selecting optimal opcodes, managing branch labels, computing operand
  stack depth, choosing local variable registers, and reducing register usage by
  liveness analysis. In addition, it supports long branches, pushing large string
  constants onto the stack, boxing and unboxing conversions, and
- {{{apidocs/cojen/classfile/CodeAssembler.html#inline(java.lang.Object)}inlining}}
+ {{{apidocs/org/cojen/classfile/CodeAssembler.html#inline(java.lang.Object)}inlining}}
  of Java code.
 
  The builder is represented by an
- {{{apidocs/cojen/classfile/CodeAssembler.html}interface}}, which can
+ {{{apidocs/org/cojen/classfile/CodeAssembler.html}interface}}, which can
  be used as a visitor into a code
- {{{apidocs/cojen/classfile/CodeDisassembler.html}disassembler}}. This feature
+ {{{apidocs/org/cojen/classfile/CodeDisassembler.html}disassembler}}. This feature
  can be used for just-in-time method mutation, and to aid in understanding how to use the
  code building facilities.
 
@@ -35,7 +35,7 @@ Cojen - Java bytecode generation and disassembly tools
 ClassFile object
 
  Defining a new class begins with the construction of a
- {{{apidocs/cojen/classfile/ClassFile.html}ClassFile}} object.
+ {{{apidocs/org/cojen/classfile/ClassFile.html}ClassFile}} object.
  Use the ClassFile instance to add fields, methods, constructors, inner
  classes, and to to specify implemented interfaces.
 
@@ -53,7 +53,7 @@ Transient classes
  A "transient" class from Cojen's perspective is one that is dynamically
  created, never leaves the confines of the current virtual machine process, and
  whose bytecode is lost when it is unloaded. The
- {{{apidocs/cojen/util/ClassInjector.html}ClassInjector}}
+ {{{apidocs/org/cojen/util/ClassInjector.html}ClassInjector}}
  is used for creating such classes. Internally, it uses a ClassLoader which
  defines classes, but it never remembers the bytecode used to construct them.
 
@@ -64,11 +64,11 @@ Transient classes
 Utilities
 
  Cojen provides several powerful utility classes which also serve as examples of how to
- dynamically generate classes. {{{apidocs/cojen/util/BeanComparator.html}BeanComparator}}
+ dynamically generate classes. {{{apidocs/org/cojen/util/BeanComparator.html}BeanComparator}}
  enables fast custom sorting of Java objects by properties,
- {{{apidocs/cojen/util/BeanPropertyAccessor.html}BeanPropertyAccessor}} allows
+ {{{apidocs/org/cojen/util/BeanPropertyAccessor.html}BeanPropertyAccessor}} allows
  object properties to be quickly accessed, and
- {{{apidocs/cojen/util/PatternMatcher.html}PatternMatcher}} supports rapid string
+ {{{apidocs/org/cojen/util/PatternMatcher.html}PatternMatcher}} supports rapid string
  comparison to patterns containing wildcards.
 
 History
