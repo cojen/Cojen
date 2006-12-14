@@ -12,7 +12,7 @@ Class disassembly
  For example, the standard String class can be disassembled as follows:
 
 +---------
-java cojen.classfile.DisassemblyTool java.lang.String
+java org.cojen.classfile.DisassemblyTool java.lang.String
 +---------
 
  The disassembly tool supports a format option, which can be "assembly" or
@@ -21,9 +21,12 @@ java cojen.classfile.DisassemblyTool java.lang.String
 
 +---------
 /**
- * Originally compiled from "BeanIntrospector.java".
+ * Disassembled on Thu Dec 14 08:30:00 PST 2006.
+ * 
+ * @target 1.0
+ * @source BeanIntrospector.java
  */
-public class cojen.util.BeanIntrospector extends java.lang.Object {
+public class org.cojen.util.BeanIntrospector extends java.lang.Object {
     /**
      * @synthetic
      */
@@ -35,10 +38,10 @@ public class cojen.util.BeanIntrospector extends java.lang.Object {
         // max stack: 2
         // max locals: 0
         // line 35
-        new cojen.util.WeakIdentityMap
+        new org.cojen.util.WeakIdentityMap
         dup
-        invokespecial void cojen.util.WeakIdentityMap.&lt;init&gt;()
-        putstatic java.util.Map cojen.util.BeanIntrospector.cPropertiesCache
+        invokespecial void org.cojen.util.WeakIdentityMap.&lt;init&gt;()
+        putstatic java.util.Map org.cojen.util.BeanIntrospector.cPropertiesCache
         return
     }
 
@@ -53,7 +56,7 @@ public class cojen.util.BeanIntrospector extends java.lang.Object {
         iconst_0
         aaload
         invokestatic java.lang.Class java.lang.Class.forName(java.lang.String)
-        invokestatic java.util.Map cojen.util.BeanIntrospector.getAllProperties(java.lang.Class)
+        invokestatic java.util.Map org.cojen.util.BeanIntrospector.getAllProperties(java.lang.Class)
         invokevirtual void java.io.PrintStream.println(java.lang.Object)
         // line 39
         return
@@ -73,7 +76,7 @@ public class cojen.util.BeanIntrospector extends java.lang.Object {
  Cojen re-orders the class constant pool and reduces local variable usage.
 
 +---------
-java cojen.classfile.DisassemblyTool -f builder cojen.util.BeanIntrospector
+java org.cojen.classfile.DisassemblyTool -f builder org.cojen.util.BeanIntrospector
 +---------
 
 +---------
@@ -82,25 +85,25 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 
-import cojen.classfile.ClassFile;
-import cojen.classfile.CodeBuilder;
-import cojen.classfile.FieldInfo;
-import cojen.classfile.Label;
-import cojen.classfile.LocalVariable;
-import cojen.classfile.Location;
-import cojen.classfile.MethodInfo;
-import cojen.classfile.Modifiers;
-import cojen.classfile.Opcode;
-import cojen.classfile.TypeDesc;
+import org.cojen.classfile.ClassFile;
+import org.cojen.classfile.CodeBuilder;
+import org.cojen.classfile.FieldInfo;
+import org.cojen.classfile.Label;
+import org.cojen.classfile.LocalVariable;
+import org.cojen.classfile.Location;
+import org.cojen.classfile.MethodInfo;
+import org.cojen.classfile.Modifiers;
+import org.cojen.classfile.Opcode;
+import org.cojen.classfile.TypeDesc;
 
 /**
- * Builds ClassFile for cojen.util.BeanIntrospector
+ * Builds ClassFile for org.cojen.util.BeanIntrospector
  *
  * @author auto-generated
  */
 public class ClassFileBuilder {
     public static void main(String[] args) throws Exception {
-        // public class cojen.util.BeanIntrospector
+        // public class org.cojen.util.BeanIntrospector
         ClassFile cf = createClassFile();
 
         if (args.length &gt; 0) {
@@ -129,7 +132,8 @@ public class ClassFileBuilder {
     }
 
     public static ClassFile createClassFile() {
-        ClassFile cf = new ClassFile("cojen.util.BeanIntrospector", "java.lang.Object");
+        ClassFile cf = new ClassFile("org.cojen.util.BeanIntrospector", "java.lang.Object");
+        cf.setTarget("1.0");
         cf.setSourceFile("BeanIntrospector.java");
 
         createStaticInitializer(cf);
@@ -174,10 +178,10 @@ public class ClassFileBuilder {
         CodeBuilder b = new CodeBuilder(mi);
 
         b.mapLineNumber(35);
-        TypeDesc type_1 = TypeDesc.forClass("cojen.util.WeakIdentityMap");
+        TypeDesc type_1 = TypeDesc.forClass("org.cojen.util.WeakIdentityMap");
         b.newObject(type_1);
         b.dup();
-        b.invokeConstructor("cojen.util.WeakIdentityMap", null);
+        b.invokeConstructor("org.cojen.util.WeakIdentityMap", null);
         TypeDesc type_2 = TypeDesc.forClass("java.util.Map");
         b.storeStaticField("cPropertiesCache", type_2);
         b.returnVoid();
@@ -202,7 +206,7 @@ public class ClassFileBuilder {
                                      "main",
                                      null,
                                      new TypeDesc[] {TypeDesc.STRING.toArrayType()});
-        mi.addException("java.lang.Exception");
+        mi.addException(TypeDesc.forClass("java.lang.Exception"));
         CodeBuilder b = new CodeBuilder(mi);
 
         LocalVariable var_1 = b.getParameter(0);
