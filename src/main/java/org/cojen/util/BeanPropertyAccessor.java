@@ -40,14 +40,14 @@ import org.cojen.classfile.TypeDesc;
  *
  * @author Brian S O'Neill
  */
-public abstract class BeanPropertyAccessor {
+public abstract class BeanPropertyAccessor<B> {
     // Maps classes to softly referenced BeanPropertyAccessors.
     private static Map cAccessors = new WeakIdentityMap();
 
     /**
      * Returns a new or cached BeanPropertyAccessor for the given class.
      */
-    public static BeanPropertyAccessor forClass(Class clazz) {
+    public static <B> BeanPropertyAccessor<B> forClass(Class<B> clazz) {
         synchronized (cAccessors) {
             BeanPropertyAccessor bpa;
             SoftReference ref = (SoftReference) cAccessors.get(clazz);
@@ -320,10 +320,10 @@ public abstract class BeanPropertyAccessor {
 
     // The actual public methods that will need to be defined.
 
-    public abstract Object getPropertyValue(Object bean, String property)
+    public abstract Object getPropertyValue(B bean, String property)
         throws NoSuchPropertyException;
 
-    public abstract void setPropertyValue(Object bean, String property,
+    public abstract void setPropertyValue(B bean, String property,
                                           Object value)
         throws NoSuchPropertyException;
 
