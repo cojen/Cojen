@@ -32,7 +32,8 @@ import java.util.Map;
  */
 public class BeanIntrospector {
     // Weakly maps Class objects to softly referenced BeanProperty maps.
-    private static Map cPropertiesCache = new WeakIdentityMap();
+    private static Map<Class, SoftReference<Map<String, BeanProperty>>> cPropertiesCache =
+        new WeakIdentityMap<Class, SoftReference<Map<String, BeanProperty>>>();
 
     public static void main(String[] args) throws Exception {
         System.out.println(getAllProperties(Class.forName(args[0])));
@@ -46,28 +47,28 @@ public class BeanIntrospector {
      * names (Strings) to BeanProperty objects.
      *
      */
-    public static Map getAllProperties(Class clazz) {
+    public static Map<String, BeanProperty> getAllProperties(Class clazz) {
         synchronized (cPropertiesCache) {
-            Map properties;
-            SoftReference ref = (SoftReference) cPropertiesCache.get(clazz);
+            Map<String, BeanProperty> properties;
+            SoftReference<Map<String, BeanProperty>> ref = cPropertiesCache.get(clazz);
             if (ref != null) {
-                properties = (Map) ref.get();
+                properties = ref.get();
                 if (properties != null) {
                     return properties;
                 }
             }
             properties = createProperties(clazz);
-            cPropertiesCache.put(clazz, new SoftReference(properties));
+            cPropertiesCache.put(clazz, new SoftReference<Map<String, BeanProperty>>(properties));
             return properties;
         }
     }
 
-    private static Map createProperties(Class clazz) {
+    private static Map<String, BeanProperty> createProperties(Class clazz) {
         if (clazz == null || clazz.isPrimitive()) {
-            return Collections.EMPTY_MAP;
+            return Collections.emptyMap();
         }
 
-        Map properties = new HashMap();
+        Map<String, BeanProperty> properties = new HashMap<String, BeanProperty>();
         fillInProperties(clazz, properties);
 
         // Properties defined in Object are also available to interfaces.
@@ -88,7 +89,7 @@ public class BeanIntrospector {
      * @param clazz Class to introspect
      * @param properties Receives properties as name->property entries
      */
-    private static void fillInProperties(Class clazz, Map properties) {
+    private static void fillInProperties(Class clazz, Map<String, BeanProperty> properties) {
         Method[] methods = clazz.getMethods();
 
         Method method;

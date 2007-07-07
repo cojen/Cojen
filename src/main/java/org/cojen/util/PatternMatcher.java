@@ -42,13 +42,13 @@ import org.cojen.classfile.TypeDesc;
  *
  * @author Brian S O'Neill
  */
-public abstract class PatternMatcher {
+public abstract class PatternMatcher<V> {
     private static final int[] NO_POSITIONS = new int[0];
 
     // Maps pattern sets to auto-generated classes.
     private static Map cPatternMatcherClasses = new SoftValuedHashMap();
 
-    public static synchronized PatternMatcher forPatterns(Map patternMap) {
+    public static synchronized <V> PatternMatcher<V> forPatterns(Map<String, V> patternMap) {
         Maker maker = new Maker(patternMap);
         Class clazz = (Class)cPatternMatcherClasses.get(maker.getKey());
 
@@ -81,16 +81,16 @@ public abstract class PatternMatcher {
         }
     }
 
-    protected final Object[] mValues;
+    protected final V[] mValues;
 
-    protected PatternMatcher(Object[] values) {
+    protected PatternMatcher(V[] values) {
         mValues = values;
     }
 
     /**
      * Returns null if no match.
      */
-    public Result getMatch(String lookup) {
+    public Result<V> getMatch(String lookup) {
         int strLen = lookup.length();
         char[] chars = new char[strLen + 1];
         lookup.getChars(0, strLen, chars, 0);
@@ -107,7 +107,7 @@ public abstract class PatternMatcher {
      *
      * @param limit maximum number of results to return
      */
-    public Result[] getMatches(String lookup, int limit) {
+    public Result<V>[] getMatches(String lookup, int limit) {
         int strLen = lookup.length();
         char[] chars = new char[strLen + 1];
         lookup.getChars(0, strLen, chars, 0);
@@ -148,12 +148,12 @@ public abstract class PatternMatcher {
         }
     }
 
-    public static class Result {
+    public static class Result<V> {
         private final String mPattern;
-        private final Object mValue;
+        private final V mValue;
         private final int[] mPositions;
 
-        Result(String pattern, Object value, int[] positions) {
+        Result(String pattern, V value, int[] positions) {
             mPattern = pattern;
             mValue = value;
             mPositions = positions;
@@ -166,7 +166,7 @@ public abstract class PatternMatcher {
         /**
          * Returns the value associated with the matched pattern.
          */
-        public Object getValue() {
+        public V getValue() {
             return mValue;
         }
 

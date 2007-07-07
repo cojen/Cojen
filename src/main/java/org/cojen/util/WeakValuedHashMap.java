@@ -35,7 +35,7 @@ import java.util.Map;
  * @author Brian S O'Neill
  * @since 2.1
  */
-public class WeakValuedHashMap extends ReferencedValueHashMap {
+public class WeakValuedHashMap<K, V> extends ReferencedValueHashMap<K, V> {
 
     /**
      * Constructs a new, empty map with the specified initial 
@@ -76,30 +76,30 @@ public class WeakValuedHashMap extends ReferencedValueHashMap {
      * the given map or 11 (whichever is greater), and a default load factor,
      * which is <tt>0.75</tt>.
      */
-    public WeakValuedHashMap(Map t) {
+    public WeakValuedHashMap(Map<? extends K, ? extends V> t) {
         super(t);
     }
 
-    Entry newEntry(int hash, Object key, Object value, Entry next) {
-        return new WeakEntry(hash, key, value, next);
+    Entry<K, V> newEntry(int hash, K key, V value, Entry<K, V> next) {
+        return new WeakEntry<K, V>(hash, key, value, next);
     }
 
-    static class WeakEntry extends ReferencedValueHashMap.Entry {
+    static class WeakEntry<K, V> extends ReferencedValueHashMap.Entry<K, V> {
 
-        WeakEntry(int hash, Object key, Object value, Entry next) {
+        WeakEntry(int hash, K key, V value, Entry<K, V> next) {
             super(hash, key, value, next);
         }
 
-        WeakEntry(int hash, Object key, Reference value, Entry next) {
+        WeakEntry(int hash, K key, Reference<V> value, Entry<K, V> next) {
             super(hash, key, value, next);
         }
 
-        Entry newEntry(int hash, Object key, Reference value, Entry next) {
-            return new WeakEntry(hash, key, value, next);
+        Entry newEntry(int hash, K key, Reference<V> value, Entry<K, V> next) {
+            return new WeakEntry<K, V>(hash, key, value, next);
         }
 
-        Reference newReference(Object value) {
-            return new WeakReference(value);
+        Reference<V> newReference(V value) {
+            return new WeakReference<V>(value);
         }
     }
 }

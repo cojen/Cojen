@@ -34,11 +34,13 @@ import java.io.Serializable;
  *
  * @author Brian S O'Neill
  */
-public class IntHashMap extends AbstractMap implements Map, Cloneable, Serializable {
+public class IntHashMap<V> extends AbstractMap<Integer, V>
+    implements Map<Integer, V>, Cloneable, Serializable
+{
     /**
      * The hash table data.
      */
-    private transient Entry table[];
+    private transient Entry<V> table[];
 
     /**
      * The total number of mappings in the hash table.
@@ -124,7 +126,7 @@ public class IntHashMap extends AbstractMap implements Map, Cloneable, Serializa
      * the given map or 11 (whichever is greater), and a default load factor,
      * which is <tt>0.75</tt>.
      */
-    public IntHashMap(Map t) {
+    public IntHashMap(Map<? extends Integer, ? extends V> t) {
         this(Math.max(2 * t.size(), 11), 0.75f);
         putAll(t);
     }
@@ -223,7 +225,7 @@ public class IntHashMap extends AbstractMap implements Map, Cloneable, Serializa
      * @return the value to which this map maps the specified key.
      * @param key key whose associated value is to be returned.
      */
-    public Object get(Integer key) {
+    public V get(Integer key) {
         return get(key.intValue());
     }
 
@@ -238,11 +240,11 @@ public class IntHashMap extends AbstractMap implements Map, Cloneable, Serializa
      * @return the value to which this map maps the specified key.
      * @param key key whose associated value is to be returned.
      */
-    public Object get(int key) {
-        Entry tab[] = table;
+    public V get(int key) {
+        Entry<V> tab[] = table;
         
         int index = (key & 0x7fffffff) % tab.length;
-        for (Entry e = tab[index]; e != null; e = e.next) {
+        for (Entry<V> e = tab[index]; e != null; e = e.next) {
             if (e.key == key) {
                 return e.value;
             }
@@ -261,7 +263,7 @@ public class IntHashMap extends AbstractMap implements Map, Cloneable, Serializa
         Entry oldMap[] = table;
         
         int newCapacity = oldCapacity * 2 + 1;
-        Entry newMap[] = new Entry[newCapacity];
+        Entry<V> newMap[] = new Entry[newCapacity];
         
         modCount++;
         threshold = (int)(newCapacity * loadFactor);
@@ -291,7 +293,7 @@ public class IntHashMap extends AbstractMap implements Map, Cloneable, Serializa
      *         also indicate that the IntHashMap previously associated
      *         <tt>null</tt> with the specified key.
      */
-    public Object put(Integer key, Object value) {
+    public V put(Integer key, V value) {
         return put(key.intValue(), value);
     }
 
@@ -307,15 +309,15 @@ public class IntHashMap extends AbstractMap implements Map, Cloneable, Serializa
      *         also indicate that the IntHashMap previously associated
      *         <tt>null</tt> with the specified key.
      */
-    public Object put(int key, Object value) {
+    public V put(int key, V value) {
         // Makes sure the key is not already in the IntHashMap.
-        Entry tab[] = table;
+        Entry<V> tab[] = table;
         int index = 0;
         
         index = (key & 0x7fffffff) % tab.length;
-        for (Entry e = tab[index] ; e != null ; e = e.next) {
+        for (Entry<V> e = tab[index] ; e != null ; e = e.next) {
             if (e.key == key) {
-                Object old = e.value;
+                V old = e.value;
                 e.value = value;
                 return old;
             }
@@ -331,7 +333,7 @@ public class IntHashMap extends AbstractMap implements Map, Cloneable, Serializa
         }
         
         // Creates the new entry.
-        Entry e = new Entry(key, value, tab[index]);
+        Entry<V> e = new Entry<V>(key, value, tab[index]);
         tab[index] = e;
         count++;
         return null;
@@ -346,7 +348,7 @@ public class IntHashMap extends AbstractMap implements Map, Cloneable, Serializa
      *         also indicate that the map previously associated <tt>null</tt>
      *         with the specified key.
      */
-    public Object remove(Integer key) {
+    public V remove(Integer key) {
         return remove(key.intValue());
     }
 
@@ -359,12 +361,12 @@ public class IntHashMap extends AbstractMap implements Map, Cloneable, Serializa
      *         also indicate that the map previously associated <tt>null</tt>
      *         with the specified key.
      */
-    public Object remove(int key) {
-        Entry tab[] = table;
+    public V remove(int key) {
+        Entry<V> tab[] = table;
         
         int index = (key & 0x7fffffff) % tab.length;
         
-        for (Entry e = tab[index], prev = null; e != null; prev = e, e = e.next) {
+        for (Entry<V> e = tab[index], prev = null; e != null; prev = e, e = e.next) {
             if (e.key == key) {
                 modCount++;
                 if (prev != null) {
@@ -374,7 +376,7 @@ public class IntHashMap extends AbstractMap implements Map, Cloneable, Serializa
                 }
                 
                 count--;
-                Object oldValue = e.value;
+                V oldValue = e.value;
                 e.value = null;
                 return oldValue;
             }
@@ -436,9 +438,9 @@ public class IntHashMap extends AbstractMap implements Map, Cloneable, Serializa
      *
      * @return a set view of the keys contained in this map.
      */
-    public Set keySet() {
+    public Set<Integer> keySet() {
         if (keySet == null) {
-            keySet = new AbstractSet() {
+            keySet = new AbstractSet<Integer>() {
                 public Iterator iterator() {
                     return new IntHashIterator(KEYS);
                 }
@@ -470,9 +472,9 @@ public class IntHashMap extends AbstractMap implements Map, Cloneable, Serializa
      *
      * @return a collection view of the values contained in this map.
      */
-    public Collection values() {
+    public Collection<V> values() {
         if (values==null) {
-            values = new AbstractCollection() {
+            values = new AbstractCollection<V>() {
                 public Iterator iterator() {
                     return (Iterator) new IntHashIterator(VALUES);
                 }
@@ -502,9 +504,9 @@ public class IntHashMap extends AbstractMap implements Map, Cloneable, Serializa
      *
      * @return a collection view of the mappings contained in this map.
      */
-    public Set entrySet() {
+    public Set<Map.Entry<Integer, V>> entrySet() {
         if (entrySet==null) {
-            entrySet = new AbstractSet() {
+            entrySet = new AbstractSet<Map.Entry<Integer, V>>() {
                 public Iterator iterator() {
                     return (Iterator) new IntHashIterator(ENTRIES);
                 }
@@ -570,34 +572,34 @@ public class IntHashMap extends AbstractMap implements Map, Cloneable, Serializa
     /**
      * IntHashMap collision list entry.
      */
-    private static class Entry implements Map.Entry {
+    private static class Entry<V> implements Map.Entry<Integer, V> {
         int key;
-        Object value;
-        Entry next;
+        V value;
+        Entry<V> next;
         private Integer objectKey;
         
-        Entry(int key, Object value, Entry next) {
+        Entry(int key, V value, Entry<V> next) {
             this.key = key;
             this.value = value;
             this.next = next;
         }
         
         protected Object clone() {
-            return new Entry(key, value, (next == null ? null : (Entry) next.clone()));
+            return new Entry<V>(key, value, (next == null ? null : (Entry<V>) next.clone()));
         }
         
         // Map.Entry Ops 
         
-        public Object getKey() {
-            return (objectKey != null) ? objectKey : (objectKey = new Integer(key));
+        public Integer getKey() {
+            return (objectKey != null) ? objectKey : (objectKey = Integer.valueOf(key));
         }
         
-        public Object getValue() {
+        public V getValue() {
             return value;
         }
         
-        public Object setValue(Object value) {
-            Object oldValue = this.value;
+        public V setValue(V value) {
+            V oldValue = this.value;
             this.value = value;
             return oldValue;
         }
@@ -677,7 +679,7 @@ public class IntHashMap extends AbstractMap implements Map, Cloneable, Serializa
                 throw new ConcurrentModificationException();
             }
             
-            Entry[] tab = IntHashMap.this.table;
+            Entry<V>[] tab = IntHashMap.this.table;
             int index = (lastReturned.key & 0x7fffffff) % tab.length;
             
             for (Entry e = tab[index], prev = null; e != null; prev = e, e = e.next) {
@@ -751,7 +753,7 @@ public class IntHashMap extends AbstractMap implements Map, Cloneable, Serializa
         // Read the keys and values, and put the mappings in the IntHashMap
         for (int i=0; i<size; i++) {
             int key = s.readInt();
-            Object value = s.readObject();
+            V value = (V) s.readObject();
             put(key, value);
         }
     }
