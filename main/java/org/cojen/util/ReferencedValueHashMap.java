@@ -42,9 +42,10 @@ import java.util.Set;
  * 
  * @author Brian S O'Neill
  */
-public abstract class ReferencedValueHashMap extends AbstractMap implements Map, Cloneable {
-
-    private transient Entry[] table;
+public abstract class ReferencedValueHashMap<K, V> extends AbstractMap<K, V>
+    implements Map<K, V>, Cloneable
+{
+    private transient Entry<K, V>[] table;
     private transient int count;
     private int threshold;
     private final float loadFactor;
@@ -52,9 +53,9 @@ public abstract class ReferencedValueHashMap extends AbstractMap implements Map,
 
     // Views
 
-    private transient Set keySet;
-    private transient Set entrySet;
-    private transient Collection values;
+    private transient Set<K> keySet;
+    private transient Set<Map.Entry<K, V>> entrySet;
+    private transient Collection<V> values;
 
     /**
      * Constructs a new, empty map with the specified initial 
@@ -111,7 +112,7 @@ public abstract class ReferencedValueHashMap extends AbstractMap implements Map,
      * the given map or 11 (whichever is greater), and a default load factor,
      * which is <tt>0.75</tt>.
      */
-    public ReferencedValueHashMap(Map t) {
+    public ReferencedValueHashMap(Map<? extends K, ? extends V> t) {
         this(Math.max(2 * t.size(), 11), 0.75f);
         putAll(t);
     }
@@ -156,12 +157,12 @@ public abstract class ReferencedValueHashMap extends AbstractMap implements Map,
     }
 
     public boolean containsKey(Object key) {
-        Entry[] tab = this.table;
+        Entry<K, V>[] tab = this.table;
 
         if (key != null) {
             int hash = key.hashCode();
             int index = (hash & 0x7fffffff) % tab.length;
-            for (Entry e = tab[index], prev = null; e != null; e = e.next) {
+            for (Entry<K, V> e = tab[index], prev = null; e != null; e = e.next) {
                 if (e.get() == null) {
                     // Clean up after a cleared Reference.
                     this.modCount++;
@@ -178,7 +179,7 @@ public abstract class ReferencedValueHashMap extends AbstractMap implements Map,
                 }
             }
         } else {
-            for (Entry e = tab[0], prev = null; e != null; e = e.next) {
+            for (Entry<K, V> e = tab[0], prev = null; e != null; e = e.next) {
                 if (e.get() == null) {
                     // Clean up after a cleared Reference.
                     this.modCount++;
@@ -199,15 +200,15 @@ public abstract class ReferencedValueHashMap extends AbstractMap implements Map,
         return false;
     }
 
-    public Object get(Object key) {
-        Entry[] tab = this.table;
+    public V get(Object key) {
+        Entry<K, V>[] tab = this.table;
 
         if (key != null) {
             int hash = key.hashCode();
             int index = (hash & 0x7fffffff) % tab.length;
 
-            for (Entry e = tab[index], prev = null; e != null; e = e.next) {
-                Object entryValue = e.get();
+            for (Entry<K, V> e = tab[index], prev = null; e != null; e = e.next) {
+                V entryValue = e.get();
 
                 if (entryValue == null) {
                     // Clean up after a cleared Reference.
@@ -225,8 +226,8 @@ public abstract class ReferencedValueHashMap extends AbstractMap implements Map,
                 }
             }
         } else {
-            for (Entry e = tab[0], prev = null; e != null; e = e.next) {
-                Object entryValue = e.get();
+            for (Entry<K, V> e = tab[0], prev = null; e != null; e = e.next) {
+                V entryValue = e.get();
 
                 if (entryValue == null) {
                     // Clean up after a cleared Reference.
@@ -254,10 +255,10 @@ public abstract class ReferencedValueHashMap extends AbstractMap implements Map,
      * cleared soft value.
      */
     private void cleanup() {
-        Entry[] tab = this.table;
+        Entry<K, V>[] tab = this.table;
 
         for (int i = tab.length ; i-- > 0 ;) {
-            for (Entry e = tab[i], prev = null; e != null; e = e.next) {
+            for (Entry<K, V> e = tab[i], prev = null; e != null; e = e.next) {
                 if (e.get() == null) {
                     // Clean up after a cleared Reference.
                     this.modCount++;
@@ -281,18 +282,18 @@ public abstract class ReferencedValueHashMap extends AbstractMap implements Map,
      */
     private void rehash() {
         int oldCapacity = this.table.length;
-        Entry[] oldMap = this.table;
+        Entry<K, V>[] oldMap = this.table;
 
         int newCapacity = oldCapacity * 2 + 1;
-        Entry[] newMap = new Entry[newCapacity];
+        Entry<K, V>[] newMap = new Entry[newCapacity];
 
         this.modCount++;
         this.threshold = (int)(newCapacity * this.loadFactor);
         this.table = newMap;
 
         for (int i = oldCapacity ; i-- > 0 ;) {
-            for (Entry old = oldMap[i] ; old != null ; ) {
-                Entry e = old;
+            for (Entry<K, V> old = oldMap[i] ; old != null ; ) {
+                Entry<K, V> e = old;
                 old = old.next;
 
                 // Only copy entry if its value hasn't been cleared.
@@ -307,21 +308,21 @@ public abstract class ReferencedValueHashMap extends AbstractMap implements Map,
         }
     }
 
-    public Object put(Object key, Object value) {
+    public V put(K key, V value) {
         if (value == null) {
-            value = KeyFactory.NULL;
+            value = (V) KeyFactory.NULL;
         }
 
         // Makes sure the key is not already in the HashMap.
-        Entry[] tab = this.table;
+        Entry<K, V>[] tab = this.table;
         int hash;
         int index;
 
         if (key != null) {
             hash = key.hashCode();
             index = (hash & 0x7fffffff) % tab.length;
-            for (Entry e = tab[index], prev = null; e != null; e = e.next) {
-                Object entryValue = e.get();
+            for (Entry<K, V> e = tab[index], prev = null; e != null; e = e.next) {
+                V entryValue = e.get();
 
                 if (entryValue == null) {
                     // Clean up after a cleared Reference.
@@ -342,8 +343,8 @@ public abstract class ReferencedValueHashMap extends AbstractMap implements Map,
         } else {
             hash = 0;
             index = 0;
-            for (Entry e = tab[0], prev = null; e != null; e = e.next) {
-                Object entryValue = e.get();
+            for (Entry<K, V> e = tab[0], prev = null; e != null; e = e.next) {
+                V entryValue = e.get();
 
                 if (entryValue == null) {
                     // Clean up after a cleared Reference.
@@ -378,21 +379,21 @@ public abstract class ReferencedValueHashMap extends AbstractMap implements Map,
         }
 
         // Creates the new entry.
-        Entry e = newEntry(hash, key, (Object)value, tab[index]);
+        Entry<K, V> e = newEntry(hash, key, (V)value, tab[index]);
         tab[index] = e;
         this.count++;
         return null;
     }
 
-    public Object remove(Object key) {
-        Entry[] tab = this.table;
+    public V remove(Object key) {
+        Entry<K, V>[] tab = this.table;
 
         if (key != null) {
             int hash = key.hashCode();
             int index = (hash & 0x7fffffff) % tab.length;
 
-            for (Entry e = tab[index], prev = null; e != null; e = e.next) {
-                Object entryValue = e.get();
+            for (Entry<K, V> e = tab[index], prev = null; e != null; e = e.next) {
+                V entryValue = e.get();
 
                 if (entryValue == null) {
                     // Clean up after a cleared Reference.
@@ -419,8 +420,8 @@ public abstract class ReferencedValueHashMap extends AbstractMap implements Map,
                 }
             }
         } else {
-            for (Entry e = tab[0], prev = null; e != null; e = e.next) {
-                Object entryValue = e.get();
+            for (Entry<K, V> e = tab[0], prev = null; e != null; e = e.next) {
+                V entryValue = e.get();
 
                 if (entryValue == null) {
                     // Clean up after a cleared Reference.
@@ -451,10 +452,10 @@ public abstract class ReferencedValueHashMap extends AbstractMap implements Map,
         return null;
     }
 
-    public void putAll(Map t) {
+    public void putAll(Map<? extends K, ? extends V> t) {
         Iterator i = t.entrySet().iterator();
         while (i.hasNext()) {
-            Map.Entry e = (Map.Entry) i.next();
+            Map.Entry<K, V> e = (Map.Entry<K, V>) i.next();
             put(e.getKey(), e.getValue());
         }
     }
@@ -487,9 +488,9 @@ public abstract class ReferencedValueHashMap extends AbstractMap implements Map,
         }
     }
 
-    public Set keySet() {
+    public Set<K> keySet() {
         if (this.keySet == null) {
-            this.keySet = new AbstractSet() {
+            this.keySet = new AbstractSet<K>() {
                 public Iterator iterator() {
                     return createHashIterator(WeakIdentityMap.KEYS);
                 }
@@ -522,9 +523,9 @@ public abstract class ReferencedValueHashMap extends AbstractMap implements Map,
         return this.keySet;
     }
 
-    public Collection values() {
+    public Collection<V> values() {
         if (this.values==null) {
-            this.values = new AbstractCollection() {
+            this.values = new AbstractCollection<V>() {
                 public Iterator iterator() {
                     return createHashIterator(WeakIdentityMap.VALUES);
                 }
@@ -545,9 +546,9 @@ public abstract class ReferencedValueHashMap extends AbstractMap implements Map,
         return this.values;
     }
 
-    public Set entrySet() {
+    public Set<Map.Entry<K, V>> entrySet() {
         if (this.entrySet==null) {
-            this.entrySet = new AbstractSet() {
+            this.entrySet = new AbstractSet<Map.Entry<K, V>>() {
                 public Iterator iterator() {
                     return createHashIterator(WeakIdentityMap.ENTRIES);
                 }
@@ -649,7 +650,7 @@ public abstract class ReferencedValueHashMap extends AbstractMap implements Map,
         return WeakIdentityMap.toString(this);
     }
 
-    abstract Entry newEntry(int hash, Object key, Object value, Entry next);
+    abstract Entry<K, V> newEntry(int hash, K key, V value, Entry<K, V> next);
 
     private Iterator createHashIterator(int type) {
         if (this.count == 0) {
@@ -662,21 +663,21 @@ public abstract class ReferencedValueHashMap extends AbstractMap implements Map,
     /**
      * Collision list entry.
      */
-    abstract static class Entry implements Map.Entry {
+    abstract static class Entry<K, V> implements Map.Entry<K, V> {
         int hash;
-        Object key;
-        Entry next;
+        K key;
+        Entry<K, V> next;
 
-        private Reference value;
+        private Reference<V> value;
 
-        Entry(int hash, Object key, Object value, Entry next) {
+        Entry(int hash, K key, V value, Entry<K, V> next) {
             this.hash = hash;
             this.key = key;
             this.value = newReference(value);
             this.next = next;
         }
 
-        Entry(int hash, Object key, Reference value, Entry next) {
+        Entry(int hash, K key, Reference<V> value, Entry<K, V> next) {
             this.hash = hash;
             this.key = key;
             this.value = value;
@@ -685,18 +686,18 @@ public abstract class ReferencedValueHashMap extends AbstractMap implements Map,
 
         // Map.Entry Ops 
 
-        public Object getKey() {
+        public K getKey() {
             return this.key;
         }
 
-        public Object getValue() {
-            Object value = this.value.get();
+        public V getValue() {
+            V value = this.value.get();
             return value == KeyFactory.NULL ? null : value;
         }
 
-        public Object setValue(Object value) {
-            Object oldValue = getValue();
-            this.value = newReference(value == null ? KeyFactory.NULL : value);
+        public V setValue(V value) {
+            V oldValue = getValue();
+            this.value = newReference(value == null ? ((V) KeyFactory.NULL) : value);
             return oldValue;
         }
 
@@ -731,12 +732,12 @@ public abstract class ReferencedValueHashMap extends AbstractMap implements Map,
                             (this.next == null ? null : (Entry)this.next.clone()));
         }
 
-        abstract Entry newEntry(int hash, Object key, Reference value, Entry next);
+        abstract Entry newEntry(int hash, K key, Reference<V> value, Entry<K, V> next);
 
-        abstract Reference newReference(Object value);
+        abstract Reference<V> newReference(V value);
 
         // Like getValue(), except does not convert NULL to null.
-        Object get() {
+        V get() {
             return this.value.get();
         }
     }
