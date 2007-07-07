@@ -34,7 +34,7 @@ import java.util.Map;
  * 
  * @author Brian S O'Neill
  */
-public class SoftValuedHashMap extends ReferencedValueHashMap {
+public class SoftValuedHashMap<K, V> extends ReferencedValueHashMap<K, V> {
 
     /**
      * Constructs a new, empty map with the specified initial 
@@ -75,30 +75,30 @@ public class SoftValuedHashMap extends ReferencedValueHashMap {
      * the given map or 11 (whichever is greater), and a default load factor,
      * which is <tt>0.75</tt>.
      */
-    public SoftValuedHashMap(Map t) {
+    public SoftValuedHashMap(Map<? extends K, ? extends V> t) {
         super(t);
     }
 
-    Entry newEntry(int hash, Object key, Object value, Entry next) {
-        return new SoftEntry(hash, key, value, next);
+    Entry<K, V> newEntry(int hash, K key, V value, Entry<K, V> next) {
+        return new SoftEntry<K, V>(hash, key, value, next);
     }
 
-    static class SoftEntry extends ReferencedValueHashMap.Entry {
+    static class SoftEntry<K, V> extends ReferencedValueHashMap.Entry<K, V> {
 
-        SoftEntry(int hash, Object key, Object value, Entry next) {
+        SoftEntry(int hash, K key, V value, Entry<K, V> next) {
             super(hash, key, value, next);
         }
 
-        SoftEntry(int hash, Object key, Reference value, Entry next) {
+        SoftEntry(int hash, K key, Reference<V> value, Entry<K, V> next) {
             super(hash, key, value, next);
         }
 
-        Entry newEntry(int hash, Object key, Reference value, Entry next) {
-            return new SoftEntry(hash, key, value, next);
+        Entry newEntry(int hash, K key, Reference<V> value, Entry<K, V> next) {
+            return new SoftEntry<K, V>(hash, key, value, next);
         }
 
-        Reference newReference(Object value) {
-            return new SoftReference(value);
+        Reference<V> newReference(V value) {
+            return new SoftReference<V>(value);
         }
     }
 }

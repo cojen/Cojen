@@ -89,7 +89,7 @@ import org.cojen.classfile.TypeDesc;
  *
  * @author Brian S O'Neill
  */
-public class BeanComparator implements Comparator, Serializable {
+public class BeanComparator<T> implements Comparator<T>, Serializable {
     // Maps Rules to auto-generated Comparators.
     private static Map cGeneratedComparatorCache;
 
@@ -104,8 +104,8 @@ public class BeanComparator implements Comparator, Serializable {
      * {@link #nullHigh high} by default), and treats all other comparisons as
      * equal.
      */
-    public static BeanComparator forClass(Class clazz) {
-        return new BeanComparator(clazz);
+    public static <T> BeanComparator<T> forClass(Class<T> clazz) {
+        return new BeanComparator<T>(clazz);
     }
 
     /**
@@ -127,14 +127,14 @@ public class BeanComparator implements Comparator, Serializable {
     }
     */
 
-    private Class mBeanClass;
+    private Class<T> mBeanClass;
 
     // Maps property names to PropertyDescriptors.
-    private transient Map mProperties;
+    private transient Map<String, BeanProperty> mProperties;
 
     private String mOrderByName;
 
-    private Comparator mUsingComparator;
+    private Comparator<?> mUsingComparator;
 
     // bit 0: reverse
     // bit 1: null low order
@@ -142,22 +142,22 @@ public class BeanComparator implements Comparator, Serializable {
     private int mFlags;
 
     // Used for comparing strings.
-    private Comparator mCollator;
+    private Comparator<String> mCollator;
 
-    private BeanComparator mParent;
+    private BeanComparator<T> mParent;
 
     // Auto-generated internal Comparator.
-    private transient Comparator mComparator;
+    private transient Comparator<T> mComparator;
 
     private transient boolean mHasHashCode;
     private transient int mHashCode;
 
-    private BeanComparator(Class clazz) {
+    private BeanComparator(Class<T> clazz) {
         mBeanClass = clazz;
         mCollator = String.CASE_INSENSITIVE_ORDER;
     }
 
-    private BeanComparator(BeanComparator parent) {
+    private BeanComparator(BeanComparator<T> parent) {
         mParent = parent;
         mBeanClass = parent.mBeanClass;
         mProperties = parent.getProperties();
@@ -196,7 +196,7 @@ public class BeanComparator implements Comparator, Serializable {
      * @throws IllegalArgumentException when property doesn't exist or cannot
      * be read.
      */
-    public BeanComparator orderBy(String propertyName)
+    public BeanComparator<T> orderBy(String propertyName)
         throws IllegalArgumentException
     {
         int dot = propertyName.indexOf('.');
@@ -222,7 +222,7 @@ public class BeanComparator implements Comparator, Serializable {
             }
         }
 
-        BeanProperty prop = (BeanProperty)getProperties().get(propertyName);
+        BeanProperty prop = getProperties().get(propertyName);
 
         if (prop == null) {
             throw new IllegalArgumentException
@@ -243,11 +243,11 @@ public class BeanComparator implements Comparator, Serializable {
             propertyName = new String(propertyName);
         }
 
-        BeanComparator bc = new BeanComparator(this);
+        BeanComparator<T> bc = new BeanComparator<T>(this);
         bc.mOrderByName = propertyName;
 
         if (subName != null) {
-            BeanComparator subOrder = forClass(prop.getType());
+            BeanComparator<?> subOrder = forClass(prop.getType());
             subOrder.mCollator = mCollator;
             bc = bc.using(subOrder.orderBy(subName));
         }
@@ -270,8 +270,8 @@ public class BeanComparator implements Comparator, Serializable {
      * @param c Comparator to use on the last order-by property. Passing null
      * restores the default comparison for the last order-by property.
      */
-    public BeanComparator using(Comparator c) {
-        BeanComparator bc = new BeanComparator(this);
+    public <S> BeanComparator<T> using(Comparator<S> c) {
+        BeanComparator<T> bc = new BeanComparator<T>(this);
         bc.mOrderByName = mOrderByName;
         bc.mUsingComparator = c;
         bc.mFlags = mFlags;
@@ -283,8 +283,8 @@ public class BeanComparator implements Comparator, Serializable {
      * property. By default, order is ascending. If no order-by properties have
      * been specified, then reverse order is applied to the compared beans.
      */
-    public BeanComparator reverse() {
-        BeanComparator bc = new BeanComparator(this);
+    public BeanComparator<T> reverse() {
+        BeanComparator<T> bc = new BeanComparator<T>(this);
         bc.mOrderByName = mOrderByName;
         bc.mUsingComparator = mUsingComparator;
         bc.mFlags = mFlags ^ 0x01;
@@ -301,8 +301,8 @@ public class BeanComparator implements Comparator, Serializable {
      * <p>
      * Calling 'nullHigh, reverse' is equivalent to calling 'reverse, nullLow'.
      */
-    public BeanComparator nullHigh() {
-        BeanComparator bc = new BeanComparator(this);
+    public BeanComparator<T> nullHigh() {
+        BeanComparator<T> bc = new BeanComparator<T>(this);
         bc.mOrderByName = mOrderByName;
         bc.mUsingComparator = mUsingComparator;
         bc.mFlags = mFlags ^ ((mFlags & 0x01) << 1);
@@ -317,8 +317,8 @@ public class BeanComparator implements Comparator, Serializable {
      * <p>
      * Calling 'reverse, nullLow' is equivalent to calling 'nullHigh, reverse'.
      */
-    public BeanComparator nullLow() {
-        BeanComparator bc = new BeanComparator(this);
+    public BeanComparator<T> nullLow() {
+        BeanComparator<T> bc = new BeanComparator<T>(this);
         bc.mOrderByName = mOrderByName;
         bc.mUsingComparator = mUsingComparator;
         bc.mFlags = mFlags ^ ((~mFlags & 0x01) << 1);
@@ -334,12 +334,12 @@ public class BeanComparator implements Comparator, Serializable {
      * A {@link #using using} Comparator disables this setting. Passing null to
      * the using method will re-enable a case-sensitive setting.
      */
-    public BeanComparator caseSensitive() {
+    public BeanComparator<T> caseSensitive() {
         if ((mFlags & 0x04) != 0) {
             // Already case-sensitive.
             return this;
         }
-        BeanComparator bc = new BeanComparator(this);
+        BeanComparator<T> bc = new BeanComparator<T>(this);
         bc.mOrderByName = mOrderByName;
         bc.mUsingComparator = mUsingComparator;
         bc.mFlags = mFlags | 0x04;
@@ -360,8 +360,8 @@ public class BeanComparator implements Comparator, Serializable {
      * causes all Strings to be ordered by
      * {@link String#compareTo(String) String.compareTo}.
      */
-    public BeanComparator collate(Comparator c) {
-        BeanComparator bc = new BeanComparator(this);
+    public BeanComparator<T> collate(Comparator<String> c) {
+        BeanComparator<T> bc = new BeanComparator<T>(this);
         bc.mOrderByName = mOrderByName;
         bc.mUsingComparator = mUsingComparator;
         bc.mFlags = mFlags & ~0x04;
@@ -369,8 +369,8 @@ public class BeanComparator implements Comparator, Serializable {
         return bc;
     }
 
-    public int compare(Object obj1, Object obj2) throws ClassCastException {
-        Comparator c = mComparator;
+    public int compare(T obj1, T obj2) throws ClassCastException {
+        Comparator<T> c = mComparator;
         if (c == null) {
             c = mComparator = generateComparator();
         }
@@ -412,14 +412,14 @@ public class BeanComparator implements Comparator, Serializable {
         }
     }
 
-    private Map getProperties() {
+    private Map<String, BeanProperty> getProperties() {
         if (mProperties == null) {
             mProperties = BeanIntrospector.getAllProperties(mBeanClass);
         }
         return mProperties;
     }
 
-    private Comparator generateComparator() {
+    private Comparator<T> generateComparator() {
         Rules rules = new Rules(this);
 
         if (!mHasHashCode) {
@@ -481,7 +481,7 @@ public class BeanComparator implements Comparator, Serializable {
                 cGeneratedComparatorCache.put(rules, c);
             }
 
-            return (Comparator)c;
+            return (Comparator<T>)c;
         }
     }
 
@@ -985,7 +985,7 @@ public class BeanComparator implements Comparator, Serializable {
         private BeanComparator[] reduceRules(BeanComparator bc) {
             // Reduce the ordering rules by returning BeanComparators
             // that are at the end of the chain or before an order-by rule.
-            List rules = new ArrayList();
+            List<BeanComparator> rules = new ArrayList<BeanComparator>();
 
             rules.add(bc);
             String name = bc.mOrderByName;
@@ -1002,7 +1002,7 @@ public class BeanComparator implements Comparator, Serializable {
             BeanComparator[] bcs = new BeanComparator[size];
             // Reverse rules so that they are in forward order.
             for (int i=0; i<size; i++) {
-                bcs[size - i - 1] = (BeanComparator)rules.get(i);
+                bcs[size - i - 1] = rules.get(i);
             }
 
             return bcs;

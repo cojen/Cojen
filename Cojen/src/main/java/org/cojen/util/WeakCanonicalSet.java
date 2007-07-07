@@ -36,12 +36,12 @@ import java.util.NoSuchElementException;
  *
  * @author Brian S O'Neill
  */
-public class WeakCanonicalSet extends AbstractSet {
-    private Entry[] table;
+public class WeakCanonicalSet<T> extends AbstractSet<T> {
+    private Entry<T>[] table;
     private int count;
     private int threshold;
     private final float loadFactor;
-    private final ReferenceQueue queue;
+    private final ReferenceQueue<T> queue;
 
     public WeakCanonicalSet() {
         final int initialCapacity = 101;
@@ -49,7 +49,7 @@ public class WeakCanonicalSet extends AbstractSet {
         this.loadFactor = loadFactor;
         this.table = new Entry[initialCapacity];
         this.threshold = (int)(initialCapacity * loadFactor);
-        this.queue = new ReferenceQueue();
+        this.queue = new ReferenceQueue<T>();
     }
 
     /**
@@ -60,14 +60,14 @@ public class WeakCanonicalSet extends AbstractSet {
      *
      * @param obj candidate canonical object; null is also accepted
      */
-    public synchronized Object put(Object obj) {
+    public synchronized T put(T obj) {
         // This implementation is based on the WeakIdentityMap.put method.
 
         if (obj == null) {
             return null;
         }
 
-        Entry[] tab = this.table;
+        Entry<T>[] tab = this.table;
 
         // Cleanup after cleared References.
         {
@@ -77,7 +77,7 @@ public class WeakCanonicalSet extends AbstractSet {
                 // Since buckets are single-linked, traverse entire list and
                 // cleanup all cleared references in it.
                 int index = (((Entry) ref).hash & 0x7fffffff) % tab.length;
-                for (Entry e = tab[index], prev = null; e != null; e = e.next) {
+                for (Entry<T> e = tab[index], prev = null; e != null; e = e.next) {
                     if (e.get() == null) {
                         if (prev != null) {
                             prev.next = e.next;
@@ -95,8 +95,8 @@ public class WeakCanonicalSet extends AbstractSet {
         int hash = hashCode(obj);
         int index = (hash & 0x7fffffff) % tab.length;
 
-        for (Entry e = tab[index], prev = null; e != null; e = e.next) {
-            Object iobj = e.get();
+        for (Entry<T> e = tab[index], prev = null; e != null; e = e.next) {
+            T iobj = e.get();
             if (iobj == null) {
                 // Clean up after a cleared Reference.
                 if (prev != null) {
@@ -123,12 +123,12 @@ public class WeakCanonicalSet extends AbstractSet {
         }
 
         // Create a new entry.
-        tab[index] = new Entry(obj, this.queue, hash, tab[index]);
+        tab[index] = new Entry<T>(obj, this.queue, hash, tab[index]);
         this.count++;
         return obj;
     }
 
-    public Iterator iterator() {
+    public Iterator<T> iterator() {
         return new SetIterator();
     }
 
@@ -141,11 +141,11 @@ public class WeakCanonicalSet extends AbstractSet {
             return false;
         }
 
-        Entry[] tab = this.table;
+        Entry<T>[] tab = this.table;
         int hash = hashCode(obj);
         int index = (hash & 0x7fffffff) % tab.length;
 
-        for (Entry e = tab[index], prev = null; e != null; e = e.next) {
+        for (Entry<T> e = tab[index], prev = null; e != null; e = e.next) {
             Object iobj = e.get();
             if (iobj == null) {
                 // Clean up after a cleared Reference.
@@ -182,17 +182,17 @@ public class WeakCanonicalSet extends AbstractSet {
 
     private void rehash() {
         int oldCapacity = this.table.length;
-        Entry[] tab = this.table;
+        Entry<T>[] tab = this.table;
 
         int newCapacity = oldCapacity * 2 + 1;
-        Entry[] newTab = new Entry[newCapacity];
+        Entry<T>[] newTab = new Entry[newCapacity];
 
         this.threshold = (int)(newCapacity * this.loadFactor);
         this.table = newTab;
 
         for (int i = oldCapacity; i-- > 0; ) {
-            for (Entry old = tab[i]; old != null; ) {
-                Entry e = old;
+            for (Entry<T> old = tab[i]; old != null; ) {
+                Entry<T> e = old;
                 old = old.next;
 
                 // Only copy entry if it hasn't been cleared.
@@ -207,27 +207,27 @@ public class WeakCanonicalSet extends AbstractSet {
         }
     }
 
-    private static class Entry extends WeakReference {
+    private static class Entry<T> extends WeakReference<T> {
         int hash;
-        Entry next;
+        Entry<T> next;
 
-        Entry(Object canonical, ReferenceQueue queue, int hash, Entry next) {
+        Entry(T canonical, ReferenceQueue<T> queue, int hash, Entry<T> next) {
             super(canonical, queue);
             this.hash = hash;
             this.next = next;
         }
     }
 
-    private class SetIterator implements Iterator {
-        private final Entry[] table;
+    private class SetIterator implements Iterator<T> {
+        private final Entry<T>[] table;
 
         private int index;
 
         // To ensure that the iterator doesn't return cleared entries, keep a
         // hard reference to the canonical object. Its existence will prevent
         // the weak reference from being cleared.
-        private Object entryCanonical;
-        private Entry entry;
+        private T entryCanonical;
+        private Entry<T> entry;
 
         SetIterator() {
             this.table = WeakCanonicalSet.this.table;
@@ -251,7 +251,7 @@ public class WeakCanonicalSet extends AbstractSet {
             return true;
         }
 
-        public Object next() {
+        public T next() {
             if (!hasNext()) {
                 throw new NoSuchElementException();
             }

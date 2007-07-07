@@ -255,7 +255,7 @@ public abstract class BeanPropertyAccessor {
      */
     private static int hashCapacity(int min) {
         BigInteger capacity = BigInteger.valueOf(min * 2 + 1);
-        while (!capacity.isProbablePrime(100)) {
+        while (!capacity.isProbablePrime(10)) {
             capacity = capacity.add(BigInteger.valueOf(2));
         }
         return capacity.intValue();

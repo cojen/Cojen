@@ -5,7 +5,9 @@ Change History
 
 2.0.1 to 2.1
 -------------------------------
+- Targets JDK1.5.
 - Added WeakValuedHashMap class.
+- Moved some utility classes from Carbonado into Cojen.
 
 2.0 to 2.0.1
 -------------------------------
