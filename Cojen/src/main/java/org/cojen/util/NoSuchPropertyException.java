@@ -22,7 +22,7 @@ package org.cojen.util;
  *
  * @author Brian S O'Neill
  */
-public class NoSuchPropertyException extends RuntimeException {
+public class NoSuchPropertyException extends UnsupportedOperationException {
     public NoSuchPropertyException(String property, boolean forRead) {
         super("Property '" + property + "' not found for " +
               (forRead ? "reading" : "writing"));

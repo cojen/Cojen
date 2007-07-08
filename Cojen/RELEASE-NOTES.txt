@@ -8,6 +8,7 @@ Change History
 - Targets JDK1.5.
 - Added WeakValuedHashMap class.
 - Moved some utility classes from Carbonado into Cojen.
+- Added BeanPropertyMapFactory class.
 
 2.0 to 2.0.1
 -------------------------------

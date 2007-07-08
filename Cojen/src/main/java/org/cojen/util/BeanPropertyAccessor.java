@@ -39,10 +39,16 @@ import org.cojen.classfile.TypeDesc;
  * directly, using a special hash/switch design pattern.
  *
  * @author Brian S O'Neill
+ * @see BeanPropertyMapFactory
  */
 public abstract class BeanPropertyAccessor<B> {
-    // Maps classes to softly referenced BeanPropertyAccessors.
-    private static Map cAccessors = new WeakIdentityMap();
+    private static final int READ_METHOD = 1;
+    private static final int WRITE_METHOD = 2;
+    private static final int HAS_READ_METHOD = 3;
+    private static final int HAS_WRITE_METHOD = 4;
+
+    private static final Map<Class, SoftReference<BeanPropertyAccessor>> cAccessors =
+        new WeakIdentityMap<Class, SoftReference<BeanPropertyAccessor>>();
 
     /**
      * Returns a new or cached BeanPropertyAccessor for the given class.
@@ -50,26 +56,26 @@ public abstract class BeanPropertyAccessor<B> {
     public static <B> BeanPropertyAccessor<B> forClass(Class<B> clazz) {
         synchronized (cAccessors) {
             BeanPropertyAccessor bpa;
-            SoftReference ref = (SoftReference) cAccessors.get(clazz);
+            SoftReference<BeanPropertyAccessor> ref = cAccessors.get(clazz);
             if (ref != null) {
-                bpa = (BeanPropertyAccessor)ref.get();
+                bpa = ref.get();
                 if (bpa != null) {
                     return bpa;
                 }
             }
             bpa = generate(clazz);
-            cAccessors.put(clazz, new SoftReference(bpa));
+            cAccessors.put(clazz, new SoftReference<BeanPropertyAccessor>(bpa));
             return bpa;
         }
     }
 
-    private static BeanPropertyAccessor generate(Class beanType) {
+    private static <B> BeanPropertyAccessor<B> generate(Class<B> beanType) {
         ClassInjector ci = ClassInjector.create
             (BeanPropertyAccessor.class.getName(), beanType.getClassLoader());
         Class clazz = ci.defineClass(generateClassFile(ci.getClassName(), beanType));
 
         try {
-            return (BeanPropertyAccessor)clazz.newInstance();
+            return (BeanPropertyAccessor<B>) clazz.newInstance();
         } catch (InstantiationException e) {
             throw new InternalError(e.toString());
         } catch (IllegalAccessException e) {
@@ -92,58 +98,82 @@ public abstract class BeanPropertyAccessor<B> {
 
         MethodInfo ctor = cf.addConstructor(Modifiers.PUBLIC, null);
         ctor.markSynthetic();
-        CodeBuilder builder = new CodeBuilder(ctor);
+        CodeBuilder b = new CodeBuilder(ctor);
 
-        builder.loadThis();
-        builder.invokeSuperConstructor(null);
-        builder.returnVoid();
+        b.loadThis();
+        b.invokeSuperConstructor(null);
+        b.returnVoid();
 
-        generateMethod(cf, beanType, props[0], true);
-        generateMethod(cf, beanType, props[1], false);
+        generateAccessMethod(cf, beanType, props[0], READ_METHOD);
+        generateAccessMethod(cf, beanType, props[0], HAS_READ_METHOD);
+        generateAccessMethod(cf, beanType, props[1], WRITE_METHOD);
+        generateAccessMethod(cf, beanType, props[1], HAS_WRITE_METHOD);
+
+        generateSearchMethod(cf, beanType, props[0]);
 
         return cf;
     }
 
-    private static void generateMethod(ClassFile cf,
-                                       Class beanType,
-                                       BeanProperty[] properties,
-                                       boolean forRead)
+    private static void generateAccessMethod(ClassFile cf,
+                                             Class beanType,
+                                             BeanProperty[] properties,
+                                             int methodType)
     {
-        TypeDesc objectType = TypeDesc.OBJECT;
-        TypeDesc stringType = TypeDesc.STRING;
-        TypeDesc intType = TypeDesc.INT;
-        TypeDesc booleanType = TypeDesc.BOOLEAN;
-        TypeDesc exceptionType =
-            TypeDesc.forClass(NoSuchPropertyException.class);
-
         MethodInfo mi;
-        if (forRead) {
-            TypeDesc[] params = {objectType, stringType};
+        switch (methodType) {
+        case READ_METHOD: default: {
+            TypeDesc[] params = {TypeDesc.OBJECT, TypeDesc.STRING};
             mi = cf.addMethod
-                (Modifiers.PUBLIC, "getPropertyValue", objectType, params);
-        } else {
+                (Modifiers.PUBLIC, "getPropertyValue", TypeDesc.OBJECT, params);
+            break;
+        }
+        case WRITE_METHOD: {
             TypeDesc[] params = new TypeDesc[] {
-                objectType, stringType, objectType
+                TypeDesc.OBJECT, TypeDesc.STRING, TypeDesc.OBJECT
             };
-            mi = cf.addMethod
-                (Modifiers.PUBLIC, "setPropertyValue", null, params);
+            mi = cf.addMethod(Modifiers.PUBLIC, "setPropertyValue", null, params);
+            break;
+        }
+        case HAS_READ_METHOD: {
+            TypeDesc[] params = {TypeDesc.STRING};
+            mi = cf.addMethod(Modifiers.PUBLIC, "hasReadableProperty", TypeDesc.BOOLEAN, params);
+            break;
+        }
+        case HAS_WRITE_METHOD: {
+            TypeDesc[] params = {TypeDesc.STRING};
+            mi = cf.addMethod(Modifiers.PUBLIC, "hasWritableProperty", TypeDesc.BOOLEAN, params);
+            break;
+        }
         }
 
         mi.markSynthetic();
-        CodeBuilder builder = new CodeBuilder(mi);
+        CodeBuilder b = new CodeBuilder(mi);
 
-        LocalVariable beanVar = builder.getParameter(0);
-        LocalVariable propertyVar = builder.getParameter(1);
-        LocalVariable valueVar;
-        if (forRead) {
+        LocalVariable beanVar, propertyVar, valueVar;
+
+        switch (methodType) {
+        case READ_METHOD: default:
+            beanVar = b.getParameter(0);
+            propertyVar = b.getParameter(1);
             valueVar = null;
-        } else {
-            valueVar = builder.getParameter(2);
+            break;
+        case WRITE_METHOD:
+            beanVar = b.getParameter(0);
+            propertyVar = b.getParameter(1);
+            valueVar = b.getParameter(2);
+            break;
+        case HAS_READ_METHOD: case HAS_WRITE_METHOD:
+            beanVar = null;
+            propertyVar = b.getParameter(0);
+            valueVar = null;
+            break;
         }
 
-        builder.loadLocal(beanVar);
-        builder.checkCast(TypeDesc.forClass(beanType));
-        builder.storeLocal(beanVar);
+        if (beanVar != null) {
+            b.loadLocal(beanVar);
+            b.checkCast(TypeDesc.forClass(beanType));
+            b.storeLocal(beanVar);
+        }
 
         if (properties.length > 0) {
             int[] cases = new int[hashCapacity(properties.length)];
@@ -153,7 +183,7 @@ public abstract class BeanPropertyAccessor<B> {
             }
 
             Label[] switchLabels = new Label[caseCount];
-            Label noMatch = builder.createLabel();
+            Label noMatch = b.createLabel();
             List[] caseMethods = caseMethods(caseCount, properties);
             
             for (int i=0; i<caseCount; i++) {
@@ -161,24 +191,23 @@ public abstract class BeanPropertyAccessor<B> {
                 if (matches == null || matches.size() == 0) {
                     switchLabels[i] = noMatch;
                 } else {
-                    switchLabels[i] = builder.createLabel();
+                    switchLabels[i] = b.createLabel();
                 }
             }
 
             if (properties.length > 1) {
-                builder.loadLocal(propertyVar);
-                builder.invokeVirtual(String.class.getName(),
-                                      "hashCode", intType, null);
-                builder.loadConstant(0x7fffffff);
-                builder.math(Opcode.IAND);
-                builder.loadConstant(caseCount);
-                builder.math(Opcode.IREM);
+                b.loadLocal(propertyVar);
+                b.invokeVirtual(String.class.getName(), "hashCode", TypeDesc.INT, null);
+                b.loadConstant(0x7fffffff);
+                b.math(Opcode.IAND);
+                b.loadConstant(caseCount);
+                b.math(Opcode.IREM);
             
-                builder.switchBranch(cases, switchLabels, noMatch);
+                b.switchBranch(cases, switchLabels, noMatch);
             }
             
             // Params to invoke String.equals.
-            TypeDesc[] params = {objectType};
+            TypeDesc[] params = {TypeDesc.OBJECT};
             
             for (int i=0; i<caseCount; i++) {
                 List matches = caseMethods[i];
@@ -194,35 +223,44 @@ public abstract class BeanPropertyAccessor<B> {
                     
                     // Test against name to find exact match.
                     
-                    builder.loadConstant(bp.getName());
-                    builder.loadLocal(propertyVar);
-                    builder.invokeVirtual(String.class.getName(),
-                                          "equals", booleanType, params);
+                    b.loadConstant(bp.getName());
+                    b.loadLocal(propertyVar);
+                    b.invokeVirtual(String.class.getName(), "equals", TypeDesc.BOOLEAN, params);
                     
                     Label notEqual;
                     
                     if (j == matchCount - 1) {
                         notEqual = null;
-                        builder.ifZeroComparisonBranch(noMatch, "==");
+                        b.ifZeroComparisonBranch(noMatch, "==");
                     } else {
-                        notEqual = builder.createLabel();
-                        builder.ifZeroComparisonBranch(notEqual, "==");
+                        notEqual = b.createLabel();
+                        b.ifZeroComparisonBranch(notEqual, "==");
                     }
                     
-                    if (forRead) {
-                        builder.loadLocal(beanVar);
-                        builder.invoke(bp.getReadMethod());
+                    switch (methodType) {
+                    case READ_METHOD: default: {
+                        b.loadLocal(beanVar);
+                        b.invoke(bp.getReadMethod());
                         TypeDesc type = TypeDesc.forClass(bp.getType());
-                        builder.convert(type, type.toObjectType());
-                        builder.returnValue(TypeDesc.OBJECT);
-                    } else {
-                        builder.loadLocal(beanVar);
-                        builder.loadLocal(valueVar);
+                        b.convert(type, type.toObjectType());
+                        b.returnValue(TypeDesc.OBJECT);
+                        break;
+                    }
+                    case WRITE_METHOD: {
+                        b.loadLocal(beanVar);
+                        b.loadLocal(valueVar);
                         TypeDesc type = TypeDesc.forClass(bp.getType());
-                        builder.checkCast(type.toObjectType());
-                        builder.convert(type.toObjectType(), type);
-                        builder.invoke(bp.getWriteMethod());
-                        builder.returnVoid();
+                        b.checkCast(type.toObjectType());
+                        b.convert(type.toObjectType(), type);
+                        b.invoke(bp.getWriteMethod());
+                        b.returnVoid();
+                        break;
+                    }
+                    case HAS_READ_METHOD: case HAS_WRITE_METHOD: {
+                        b.loadConstant(true);
+                        b.returnValue(TypeDesc.BOOLEAN);
+                        break;
+                    }
                     }
                     
                     if (notEqual != null) {
@@ -234,17 +272,21 @@ public abstract class BeanPropertyAccessor<B> {
             noMatch.setLocation();
         }
 
-        builder.newObject(exceptionType);
-        builder.dup();
-        builder.loadLocal(propertyVar);
-        builder.loadConstant(forRead);
+        if (methodType == HAS_READ_METHOD || methodType == HAS_WRITE_METHOD) {
+            b.loadConstant(false);
+            b.returnValue(TypeDesc.BOOLEAN);
+        } else {
+            b.newObject(TypeDesc.forClass(NoSuchPropertyException.class));
+            b.dup();
+            b.loadLocal(propertyVar);
+            b.loadConstant(methodType == READ_METHOD);
 
-        // Params to invoke NoSuchPropertyException.<init>.
-        TypeDesc[] params = {stringType, booleanType};
+            // Params to invoke NoSuchPropertyException.<init>.
+            TypeDesc[] params = {TypeDesc.STRING, TypeDesc.BOOLEAN};
 
-        builder.invokeConstructor
-            (NoSuchPropertyException.class.getName(), params);
-        builder.throwObject();
+            b.invokeConstructor(NoSuchPropertyException.class.getName(), params);
+            b.throwObject();
+        }
     }
 
     /**
@@ -282,6 +324,86 @@ public abstract class BeanPropertyAccessor<B> {
         }
 
         return cases;
+    }
+
+    private static void generateSearchMethod(ClassFile cf,
+                                             Class beanType,
+                                             BeanProperty[] properties)
+    {
+        MethodInfo mi;
+        {
+            TypeDesc[] params = {TypeDesc.OBJECT, TypeDesc.OBJECT};
+            mi = cf.addMethod(Modifiers.PUBLIC, "hasPropertyValue", TypeDesc.BOOLEAN, params);
+        }
+
+        mi.markSynthetic();
+        CodeBuilder b = new CodeBuilder(mi);
+
+        LocalVariable beanVar = b.getParameter(0);
+        b.loadLocal(beanVar);
+        b.checkCast(TypeDesc.forClass(beanType));
+        b.storeLocal(beanVar);
+
+        LocalVariable valueVar = b.getParameter(1);
+
+        // If search value is null, only check properties which might be null.
+        b.loadLocal(valueVar);
+        Label searchNotNull = b.createLabel();
+        b.ifNullBranch(searchNotNull, false);
+
+        for (BeanProperty bp : properties) {
+            if (bp.getType().isPrimitive()) {
+                continue;
+            }
+
+            b.loadLocal(beanVar);
+            b.invoke(bp.getReadMethod());
+
+            Label noMatch = b.createLabel();
+            b.ifNullBranch(noMatch, false);
+            b.loadConstant(true);
+            b.returnValue(TypeDesc.BOOLEAN);
+
+            noMatch.setLocation();
+        }
+
+        b.loadConstant(false);
+        b.returnValue(TypeDesc.BOOLEAN);
+
+        searchNotNull.setLocation();
+
+        // Handle search for non-null value. Search non-primitive properties
+        // first, to avoid object conversion.
+
+        // Params to invoke Object.equals.
+        TypeDesc[] params = {TypeDesc.OBJECT};
+
+        for (int pass = 1; pass <= 2; pass++) {
+            for (BeanProperty bp : properties) {
+                boolean primitive = bp.getType().isPrimitive();
+                if (pass == 1 && primitive) {
+                    continue;
+                } else if (pass == 2 && !primitive) {
+                    continue;
+                }
+
+                b.loadLocal(valueVar);
+                b.loadLocal(beanVar);
+                b.invoke(bp.getReadMethod());
+                b.convert(TypeDesc.forClass(bp.getType()), TypeDesc.OBJECT);
+                b.invokeVirtual(Object.class.getName(), "equals", TypeDesc.BOOLEAN, params);
+
+                Label noMatch = b.createLabel();
+                b.ifZeroComparisonBranch(noMatch, "==");
+                b.loadConstant(true);
+                b.returnValue(TypeDesc.BOOLEAN);
+
+                noMatch.setLocation();
+            }
+        }
+
+        b.loadConstant(false);
+        b.returnValue(TypeDesc.BOOLEAN);
     }
 
     /**
@@ -323,9 +445,29 @@ public abstract class BeanPropertyAccessor<B> {
     public abstract Object getPropertyValue(B bean, String property)
         throws NoSuchPropertyException;
 
-    public abstract void setPropertyValue(B bean, String property,
-                                          Object value)
+    public abstract void setPropertyValue(B bean, String property, Object value)
         throws NoSuchPropertyException;
+
+    /**
+     * Returns true if readable bean property exists.
+     *
+     * @since 2.1
+     */
+    public abstract boolean hasReadableProperty(String property);
+
+    /**
+     * Returns true if writable bean property exists.
+     *
+     * @since 2.1
+     */
+    public abstract boolean hasWritableProperty(String property);
+
+    /**
+     * Returns true if at least one property is set to the given value.
+     *
+     * @since 2.1
+     */
+    public abstract boolean hasPropertyValue(B bean, Object value);
 
     // Auto-generated code sample:
     /*
