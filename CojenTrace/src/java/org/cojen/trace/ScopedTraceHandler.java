@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package cojen.trace;
+package org.cojen.trace;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import cojen.util.IntHashMap;
+import org.cojen.util.IntHashMap;
 
 /**
  * Abstract trace handler which gathers data on traced methods and reports it
@@ -194,7 +194,7 @@ public abstract class ScopedTraceHandler implements TraceHandler {
         private final TraceToolbox mToolbox;
         private final Scope mParent;
         private final Thread mThread;
-        private final IntHashMap mMethodDataMap;
+        private final IntHashMap<MethodData> mMethodDataMap;
         private final ArrayList<MethodData> mMethodDataSequence;
 
         private int mExitCount;
@@ -209,7 +209,7 @@ public abstract class ScopedTraceHandler implements TraceHandler {
             mToolbox = toolbox;
             mParent = parent;
             mThread = thread;
-            mMethodDataMap = new IntHashMap();
+            mMethodDataMap = new IntHashMap<MethodData>();
             mMethodDataSequence = new ArrayList<MethodData>();
         }
 
@@ -402,7 +402,7 @@ public abstract class ScopedTraceHandler implements TraceHandler {
             if (parent != null) {
                 for (MethodData md : mMethodDataSequence) {
                     int mid = md.mMethod.getMethodID();
-                    MethodData pmd = (MethodData) parent.mMethodDataMap.get(mid);
+                    MethodData pmd = parent.mMethodDataMap.get(mid);
                     if (pmd == null) {
                         parent.mMethodDataMap.put(mid, md);
                         parent.mMethodDataSequence.add(md);
@@ -417,7 +417,7 @@ public abstract class ScopedTraceHandler implements TraceHandler {
         }
 
         private MethodData getMethodData(int mid) {
-            MethodData md = (MethodData) mMethodDataMap.get(mid);
+            MethodData md = mMethodDataMap.get(mid);
             if (md == null) {
                 md = new MethodData(mToolbox.getTracedMethod(mid));
                 mMethodDataMap.put(mid, md);

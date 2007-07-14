@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package cojen.trace;
+package org.cojen.trace;
 
 import java.lang.instrument.Instrumentation;
 
@@ -24,7 +24,7 @@ import java.util.Random;
 
 import java.security.SecureRandom;
 
-import static cojen.trace.TraceMode.*;
+import static org.cojen.trace.TraceMode.*;
 
 /**
  * Instrumentation agent for tracing.

@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package cojen.trace;
+package org.cojen.trace;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -29,26 +29,26 @@ import java.security.ProtectionDomain;
 import java.util.HashMap;
 import java.util.Map;
 
-import cojen.classfile.attribute.Annotation;
-import cojen.classfile.attribute.AnnotationsAttr;
+import org.cojen.classfile.attribute.Annotation;
+import org.cojen.classfile.attribute.AnnotationsAttr;
 
-import cojen.classfile.Attribute;
-import cojen.classfile.ClassFile;
-import cojen.classfile.CodeAssembler;
-import cojen.classfile.CodeBuilder;
-import cojen.classfile.CodeDisassembler;
-import cojen.classfile.DelegatedCodeAssembler;
-import cojen.classfile.Label;
-import cojen.classfile.LocalVariable;
-import cojen.classfile.MethodInfo;
-import cojen.classfile.Modifiers;
-import cojen.classfile.Opcode;
-import cojen.classfile.TypeDesc;
+import org.cojen.classfile.Attribute;
+import org.cojen.classfile.ClassFile;
+import org.cojen.classfile.CodeAssembler;
+import org.cojen.classfile.CodeBuilder;
+import org.cojen.classfile.CodeDisassembler;
+import org.cojen.classfile.DelegatedCodeAssembler;
+import org.cojen.classfile.Label;
+import org.cojen.classfile.LocalVariable;
+import org.cojen.classfile.MethodInfo;
+import org.cojen.classfile.Modifiers;
+import org.cojen.classfile.Opcode;
+import org.cojen.classfile.TypeDesc;
 
-import cojen.classfile.constant.ConstantIntegerInfo;
+import org.cojen.classfile.constant.ConstantIntegerInfo;
 
-import static cojen.trace.TraceMode.*;
-import static cojen.trace.TraceModes.*;
+import static org.cojen.trace.TraceMode.*;
+import static org.cojen.trace.TraceModes.*;
 
 /**
  * 
@@ -86,7 +86,7 @@ class Transformer implements ClassFileTransformer {
         className = className.replace('/', '.');
 
         // Handle special cases...
-        if (className.startsWith("cojen.trace.") ||
+        if (className.startsWith("org.cojen.trace.") ||
             className.startsWith("sun.reflect."))
         {
             return null;

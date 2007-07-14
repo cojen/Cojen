@@ -14,9 +14,9 @@
  *  limitations under the License.
  */
 
-package cojen.trace;
+package org.cojen.trace;
 
-import cojen.util.IntHashMap;
+import org.cojen.util.IntHashMap;
 
 /**
  * Thread-safe registry of traced methods.
@@ -24,12 +24,12 @@ import cojen.util.IntHashMap;
  * @author Brian S O'Neill
  */
 class TracedMethodRegistry {
-    private final IntHashMap mMethodMap;
+    private final IntHashMap<TracedMethod> mMethodMap;
 
     private int mNextId;
 
     public TracedMethodRegistry() {
-        mMethodMap = new IntHashMap();
+        mMethodMap = new IntHashMap<TracedMethod>();
     }
 
     /**
@@ -39,7 +39,7 @@ class TracedMethodRegistry {
      * @return registered method or null if not found
      */
     public synchronized TracedMethod getTracedMethod(int mid) {
-        return (TracedMethod) mMethodMap.get(mid);
+        return mMethodMap.get(mid);
     }
 
     /**

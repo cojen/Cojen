@@ -14,9 +14,9 @@
  *  limitations under the License.
  */
 
-package cojen.trace;
+package org.cojen.trace;
 
-import static cojen.trace.TraceMode.*;
+import static org.cojen.trace.TraceMode.*;
 
 /**
  * 

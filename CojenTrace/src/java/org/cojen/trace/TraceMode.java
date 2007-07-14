@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package cojen.trace;
+package org.cojen.trace;
 
 /**
  * 

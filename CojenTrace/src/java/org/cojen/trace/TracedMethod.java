@@ -14,11 +14,11 @@
  *  limitations under the License.
  */
 
-package cojen.trace;
+package org.cojen.trace;
 
 import java.lang.ref.WeakReference;
 
-import cojen.classfile.TypeDesc;
+import org.cojen.classfile.TypeDesc;
 
 /**
  * Basic information regarding a traced method or constructor.
