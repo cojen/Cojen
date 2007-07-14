@@ -81,11 +81,11 @@ public class Annotation {
 
     private final ConstantPool mCp;
     private ConstantUTFInfo mType;
-    private final Map mMemberValues;
+    private final Map<String, MemberValue> mMemberValues;
     
     public Annotation(ConstantPool cp) {
         mCp = cp;
-        mMemberValues = new LinkedHashMap(2);
+        mMemberValues = new LinkedHashMap<String, MemberValue>(2);
     }
     
     public Annotation(ConstantPool cp, DataInput din) throws IOException {
@@ -93,7 +93,7 @@ public class Annotation {
         mType = (ConstantUTFInfo)cp.getConstant(din.readUnsignedShort());
 
         int memberCount = din.readUnsignedShort();
-        mMemberValues = new LinkedHashMap(memberCount);
+        mMemberValues = new LinkedHashMap<String, MemberValue>(memberCount);
         
         for (int i=0; i<memberCount; i++) {
             String name = ((ConstantUTFInfo)cp.getConstant(din.readUnsignedShort())).getValue();
@@ -121,7 +121,7 @@ public class Annotation {
      * Returns an unmodifiable map of member names (String) to MemberValue
      * objects.
      */
-    public Map getMemberValues() {
+    public Map<String, MemberValue> getMemberValues() {
         return Collections.unmodifiableMap(mMemberValues);
     }
     
@@ -261,9 +261,8 @@ public class Annotation {
 
     public int getLength() {
         int length = 4;
-        Iterator it = mMemberValues.values().iterator();
-        while (it.hasNext()) {
-            length += 2 + ((MemberValue)it.next()).getLength();
+        for (MemberValue mv : mMemberValues.values()) {
+            length += 2 + mv.getLength();
         }
         return length;
     }
@@ -272,13 +271,9 @@ public class Annotation {
         dout.writeShort(mType.getIndex());
         int memberCount = mMemberValues.size();
         dout.writeShort(memberCount);
-        Iterator it = mMemberValues.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry entry = (Map.Entry)it.next();
-            String name = (String)entry.getKey();
-            MemberValue value = (MemberValue)entry.getValue();
-            dout.writeShort(mCp.addConstantUTF(name).getIndex());
-            value.writeTo(dout);
+        for (Map.Entry<String, MemberValue> entry : mMemberValues.entrySet()) {
+            dout.writeShort(mCp.addConstantUTF(entry.getKey()).getIndex());
+            entry.getValue().writeTo(dout);
         }
     }
 
