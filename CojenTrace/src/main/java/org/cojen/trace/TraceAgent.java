@@ -91,8 +91,11 @@ public class TraceAgent {
     /**
      * Method called by instrumented class to register traced methods.
      */
-    public void registerTraceMethod(int mid, Class clazz, String name, Class... paramTypes) {
-        mRegistry.registerMethod(mid, new TracedMethod(mid, clazz, name, paramTypes));
+    public void registerTraceMethod(int mid, String operation, Class clazz,
+                                    String methodName, Class returnType, Class... paramTypes)
+    {
+        mRegistry.registerMethod
+            (mid, new TracedMethod(mid, operation, clazz, methodName, returnType, paramTypes));
     }
 
     public long getAgentID() {

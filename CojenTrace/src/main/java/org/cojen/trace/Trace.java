@@ -28,8 +28,13 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.CLASS)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 public @interface Trace {
-    // Note: Any changes to the defaults must also be made to TraceAgent since
+    // Note: Any changes to the defaults must also be made to Transformer since
     // this annotation is not runtime visible.
+
+    /**
+     * Optionally specify an operation name to pass to trace handler.
+     */
+    String operation() default "";
 
     /**
      * Set to true to pass method arguments to trace handler.

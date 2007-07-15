@@ -70,7 +70,7 @@ class TracedMethodRegistry {
         if (mMethodMap.get(mid) == null && mMethodMap.containsKey(mid)) {
             mMethodMap.put(mid, method);
         } else {
-            throw new IllegalStateException();
+            throw new IllegalStateException("Unknown mid: " + mid);
         }
     }
 }

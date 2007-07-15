@@ -18,6 +18,9 @@ package org.cojen.trace;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
@@ -46,6 +49,8 @@ import org.cojen.classfile.Opcode;
 import org.cojen.classfile.TypeDesc;
 
 import org.cojen.classfile.constant.ConstantIntegerInfo;
+import org.cojen.classfile.constant.ConstantStringInfo;
+import org.cojen.classfile.constant.ConstantUTFInfo;
 
 import static org.cojen.trace.TraceMode.*;
 import static org.cojen.trace.TraceModes.*;
@@ -56,12 +61,29 @@ import static org.cojen.trace.TraceModes.*;
  * @author Brian S O'Neill
  */
 class Transformer implements ClassFileTransformer {
-    private static final String HANDLER_FIELD = "handler$";
+    private static final boolean DEBUG;
+    private static final String HANDLER_FIELD_PREFIX;
+
+    static {
+        DEBUG = Boolean.getBoolean("org.cojen.trace.Transformer.DEBUG");
+        HANDLER_FIELD_PREFIX = Transformer.class.getName().replace('.', '$') + "$handler$";
+    }
+
+
+    private static int cHandlerFieldCounter = 0;
+
+    private static synchronized String handlerFieldName() {
+        String name = HANDLER_FIELD_PREFIX + cHandlerFieldCounter;
+        cHandlerFieldCounter++;
+        return name;
+    }
 
     private final TraceAgent mAgent;
+    final String mHandlerFieldName;
 
     Transformer(TraceAgent agent) {
         mAgent = agent;
+        mHandlerFieldName = handlerFieldName();
     }
 
     public byte[] transform(ClassLoader loader,
@@ -112,24 +134,24 @@ class Transformer implements ClassFileTransformer {
             return null;
         }
 
-        Map<MethodInfo, Integer> transformedMethodIDs = new HashMap<MethodInfo, Integer>();
+        Map<MethodInfo, MidAndOp> transformedMethods = new HashMap<MethodInfo, MidAndOp>();
 
         for (MethodInfo mi : cf.getMethods()) {
-            tryTransform(modes, transformedMethodIDs, mi);
+            tryTransform(modes, transformedMethods, mi);
         }
 
         for (MethodInfo mi : cf.getConstructors()) {
-            tryTransform(modes, transformedMethodIDs, mi);
+            tryTransform(modes, transformedMethods, mi);
         }
 
-        if (transformedMethodIDs.size() == 0) {
+        if (transformedMethods.size() == 0) {
             // Class is unchanged.
             return null;
         }
 
         // Add field for holding reference to handler.
         cf.addField(Modifiers.PRIVATE.toStatic(true),
-                    HANDLER_FIELD, TypeDesc.forClass(TraceHandler.class));
+                    mHandlerFieldName, TypeDesc.forClass(TraceHandler.class));
         
         // Add or prepend static initializer for getting handler and
         // registering methods.
@@ -155,23 +177,33 @@ class Transformer implements ClassFileTransformer {
             TypeDesc handlerType = TypeDesc.forClass(TraceHandler.class);
             b.loadLocal(agentVar);
             b.invokeVirtual(agentType, "getTraceHandler", handlerType, null);
-            b.storeStaticField(HANDLER_FIELD, handlerType);
+            b.storeStaticField(mHandlerFieldName, handlerType);
 
             // Finish registering each method.
             TypeDesc classType = TypeDesc.forClass(Class.class);
             TypeDesc classArrayType = classType.toArrayType();
             TypeDesc methodType = TypeDesc.forClass(Method.class);
 
-            for (Map.Entry<MethodInfo, Integer> entry : transformedMethodIDs.entrySet()) {
+            for (Map.Entry<MethodInfo, MidAndOp> entry : transformedMethods.entrySet()) {
                 MethodInfo mi = entry.getKey();
-                int mid = entry.getValue();
+                MidAndOp midAndOp = entry.getValue();
 
                 // For use below when calling registerTraceMethod.
                 b.loadLocal(agentVar);
-                b.loadConstant(mid);
+
+                b.loadConstant(midAndOp.mid);
+                b.loadConstant(midAndOp.operation);
 
                 b.loadConstant(cf.getType());
                 b.loadConstant(mi.getName().equals("<init>") ? null : mi.getName());
+
+                TypeDesc returnType = mi.getMethodDescriptor().getReturnType();
+                if (returnType == null || returnType == TypeDesc.VOID) {
+                    b.loadNull();
+                } else {
+                    b.loadConstant(returnType);
+                }
+
                 TypeDesc[] types = mi.getMethodDescriptor().getParameterTypes();
                 if (types.length == 0) {
                     b.loadNull();
@@ -188,7 +220,8 @@ class Transformer implements ClassFileTransformer {
                 }
 
                 b.invokeVirtual(agentType, "registerTraceMethod", null, new TypeDesc[]
-                    {TypeDesc.INT, classType, TypeDesc.STRING, classArrayType});
+                    {TypeDesc.INT, TypeDesc.STRING,
+                     classType, TypeDesc.STRING, classType, classArrayType});
             }
 
             if (dis == null) {
@@ -200,17 +233,23 @@ class Transformer implements ClassFileTransformer {
 
         // Define the newly transformed class.
 
-        /* debugging
-        try {
-            java.io.FileOutputStream fout =
-                new java.io.FileOutputStream(cf.getClassName() + ".class");
-            cf.writeTo(fout);
-            fout.close();
-        } catch (Exception e) {
-            System.out.println("Error defining: " + cf.getClassName());
-            e.printStackTrace(System.out);
+        if (DEBUG) {
+            File file = new File(cf.getClassName().replace('.', '/') + ".class");
+            try {
+                File tempDir = new File(System.getProperty("java.io.tmpdir"));
+                file = new File(tempDir, file.getPath());
+            } catch (SecurityException e) {
+            }
+            try {
+                file.getParentFile().mkdirs();
+                System.out.println("CojenTrace Transformer writing to " + file);
+                OutputStream out = new FileOutputStream(file);
+                cf.writeTo(out);
+                out.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
-        */
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try {
@@ -223,6 +262,22 @@ class Transformer implements ClassFileTransformer {
         }
 
         return out.toByteArray();
+    }
+
+    private String getStringParam(Map<String, Annotation.MemberValue> memberValues,
+                                  String paramName)
+    {
+        Annotation.MemberValue mv = memberValues.get(paramName);
+        Object constant;
+        if (mv != null && (constant = mv.getValue()) != null) {
+            if (constant instanceof ConstantUTFInfo) {
+                return ((ConstantUTFInfo) constant).getValue();
+            }
+            if (constant instanceof ConstantStringInfo) {
+                return ((ConstantStringInfo) constant).getValue();
+            }
+        }
+        return null;
     }
 
     private Boolean getBooleanParam(Map<String, Annotation.MemberValue> memberValues,
@@ -246,7 +301,7 @@ class Transformer implements ClassFileTransformer {
     }
 
     private void tryTransform(TraceModes modes,
-                              Map<MethodInfo, Integer> transformedMethodIDs,
+                              Map<MethodInfo, MidAndOp> transformedMethods,
                               MethodInfo mi)
     {
         if (mi.getModifiers().isAbstract() || mi.getModifiers().isNative()) {
@@ -264,6 +319,7 @@ class Transformer implements ClassFileTransformer {
             }
         }
 
+        String operation;
         boolean args, result, exception, time, alloc, root, graft;
         alloc = false;
 
@@ -271,6 +327,7 @@ class Transformer implements ClassFileTransformer {
             // If no user trace annotation exists, check if any trace mode is
             // on which will turn on trace anyhow.
 
+            operation = null;
             args = modes.getTraceArguments() == ON;
             result = modes.getTraceResult() == ON;
             exception = modes.getTraceException() == ON;
@@ -289,7 +346,12 @@ class Transformer implements ClassFileTransformer {
             // Extract trace parameters. Defaults copied from Trace annotation.
 
             Map<String, Annotation.MemberValue> memberValues = traceAnnotation.getMemberValues();
-            
+
+            operation = getStringParam(memberValues, "operation");
+            if ("".equals(operation)) {
+                operation = null;
+            }
+
             args = getBooleanParam(memberValues, "args", false);
             if (modes.getTraceArguments() != USER) {
                 args = modes.getTraceArguments() == ON;
@@ -321,12 +383,13 @@ class Transformer implements ClassFileTransformer {
             graft = getBooleanParam(memberValues, "graft", false);
         }
 
-        int mid = transform(mi, args, result, exception, time, alloc, root, graft);
+        int mid = transform(mi, operation, args, result, exception, time, alloc, root, graft);
 
-        transformedMethodIDs.put(mi, mid);
+        transformedMethods.put(mi, new MidAndOp(mid, operation));
     }
 
     /**
+     * @param operation optional trace operation name
      * @param args when true, pass method arguments to trace handler
      * @param result when true, pass method return value to trace handler
      * @param exception when true, pass thrown exception to trace handler
@@ -337,6 +400,7 @@ class Transformer implements ClassFileTransformer {
      * @return method id
      */
     private int transform(MethodInfo mi,
+                          String operation,
                           boolean args,
                           boolean result,
                           boolean exception,
@@ -359,7 +423,7 @@ class Transformer implements ClassFileTransformer {
 
         // Call enterMethod
         {
-            b.loadStaticField(HANDLER_FIELD, TypeDesc.forClass(TraceHandler.class));
+            b.loadStaticField(mHandlerFieldName, TypeDesc.forClass(TraceHandler.class));
 
             b.loadConstant(mid);
 
@@ -417,7 +481,7 @@ class Transformer implements ClassFileTransformer {
             }
             
             // Prepare call to exit method
-            b.loadStaticField(HANDLER_FIELD, TypeDesc.forClass(TraceHandler.class));
+            b.loadStaticField(mHandlerFieldName, TypeDesc.forClass(TraceHandler.class));
             b.loadConstant(mid);
             
             TypeDesc[] exitMethodParams;
@@ -470,7 +534,7 @@ class Transformer implements ClassFileTransformer {
                 b.storeLocal(exceptionVar);
             }
             
-            b.loadStaticField(HANDLER_FIELD, TypeDesc.forClass(TraceHandler.class));
+            b.loadStaticField(mHandlerFieldName, TypeDesc.forClass(TraceHandler.class));
             b.loadConstant(mid);
             
             TypeDesc[] exitMethodParams;
@@ -508,7 +572,17 @@ class Transformer implements ClassFileTransformer {
         return mid;
     }
 
-    private static class AllocTracer extends DelegatedCodeAssembler {
+    private static class MidAndOp {
+        public final int mid;
+        public final String operation;
+
+        MidAndOp(int mid, String operation) {
+            this.mid = mid;
+            this.operation = operation;
+        }
+    }
+
+    private class AllocTracer extends DelegatedCodeAssembler {
         private final int mMethodID;
 
         private int mNewObjectCount;
@@ -564,7 +638,7 @@ class Transformer implements ClassFileTransformer {
             // stack: obj
             dup();
             // stack: obj, obj
-            loadStaticField(HANDLER_FIELD, TypeDesc.forClass(TraceHandler.class));
+            loadStaticField(mHandlerFieldName, TypeDesc.forClass(TraceHandler.class));
             // stack: obj, obj, handler
             swap();
             // stack: obj, handler, obj

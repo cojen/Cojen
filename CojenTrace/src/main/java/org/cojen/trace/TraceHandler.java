@@ -93,7 +93,7 @@ public interface TraceHandler {
 
     /**
      * Called by a traced method upon exit. This method is never called if the
-     * trace was not configured to pass return values, or of the traced method
+     * trace was not configured to pass return values or if the traced method
      * returns void.
      *
      * @param mid method id

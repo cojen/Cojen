@@ -43,30 +43,46 @@ public class TracedMethod {
     }
 
     private final int mMID;
+    private final String mOperation;
     private final WeakReference<Class> mClass;
-    private final String mName;
+    private final String mMethodName;
+    private final WeakReference<Class> mReturnType;
     private final WeakReference<Class>[] mParamTypes;
 
     private final String mStr;
 
     /**
      * @param mid reserved method identifier
+     * @param operation optional operation name
      * @param clazz declaring class
-     * @param name method name or null for constructor
+     * @param methodName method name or null for constructor
+     * @param returnType method return type, or null if void
      * @param paramTypes method or constructor parameter types, or null if none
      */
-    TracedMethod(int mid, Class clazz, String name, Class... paramTypes) {
+    TracedMethod(int mid, String operation,
+                 Class clazz, String methodName, Class returnType, Class... paramTypes)
+    {
         mMID = mid;
+        mOperation = operation;
 
         StringBuilder b = new StringBuilder();
+
+        b.append(returnType == null ? "void" : returnType.getName()).append(' ');
+
         b.append(TypeDesc.forClass(clazz).getFullName());
-        if (name != null) {
-            b.append('.').append(name);
+        if (methodName != null) {
+            b.append('.').append(methodName);
         }
         b.append('(');
 
         mClass = new WeakReference<Class>(clazz);
-        mName = name;
+        mMethodName = methodName;
+
+        if (returnType == null) {
+            mReturnType = null;
+        } else {
+            mReturnType = new WeakReference<Class>(returnType);
+        }
 
         if (paramTypes == null || paramTypes.length == 0) {
             mParamTypes = null;
@@ -85,10 +101,17 @@ public class TracedMethod {
     }
 
     /**
+     * Returns the optional traced method operation.
+     */
+    public String getOperation() {
+        return mOperation;
+    }
+
+    /**
      * Returns true if traced method is a constructor.
      */
     public boolean isConstructor() {
-        return mName == null;
+        return mMethodName == null;
     }
 
     /**
@@ -101,8 +124,23 @@ public class TracedMethod {
     /**
      * Returns the method's name, or null if a constructor.
      */
-    public String getName() {
-        return mName;
+    public String getMethodName() {
+        return mMethodName;
+    }
+
+    /**
+     * Returns the method's return type, which is null if void or if class has
+     * been garbage collected.
+     */
+    public Class getReturnType() {
+        return mReturnType == null ? null : mReturnType.get();
+    }
+
+    /**
+     * Returns true if the method returns void.
+     */
+    public boolean isVoid() {
+        return mReturnType == null;
     }
 
     /**
@@ -134,6 +172,7 @@ public class TracedMethod {
         return mMID;
     }
 
+    @Override
     public String toString() {
         return mStr;
     }

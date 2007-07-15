@@ -22,6 +22,7 @@ import static org.cojen.trace.TraceMode.*;
  * 
  *
  * @author Brian S O'Neill
+ * @see TraceHandler#getTraceModes
  */
 public class TraceModes {
     /** All modes on, regardles off user Trace annotation */
@@ -100,6 +101,7 @@ public class TraceModes {
             mTraceException.hashCode() + mTraceTime.hashCode();
     }
 
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;

@@ -20,6 +20,7 @@ package org.cojen.trace;
  * 
  *
  * @author Brian S O'Neill
+ * @see TraceHandler#getTraceModes
  */
 public enum TraceMode {
     /** Indicates feature is on, regardless of user Trace annotation */

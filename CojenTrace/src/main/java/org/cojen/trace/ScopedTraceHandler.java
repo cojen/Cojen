@@ -33,7 +33,7 @@ import org.cojen.util.IntHashMap;
  *
  * <p>When the traced method that created the scope exits, the scope exits, and
  * gathered data is reported. If a parent scope exists, this data is
- * transferred to it.
+ * transferred to it as well.
  *
  * @author Brian S O'Neill
  */
@@ -47,7 +47,7 @@ public abstract class ScopedTraceHandler implements TraceHandler {
     }
 
     /**
-     * Always returns {@link TraceModes.ALL_USER}.
+     * Always returns {@link TraceModes#ALL_USER}.
      */
     public TraceModes getTraceModes(String className) {
         return TraceModes.ALL_USER;
@@ -197,8 +197,8 @@ public abstract class ScopedTraceHandler implements TraceHandler {
         private final IntHashMap<MethodData> mMethodDataMap;
         private final ArrayList<MethodData> mMethodDataSequence;
 
-        private int mExitCount;
         private Object[] mArguments;
+        private boolean mHasResult;
         private Object mResult;
         private Throwable mException;
 
@@ -244,21 +244,28 @@ public abstract class ScopedTraceHandler implements TraceHandler {
             return mMethodDataSequence;
         }
 
-
         /**
          * Returns the arguments passed to the first invocation of the method
          * that initiated this scope. Returns null if method has no arguments
-         * or is not configured to pass arguments.
+         * or if it isn't configured to trace arguments.
          */
         public Object[] getArguments() {
             return mArguments;
         }
 
         /**
+         * Returns true if method is non-void, result tracing is enabled, and
+         * method did not throw an exception.
+         */
+        public boolean hasResult() {
+            return mHasResult;
+        }
+
+        /**
          * Returns the return value passed from the first invocation of the
          * method that initiated this scope. Returns null if method has no
-         * return value, or it is not configured to pass the return value, or
-         * if it threw an exception.
+         * return value, or if it isn't configured to trace the return value,
+         * or if it threw an exception.
          */
         public Object getResult() {
             return mResult;
@@ -267,7 +274,7 @@ public abstract class ScopedTraceHandler implements TraceHandler {
         /**
          * Returns the exception thrown from the first invocation of the method
          * that initiated this scope. Returns null if method did not throw an
-         * exception or is not configured to pass the exception.
+         * exception or if it isn't configured to trace the exception.
          */
         public Throwable getException() {
             return mException;
@@ -285,14 +292,14 @@ public abstract class ScopedTraceHandler implements TraceHandler {
         }
 
         void enterMethod(int mid) {
-            getMethodData(mid).mCallCount++;
+            getMethodData(mid).entered();
         }
 
         void enterMethod(int mid, Object... arguments) {
             if (mMethodDataSequence.size() == 0) {
                 mArguments = arguments;
             }
-            getMethodData(mid).mCallCount++;
+            getMethodData(mid).entered();
         }
 
         /*
@@ -306,10 +313,8 @@ public abstract class ScopedTraceHandler implements TraceHandler {
          */
         boolean exitMethod(int mid) {
             MethodData md = getMethodData(mid);
-            if (md == mMethodDataSequence.get(0)) {
-                if (++mExitCount == md.mCallCount) {
-                    return true;
-                }
+            if (md.exited() && md == mMethodDataSequence.get(0)) {
+                return true;
             }
             return false;
         }
@@ -319,11 +324,8 @@ public abstract class ScopedTraceHandler implements TraceHandler {
          */
         boolean exitMethod(int mid, long timeNanos) {
             MethodData md = getMethodData(mid);
-            md.mTotalTimeNanos += timeNanos;
-            if (md == mMethodDataSequence.get(0)) {
-                if (++mExitCount == md.mCallCount) {
-                    return true;
-                }
+            if (md.exited(timeNanos) && md == mMethodDataSequence.get(0)) { 
+                return true;
             }
             return false;
         }
@@ -333,11 +335,10 @@ public abstract class ScopedTraceHandler implements TraceHandler {
          */
         boolean exitMethod(int mid, Object result) {
             MethodData md = getMethodData(mid);
-            if (md == mMethodDataSequence.get(0)) {
-                if (++mExitCount == md.mCallCount) {
-                    mResult = result;
-                    return true;
-                }
+            if (md.exited() && md == mMethodDataSequence.get(0)) { 
+                mResult = result;
+                mHasResult = true;
+                return true;
             }
             return false;
         }
@@ -347,12 +348,10 @@ public abstract class ScopedTraceHandler implements TraceHandler {
          */
         boolean exitMethod(int mid, Object result, long timeNanos) {
             MethodData md = getMethodData(mid);
-            md.mTotalTimeNanos += timeNanos;
-            if (md == mMethodDataSequence.get(0)) {
-                if (++mExitCount == md.mCallCount) {
-                    mResult = result;
-                    return true;
-                }
+            if (md.exited(timeNanos) && md == mMethodDataSequence.get(0)) { 
+                mResult = result;
+                mHasResult = true;
+                return true;
             }
             return false;
         }
@@ -362,11 +361,9 @@ public abstract class ScopedTraceHandler implements TraceHandler {
          */
         boolean exitMethod(int mid, Throwable t) {
             MethodData md = getMethodData(mid);
-            if (md == mMethodDataSequence.get(0)) {
-                if (++mExitCount == md.mCallCount) {
-                    mException = t;
-                    return true;
-                }
+            if (md.exited() && md == mMethodDataSequence.get(0)) { 
+                mException = t;
+                return true;
             }
             return false;
         }
@@ -376,12 +373,9 @@ public abstract class ScopedTraceHandler implements TraceHandler {
          */
         boolean exitMethod(int mid, Throwable t, long timeNanos) {
             MethodData md = getMethodData(mid);
-            md.mTotalTimeNanos += timeNanos;
-            if (md == mMethodDataSequence.get(0)) {
-                if (++mExitCount == md.mCallCount) {
-                    mException = t;
-                    return true;
-                }
+            if (md.exited(timeNanos) && md == mMethodDataSequence.get(0)) { 
+                mException = t;
+                return true;
             }
             return false;
         }
@@ -407,9 +401,7 @@ public abstract class ScopedTraceHandler implements TraceHandler {
                         parent.mMethodDataMap.put(mid, md);
                         parent.mMethodDataSequence.add(md);
                     } else {
-                        pmd.mTotalTimeNanos += md.mTotalTimeNanos;
-                        pmd.mCallCount += md.mCallCount;
-                        //pmd.mAllocationBytes += md.mAllocationBytes;
+                        md.transferToParent(pmd);
                     }
                 }
             }
@@ -427,10 +419,12 @@ public abstract class ScopedTraceHandler implements TraceHandler {
         }
     }
 
-    public static class MethodData {
+    public static final class MethodData {
         final TracedMethod mMethod;
-        long mTotalTimeNanos;
+        int mActiveCount;
         int mCallCount;
+        // Value of -1 means no time has been captured.
+        long mTotalTimeNanos = -1;
         //long mAllocationBytes;
 
         MethodData(TracedMethod method) {
@@ -445,11 +439,20 @@ public abstract class ScopedTraceHandler implements TraceHandler {
         }
 
         /**
+         * Returns true if total time spent in executing the traced method was
+         * captured.
+         */
+        public boolean hasTotalTimeNanos() {
+            return mTotalTimeNanos != -1;
+        }
+
+        /**
          * Returns the total time spent in executing the traced method, in
-         * nanoseconds.
+         * nanoseconds. Returns zero if not captured.
          */
         public long getTotalTimeNanos() {
-            return mTotalTimeNanos;
+            long total = mTotalTimeNanos;
+            return total == -1 ? 0 : total;
         }
 
         /**
@@ -468,5 +471,42 @@ public abstract class ScopedTraceHandler implements TraceHandler {
             return mAllocationBytes;
         }
         */
+
+        void entered() {
+            mActiveCount++;
+            mCallCount++;
+        }
+
+        /**
+         * @return true if all active calls have exited
+         */
+        boolean exited() {
+            return --mActiveCount == 0;
+        }
+
+        /**
+         * @return true if all active calls have exited
+         */
+        boolean exited(long timeNanos) {
+            // Only record execution time after any recursive calls have
+            // exited. This avoids recording more time than is actually
+            // possible.
+            if (exited()) {
+                mTotalTimeNanos = getTotalTimeNanos() + timeNanos;
+                return true;
+            }
+            return false;
+        }
+
+        void transferToParent(MethodData parent) {
+            parent.mCallCount += mCallCount;
+            //parent.mAllocationBytes += mAllocationBytes;
+            long total = mTotalTimeNanos;
+            if (total != -1) {
+                if (parent.mActiveCount == 0) {
+                    parent.mTotalTimeNanos = parent.getTotalTimeNanos() + total;
+                }
+            }
+        }
     }
 }
