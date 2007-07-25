@@ -25,9 +25,9 @@
   </licenses>
 
   <scm>
-    <connection>scm:svn:https://svn.sourceforge.net/svnroot/cojen/trunk/Cojen</connection>
-    <developerConnection>scm:svn:https://svn.sourceforge.net/svnroot/cojen/trunk/Cojen</developerConnection>
-    <url>http://svn.sourceforge.net/viewvc/cojen/trunk/Cojen/</url>
+    <connection>scm:svn:https://cojen.svn.sourceforge.net/svnroot/cojen/trunk/Cojen</connection>
+    <developerConnection>scm:svn:https://cojen.svn.sourceforge.net/svnroot/cojen/trunk/Cojen</developerConnection>
+    <url>http://cojen.svn.sourceforge.net/viewvc/cojen/trunk/Cojen/</url>
   </scm>
 
   <issueManagement>
