@@ -23,10 +23,14 @@ import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * Provides a simple and efficient means of reading and writing bean properties
@@ -54,13 +58,13 @@ public abstract class BeanPropertyMapFactory<B> {
                 }
             }
 
-	    Map<String, BeanProperty> properties = BeanIntrospector.getAllProperties(clazz);
+            Map<String, BeanProperty> properties = BeanIntrospector.getAllProperties(clazz);
 
-	    if (properties.size() == 0) {
-		factory = Empty.INSTANCE;
-	    } else {
-		factory = new Standard<B>(BeanPropertyAccessor.forClass(clazz), properties);
-	    }
+            if (properties.size() == 0) {
+                factory = Empty.INSTANCE;
+            } else {
+                factory = new Standard<B>(BeanPropertyAccessor.forClass(clazz), properties);
+            }
 
             cFactories.put(clazz, new SoftReference<BeanPropertyMapFactory>(factory));
             return factory;
@@ -73,12 +77,12 @@ public abstract class BeanPropertyMapFactory<B> {
 
      * @throws IllegalArgumentException if bean is null
      */
-    public static Map<String, Object> asMap(Object bean) {
-	if (bean == null) {
-	    throw new IllegalArgumentException();
-	}
-	BeanPropertyMapFactory factory = forClass(bean.getClass());
-	return factory.createMap(bean);
+    public static SortedMap<String, Object> asMap(Object bean) {
+        if (bean == null) {
+            throw new IllegalArgumentException();
+        }
+        BeanPropertyMapFactory factory = forClass(bean.getClass());
+        return factory.createMap(bean);
     }
 
     /**
@@ -87,267 +91,415 @@ public abstract class BeanPropertyMapFactory<B> {
      *
      * @throws IllegalArgumentException if bean is null
      */
-    public abstract Map<String, Object> createMap(B bean);
+    public abstract SortedMap<String, Object> createMap(B bean);
 
     private static class Empty extends BeanPropertyMapFactory {
-	static final Empty INSTANCE = new Empty();
+        static final Empty INSTANCE = new Empty();
+        static final SortedMap<String, Object> EMPTY_MAP =
+            Collections.unmodifiableSortedMap(new TreeMap<String, Object>());
 
-	private Empty() {
-	}
+        private Empty() {
+        }
 
-	public Map<String, Object> createMap(Object bean) {
-	    if (bean == null) {
-		throw new IllegalArgumentException();
-	    }
-	    return Collections.emptyMap();
-	}
+        public SortedMap<String, Object> createMap(Object bean) {
+            if (bean == null) {
+                throw new IllegalArgumentException();
+            }
+            return EMPTY_MAP;
+        }
     }
 
     private static class Standard<B> extends BeanPropertyMapFactory<B> {
-	final BeanPropertyAccessor mAccessor;
-	final Set<String> mPropertyNames;
+        final BeanPropertyAccessor mAccessor;
+        final SortedSet<String> mPropertyNames;
 
-	public Standard(BeanPropertyAccessor<B> accessor, Map<String, BeanProperty> properties) {
-	    mAccessor = accessor;
+        public Standard(BeanPropertyAccessor<B> accessor, Map<String, BeanProperty> properties) {
+            mAccessor = accessor;
 
-	    // Only reveal readable properties.
-	    Set<String> propertyNames = new HashSet<String>(properties.size());
-	    for (BeanProperty property : properties.values()) {
-		if (property.getReadMethod() != null) {
-		    propertyNames.add(property.getName());
-		}
-	    }
+            // Only reveal readable properties.
+            SortedSet<String> propertyNames = new TreeSet<String>();
+            for (BeanProperty property : properties.values()) {
+                if (property.getReadMethod() != null) {
+                    propertyNames.add(property.getName());
+                }
+            }
 
-	    mPropertyNames = Collections.unmodifiableSet(propertyNames);
-	}
+            mPropertyNames = Collections.unmodifiableSortedSet(propertyNames);
+        }
 
-	public Map<String, Object> createMap(B bean) {
-	    if (bean == null) {
-		throw new IllegalArgumentException();
-	    }
-	    return new BeanMap<B>(bean, mAccessor, mPropertyNames);
-	}
+        public SortedMap<String, Object> createMap(B bean) {
+            if (bean == null) {
+                throw new IllegalArgumentException();
+            }
+            return new BeanMap<B>(bean, mAccessor, mPropertyNames);
+        }
     }
 
-    private static class BeanMap<B> extends AbstractMap<String, Object> {
-	final B mBean;
-	final BeanPropertyAccessor mAccessor;
-	final Set<String> mPropertyNames;
+    private static class BeanMap<B> extends AbstractMap<String, Object>
+        implements SortedMap<String, Object>
+    {
+        final B mBean;
+        final BeanPropertyAccessor mAccessor;
+        final SortedSet<String> mPropertyNames;
 
-	BeanMap(B bean, BeanPropertyAccessor<B> accessor, Set<String> propertyNames) {
-	    mBean = bean;
-	    mAccessor = accessor;
-	    mPropertyNames = propertyNames;
-	}
+        BeanMap(B bean, BeanPropertyAccessor<B> accessor, SortedSet<String> propertyNames) {
+            mBean = bean;
+            mAccessor = accessor;
+            mPropertyNames = propertyNames;
+        }
 
-	@Override
-	public int size() {
-	    return mPropertyNames.size();
-	}
+        public Comparator<? super String> comparator() {
+            return null;
+        }
 
-	@Override
-	public boolean isEmpty() {
-	    return false;
-	}
+        public SortedMap<String, Object> subMap(String fromKey, String toKey) {
+            return new SubMap<B>(mBean, mAccessor, mPropertyNames.subSet(fromKey, toKey),
+                                 fromKey, toKey);
+        }
 
-	@Override
-	public boolean containsKey(Object key) {
-	    return mAccessor.hasReadableProperty((String) key);
-	}
+        public SortedMap<String, Object> headMap(String toKey) {
+            return new SubMap<B>(mBean, mAccessor, mPropertyNames.headSet(toKey),
+                                 null, toKey);
+        }
 
-	@Override
-	public boolean containsValue(Object value) {
-	    return mAccessor.hasPropertyValue(mBean, value);
-	}
+        public SortedMap<String, Object> tailMap(String fromKey) {
+            return new SubMap<B>(mBean, mAccessor, mPropertyNames.tailSet(fromKey),
+                                 fromKey, null);
+        }
 
-	@Override
-	public Object get(Object key) {
-	    return mAccessor.getPropertyValue(mBean, (String) key);
-	}
+        public String firstKey() {
+            return mPropertyNames.first();
+        }
 
-	@Override
-	public Object put(String key, Object value) {
-	    Object old = mAccessor.getPropertyValue(mBean, key);
-	    mAccessor.setPropertyValue(mBean, key, value);
-	    return old;
-	}
+        public String lastKey() {
+            return mPropertyNames.last();
+        }
 
-	@Override
-	public Object remove(Object key) {
-	    throw new UnsupportedOperationException();
-	}
+        @Override
+        public int size() {
+            return mPropertyNames.size();
+        }
 
-	@Override
-	public void clear() {
-	    throw new UnsupportedOperationException();
-	}
+        @Override
+        public boolean isEmpty() {
+            return false;
+        }
 
-	@Override
-	public Set<String> keySet() {
-	    return mPropertyNames;
-	}
+        @Override
+        public boolean containsKey(Object key) {
+            return mAccessor.hasReadableProperty((String) key);
+        }
 
-	@Override
-	public Collection<Object> values() {
-	    return new AbstractCollection<Object>() {
-		@Override
-		public Iterator<Object> iterator() {
-		    return new Iterator<Object>() {
-			private final Iterator<String> mPropIterator = keySet().iterator();
+        @Override
+        public boolean containsValue(Object value) {
+            return mAccessor.hasPropertyValue(mBean, value);
+        }
 
-			public boolean hasNext() {
-			    return mPropIterator.hasNext();
-			}
+        @Override
+        public Object get(Object key) {
+            return mAccessor.getPropertyValue(mBean, (String) key);
+        }
 
-			public Object next() {
-			    return get(mPropIterator.next());
-			}
+        @Override
+        public Object put(String key, Object value) {
+            Object old = mAccessor.getPropertyValue(mBean, key);
+            mAccessor.setPropertyValue(mBean, key, value);
+            return old;
+        }
 
-			public void remove() {
-			    throw new UnsupportedOperationException();
-			}
-		    };
-		}
-		
-		@Override
-		public int size() {
-		    return BeanMap.this.size();
-		}
+        @Override
+        public Object remove(Object key) {
+            throw new UnsupportedOperationException();
+        }
 
-		@Override
-		public boolean isEmpty() {
-		    return false;
-		}
+        @Override
+        public void clear() {
+            throw new UnsupportedOperationException();
+        }
 
-		@Override
-		public boolean contains(Object v) {
-		    return containsValue(v);
-		}
+        @Override
+        public Set<String> keySet() {
+            return mPropertyNames;
+        }
 
-		@Override
-		public boolean remove(Object e) {
-		    throw new UnsupportedOperationException();
-		}
+        @Override
+        public Collection<Object> values() {
+            return new AbstractCollection<Object>() {
+                @Override
+                public Iterator<Object> iterator() {
+                    return new Iterator<Object>() {
+                        private final Iterator<String> mPropIterator = keySet().iterator();
 
-		@Override
-		public void clear() {
-		    throw new UnsupportedOperationException();
-		}
-	    };
-	}
+                        public boolean hasNext() {
+                            return mPropIterator.hasNext();
+                        }
 
-	@Override
-	public Set<Map.Entry<String, Object>> entrySet() {
-	    return new AbstractSet<Map.Entry<String, Object>>() {
-		@Override
-		public Iterator<Map.Entry<String, Object>> iterator() {
-		    return new Iterator<Map.Entry<String, Object>>() {
-			private final Iterator<String> mPropIterator = keySet().iterator();
+                        public Object next() {
+                            return get(mPropIterator.next());
+                        }
 
-			public boolean hasNext() {
-			    return mPropIterator.hasNext();
-			}
+                        public void remove() {
+                            throw new UnsupportedOperationException();
+                        }
+                    };
+                }
+                
+                @Override
+                public int size() {
+                    return BeanMap.this.size();
+                }
 
-			public Map.Entry<String, Object> next() {
-			    final String property = mPropIterator.next();
-			    final Object value = get(property);
+                @Override
+                public boolean isEmpty() {
+                    return false;
+                }
 
-			    return new Map.Entry<String, Object>() {
-				Object mutableValue = value;
+                @Override
+                public boolean contains(Object v) {
+                    return containsValue(v);
+                }
 
-				public String getKey() {
-				    return property;
-				}
+                @Override
+                public boolean remove(Object e) {
+                    throw new UnsupportedOperationException();
+                }
 
-				public Object getValue() {
-				    return mutableValue;
-				}
+                @Override
+                public void clear() {
+                    throw new UnsupportedOperationException();
+                }
+            };
+        }
 
-				public Object setValue(Object value) {
-				    Object old = BeanMap.this.put(property, value);
-				    mutableValue = value;
-				    return old;
-				}
+        @Override
+        public Set<Map.Entry<String, Object>> entrySet() {
+            return new AbstractSet<Map.Entry<String, Object>>() {
+                @Override
+                public Iterator<Map.Entry<String, Object>> iterator() {
+                    return new Iterator<Map.Entry<String, Object>>() {
+                        private final Iterator<String> mPropIterator = keySet().iterator();
 
-				@Override
-				public boolean equals(Object obj) {
-				    if (this == obj) {
-					return true;
-				    }
+                        public boolean hasNext() {
+                            return mPropIterator.hasNext();
+                        }
 
-				    if (obj instanceof Map.Entry) {
-					Map.Entry other = (Map.Entry) obj;
+                        public Map.Entry<String, Object> next() {
+                            final String property = mPropIterator.next();
+                            final Object value = get(property);
 
-					return
-					    (this.getKey() == null ?
-					     other.getKey() == null
-					     : this.getKey().equals(other.getKey()))
-					    &&
-					    (this.getValue() == null ?
-					     other.getValue() == null
-					     : this.getValue().equals(other.getValue()));
-				    }
+                            return new Map.Entry<String, Object>() {
+                                Object mutableValue = value;
 
-				    return false;
-				}
+                                public String getKey() {
+                                    return property;
+                                }
 
-				@Override
-				public int hashCode() {
-				    return (getKey() == null ? 0 : getKey().hashCode()) ^
-					(getValue() == null ? 0 : getValue().hashCode());
-				}
+                                public Object getValue() {
+                                    return mutableValue;
+                                }
 
-				@Override
-				public String toString() {
-				    return property + "=" + mutableValue;
-				}
-			    };
-			}
+                                public Object setValue(Object value) {
+                                    Object old = BeanMap.this.put(property, value);
+                                    mutableValue = value;
+                                    return old;
+                                }
 
-			public void remove() {
-			    throw new UnsupportedOperationException();
-			}
-		    };
-		}
+                                @Override
+                                public boolean equals(Object obj) {
+                                    if (this == obj) {
+                                        return true;
+                                    }
 
-		@Override
-		public int size() {
-		    return BeanMap.this.size();
-		}
+                                    if (obj instanceof Map.Entry) {
+                                        Map.Entry other = (Map.Entry) obj;
 
-		@Override
-		public boolean isEmpty() {
-		    return false;
-		}
+                                        return
+                                            (this.getKey() == null ?
+                                             other.getKey() == null
+                                             : this.getKey().equals(other.getKey()))
+                                            &&
+                                            (this.getValue() == null ?
+                                             other.getValue() == null
+                                             : this.getValue().equals(other.getValue()));
+                                    }
 
-		@Override
-		public boolean contains(Object e) {
-		    Map.Entry<String, Object> entry = (Map.Entry<String, Object>) e;
-		    String key = entry.getKey();
-		    if (BeanMap.this.containsKey(key)) {
-			Object value = BeanMap.this.get(key);
-			return value == null ? entry.getValue() == null
-			    : value.equals(entry.getValue());
-		    }
-		    return false;
-		}
+                                    return false;
+                                }
 
-		@Override
-		public boolean add(Map.Entry<String, Object> e) {
-		    BeanMap.this.put(e.getKey(), e.getValue());
-		    return true;
-		}
+                                @Override
+                                public int hashCode() {
+                                    return (getKey() == null ? 0 : getKey().hashCode()) ^
+                                        (getValue() == null ? 0 : getValue().hashCode());
+                                }
 
-		@Override
-		public boolean remove(Object e) {
-		    throw new UnsupportedOperationException();
-		}
+                                @Override
+                                public String toString() {
+                                    return property + "=" + mutableValue;
+                                }
+                            };
+                        }
 
-		@Override
-		public void clear() {
-		    throw new UnsupportedOperationException();
-		}
-	    };
-	}
+                        public void remove() {
+                            throw new UnsupportedOperationException();
+                        }
+                    };
+                }
+
+                @Override
+                public int size() {
+                    return BeanMap.this.size();
+                }
+
+                @Override
+                public boolean isEmpty() {
+                    return false;
+                }
+
+                @Override
+                public boolean contains(Object e) {
+                    Map.Entry<String, Object> entry = (Map.Entry<String, Object>) e;
+                    String key = entry.getKey();
+                    if (BeanMap.this.containsKey(key)) {
+                        Object value = BeanMap.this.get(key);
+                        return value == null ? entry.getValue() == null
+                            : value.equals(entry.getValue());
+                    }
+                    return false;
+                }
+
+                @Override
+                public boolean add(Map.Entry<String, Object> e) {
+                    BeanMap.this.put(e.getKey(), e.getValue());
+                    return true;
+                }
+
+                @Override
+                public boolean remove(Object e) {
+                    throw new UnsupportedOperationException();
+                }
+
+                @Override
+                public void clear() {
+                    throw new UnsupportedOperationException();
+                }
+            };
+        }
+    }
+
+    private static class SubMap<B> extends BeanMap<B> {
+        final String mFromKey;
+        final String mToKey;
+
+        SubMap(B bean, BeanPropertyAccessor<B> accessor, SortedSet<String> propertyNames,
+               String fromKey, String toKey)
+        {
+            super(bean, accessor, propertyNames);
+            mFromKey = fromKey;
+            mToKey = toKey;
+        }
+
+        @Override
+        public SortedMap<String, Object> subMap(String fromKey, String toKey) {
+            if (mFromKey != null && mFromKey.compareTo(fromKey) > 0) {
+                fromKey = mFromKey;
+            }
+            if (mToKey != null && mToKey.compareTo(toKey) < 0) {
+                toKey = mToKey;
+            }
+            return new SubMap<B>(mBean, mAccessor, mPropertyNames.subSet(fromKey, toKey),
+                                 fromKey, toKey);
+        }
+
+        @Override
+        public SortedMap<String, Object> headMap(String toKey) {
+            if (mToKey != null && mToKey.compareTo(toKey) < 0) {
+                toKey = mToKey;
+            }
+            return new SubMap<B>(mBean, mAccessor, mPropertyNames.headSet(toKey),
+                                 mFromKey, toKey);
+        }
+
+        @Override
+        public SortedMap<String, Object> tailMap(String fromKey) {
+            if (mFromKey != null && mFromKey.compareTo(fromKey) > 0) {
+                fromKey = mFromKey;
+            }
+            return new SubMap<B>(mBean, mAccessor, mPropertyNames.tailSet(fromKey),
+                                 fromKey, mToKey);
+        }
+
+        @Override
+        public boolean containsKey(Object key) {
+            if (key == null) {
+                return false;
+            }
+            String strKey = (String) key;
+            if (mFromKey != null && mFromKey.compareTo(strKey) > 0) {
+                return false;
+            }
+            if (mToKey != null && mToKey.compareTo(strKey) <= 0) {
+                return false;
+            }
+            return mAccessor.hasReadableProperty(strKey);
+        }
+
+        @Override
+        public boolean containsValue(Object value) {
+            for (String key : keySet()) {
+                Object propValue = mAccessor.getPropertyValue(mBean, key);
+                if (propValue == null) {
+                    if (value == null) {
+                        return true;
+                    }
+                } else if (propValue.equals(value)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public Object get(Object key) {
+            if (key == null) {
+                return null;
+            }
+            String strKey = (String) key;
+            if (mFromKey != null && mFromKey.compareTo(strKey) > 0) {
+                return null;
+            }
+            if (mToKey != null && mToKey.compareTo(strKey) <= 0) {
+                return null;
+            }
+            return mAccessor.getPropertyValue(mBean, strKey);
+        }
+
+        @Override
+        public Object put(String key, Object value) {
+            if (key != null) {
+                if (mFromKey != null && mFromKey.compareTo(key) > 0) {
+                    throw rangeError(key);
+                }
+                if (mToKey != null && mToKey.compareTo(key) <= 0) {
+                    throw rangeError(key);
+                }
+            }
+            Object old = mAccessor.getPropertyValue(mBean, key);
+            mAccessor.setPropertyValue(mBean, key, value);
+            return old;
+        }
+
+        private IllegalArgumentException rangeError(String key) {
+            String range;
+            if (mFromKey == null) {
+                range = "," + mToKey;
+            } else if (mToKey == null) {
+                range = mFromKey + ",";
+            } else {
+                range = mFromKey + "," + mToKey;
+            }
+
+            return new IllegalArgumentException
+                ("Key out of range: key=" + key + ", range=[" + range + ')');
+        }
     }
 }
