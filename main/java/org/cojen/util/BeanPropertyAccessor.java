@@ -44,8 +44,10 @@ import org.cojen.classfile.TypeDesc;
 public abstract class BeanPropertyAccessor<B> {
     private static final int READ_METHOD = 1;
     private static final int WRITE_METHOD = 2;
-    private static final int HAS_READ_METHOD = 3;
-    private static final int HAS_WRITE_METHOD = 4;
+    private static final int TRY_READ_METHOD = 3;
+    private static final int TRY_WRITE_METHOD = 4;
+    private static final int HAS_READ_METHOD = 5;
+    private static final int HAS_WRITE_METHOD = 6;
 
     private static final Map<Class, SoftReference<BeanPropertyAccessor>> cAccessors =
         new WeakIdentityMap<Class, SoftReference<BeanPropertyAccessor>>();
@@ -105,8 +107,10 @@ public abstract class BeanPropertyAccessor<B> {
         b.returnVoid();
 
         generateAccessMethod(cf, beanType, props[0], READ_METHOD);
+        generateAccessMethod(cf, beanType, props[0], TRY_READ_METHOD);
         generateAccessMethod(cf, beanType, props[0], HAS_READ_METHOD);
         generateAccessMethod(cf, beanType, props[1], WRITE_METHOD);
+        generateAccessMethod(cf, beanType, props[1], TRY_WRITE_METHOD);
         generateAccessMethod(cf, beanType, props[1], HAS_WRITE_METHOD);
 
         generateSearchMethod(cf, beanType, props[0]);
@@ -134,6 +138,19 @@ public abstract class BeanPropertyAccessor<B> {
             mi = cf.addMethod(Modifiers.PUBLIC, "setPropertyValue", null, params);
             break;
         }
+        case TRY_READ_METHOD: {
+            TypeDesc[] params = {TypeDesc.OBJECT, TypeDesc.STRING};
+            mi = cf.addMethod
+                (Modifiers.PUBLIC, "tryGetPropertyValue", TypeDesc.OBJECT, params);
+            break;
+        }
+        case TRY_WRITE_METHOD: {
+            TypeDesc[] params = new TypeDesc[] {
+                TypeDesc.OBJECT, TypeDesc.STRING, TypeDesc.OBJECT
+            };
+            mi = cf.addMethod(Modifiers.PUBLIC, "trySetPropertyValue", TypeDesc.BOOLEAN, params);
+            break;
+        }
         case HAS_READ_METHOD: {
             TypeDesc[] params = {TypeDesc.STRING};
             mi = cf.addMethod(Modifiers.PUBLIC, "hasReadableProperty", TypeDesc.BOOLEAN, params);
@@ -152,12 +169,12 @@ public abstract class BeanPropertyAccessor<B> {
         LocalVariable beanVar, propertyVar, valueVar;
 
         switch (methodType) {
-        case READ_METHOD: default:
+        case READ_METHOD: case TRY_READ_METHOD: default:
             beanVar = b.getParameter(0);
             propertyVar = b.getParameter(1);
             valueVar = null;
             break;
-        case WRITE_METHOD:
+        case WRITE_METHOD: case TRY_WRITE_METHOD:
             beanVar = b.getParameter(0);
             propertyVar = b.getParameter(1);
             valueVar = b.getParameter(2);
@@ -238,7 +255,7 @@ public abstract class BeanPropertyAccessor<B> {
                     }
                     
                     switch (methodType) {
-                    case READ_METHOD: default: {
+                    case READ_METHOD: case TRY_READ_METHOD: default: {
                         b.loadLocal(beanVar);
                         b.invoke(bp.getReadMethod());
                         TypeDesc type = TypeDesc.forClass(bp.getType());
@@ -246,14 +263,19 @@ public abstract class BeanPropertyAccessor<B> {
                         b.returnValue(TypeDesc.OBJECT);
                         break;
                     }
-                    case WRITE_METHOD: {
+                    case WRITE_METHOD: case TRY_WRITE_METHOD: {
                         b.loadLocal(beanVar);
                         b.loadLocal(valueVar);
                         TypeDesc type = TypeDesc.forClass(bp.getType());
                         b.checkCast(type.toObjectType());
                         b.convert(type.toObjectType(), type);
                         b.invoke(bp.getWriteMethod());
-                        b.returnVoid();
+                        if (methodType == WRITE_METHOD) {
+                            b.returnVoid();
+                        } else {
+                            b.loadConstant(true);
+                            b.returnValue(TypeDesc.BOOLEAN);
+                        }
                         break;
                     }
                     case HAS_READ_METHOD: case HAS_WRITE_METHOD: {
@@ -272,9 +294,14 @@ public abstract class BeanPropertyAccessor<B> {
             noMatch.setLocation();
         }
 
-        if (methodType == HAS_READ_METHOD || methodType == HAS_WRITE_METHOD) {
+        if (methodType == HAS_READ_METHOD || methodType == HAS_WRITE_METHOD
+            || methodType == TRY_WRITE_METHOD)
+        {
             b.loadConstant(false);
             b.returnValue(TypeDesc.BOOLEAN);
+        } else if (methodType == TRY_READ_METHOD) {
+            b.loadNull();
+            b.returnValue(TypeDesc.OBJECT);
         } else {
             b.newObject(TypeDesc.forClass(NoSuchPropertyException.class));
             b.dup();
@@ -468,6 +495,21 @@ public abstract class BeanPropertyAccessor<B> {
      * @since 2.1
      */
     public abstract boolean hasPropertyValue(B bean, Object value);
+
+    /**
+     * Returns property value or null if it does not exist.
+     *
+     * @since 2.1
+     */
+    public abstract Object tryGetPropertyValue(B bean, String property);
+
+    /**
+     * Tries to set property value, if it exists.
+     *
+     * @return false if property doesn't exist
+     * @since 2.1
+     */
+    public abstract boolean trySetPropertyValue(B bean, String property, Object value);
 
     // Auto-generated code sample:
     /*
