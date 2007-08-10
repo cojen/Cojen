@@ -197,12 +197,12 @@ public abstract class BeanPropertyMapFactory<B> {
 
         @Override
         public Object get(Object key) {
-            return mAccessor.getPropertyValue(mBean, (String) key);
+            return mAccessor.tryGetPropertyValue(mBean, (String) key);
         }
 
         @Override
         public Object put(String key, Object value) {
-            Object old = mAccessor.getPropertyValue(mBean, key);
+            Object old = mAccessor.tryGetPropertyValue(mBean, key);
             mAccessor.setPropertyValue(mBean, key, value);
             return old;
         }
@@ -470,7 +470,7 @@ public abstract class BeanPropertyMapFactory<B> {
             if (mToKey != null && mToKey.compareTo(strKey) <= 0) {
                 return null;
             }
-            return mAccessor.getPropertyValue(mBean, strKey);
+            return mAccessor.tryGetPropertyValue(mBean, strKey);
         }
 
         @Override
@@ -483,7 +483,7 @@ public abstract class BeanPropertyMapFactory<B> {
                     throw rangeError(key);
                 }
             }
-            Object old = mAccessor.getPropertyValue(mBean, key);
+            Object old = mAccessor.tryGetPropertyValue(mBean, key);
             mAccessor.setPropertyValue(mBean, key, value);
             return old;
         }
