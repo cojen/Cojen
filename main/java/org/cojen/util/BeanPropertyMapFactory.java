@@ -18,12 +18,15 @@ package org.cojen.util;
 
 import java.lang.ref.SoftReference;
 
+import java.lang.reflect.Method;
+
 import java.util.AbstractCollection;
 import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -34,7 +37,8 @@ import java.util.TreeSet;
 
 /**
  * Provides a simple and efficient means of reading and writing bean properties
- * via a map.
+ * via a map. Properties which declare throwing checked exceptions are
+ * excluded as are properties which are read-only or write-only.
  *
  * @author Brian S O'Neill
  * @see BeanPropertyAccessor
@@ -58,12 +62,30 @@ public abstract class BeanPropertyMapFactory<B> {
                 }
             }
 
-            Map<String, BeanProperty> properties = BeanIntrospector.getAllProperties(clazz);
+            final Map<String, BeanProperty> properties = BeanIntrospector.getAllProperties(clazz);
+            Map<String, BeanProperty> supportedProperties = properties;
 
-            if (properties.size() == 0) {
+            // Determine which properties are to be excluded.
+            for (Map.Entry<String, BeanProperty> entry : properties.entrySet()) {
+                BeanProperty property = entry.getValue();
+                if (property.getReadMethod() == null ||
+                    property.getWriteMethod() == null ||
+                    throwsCheckedException(property.getReadMethod()) ||
+                    throwsCheckedException(property.getWriteMethod()))
+                {
+                    // Exclude property.
+                    if (supportedProperties == properties) {
+                        supportedProperties = new HashMap<String, BeanProperty>(properties);
+                    }
+                    supportedProperties.remove(entry.getKey());
+                }
+            }
+
+            if (supportedProperties.size() == 0) {
                 factory = Empty.INSTANCE;
             } else {
-                factory = new Standard<B>(BeanPropertyAccessor.forClass(clazz), properties);
+                factory = new Standard<B>
+                    (BeanPropertyAccessor.forClass(clazz), supportedProperties);
             }
 
             cFactories.put(clazz, new SoftReference<BeanPropertyMapFactory>(factory));
@@ -73,8 +95,8 @@ public abstract class BeanPropertyMapFactory<B> {
 
     /**
      * Returns a fixed-size map backed by the given bean. Map remove operations
-     * are unsupported, as are put operations on non-existent properties.
-
+     * are unsupported, as is access to excluded properties.
+     *
      * @throws IllegalArgumentException if bean is null
      */
     public static SortedMap<String, Object> asMap(Object bean) {
@@ -92,6 +114,25 @@ public abstract class BeanPropertyMapFactory<B> {
      * @throws IllegalArgumentException if bean is null
      */
     public abstract SortedMap<String, Object> createMap(B bean);
+
+    private static boolean throwsCheckedException(Method method) {
+        Class<?>[] exceptionTypes = method.getExceptionTypes();
+        if (exceptionTypes == null) {
+            return false;
+        }
+
+        for (Class<?> exceptionType : exceptionTypes) {
+            if (RuntimeException.class.isAssignableFrom(exceptionType)) {
+                continue;
+            }
+            if (Error.class.isAssignableFrom(exceptionType)) {
+                continue;
+            }
+            return true;
+        }
+
+        return false;
+    }
 
     private static class Empty extends BeanPropertyMapFactory {
         static final Empty INSTANCE = new Empty();
