@@ -17,12 +17,17 @@
 package org.cojen.util;
 
 import java.lang.ref.SoftReference;
+
 import java.lang.reflect.Method;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
 import java.math.BigInteger;
+
 import org.cojen.classfile.ClassFile;
 import org.cojen.classfile.CodeBuilder;
 import org.cojen.classfile.Label;
@@ -42,6 +47,17 @@ import org.cojen.classfile.TypeDesc;
  * @see BeanPropertyMapFactory
  */
 public abstract class BeanPropertyAccessor<B> {
+    public static enum PropertySet {
+        /** Set of all properties */
+        ALL,
+        /** Set of all properties which declare only unchecked exceptions */
+        UNCHECKED_EXCEPTIONS,
+        /** Set of all read-write properties */
+        READ_WRITE,
+        /** Set of all read-write properties which declare only unchecked exceptions */
+        READ_WRITE_UNCHECKED_EXCEPTIONS,
+    }
+
     private static final int READ_METHOD = 1;
     private static final int WRITE_METHOD = 2;
     private static final int TRY_READ_METHOD = 3;
@@ -49,32 +65,43 @@ public abstract class BeanPropertyAccessor<B> {
     private static final int HAS_READ_METHOD = 5;
     private static final int HAS_WRITE_METHOD = 6;
 
-    private static final Map<Class, SoftReference<BeanPropertyAccessor>> cAccessors =
-        new WeakIdentityMap<Class, SoftReference<BeanPropertyAccessor>>();
+    private static final
+        Map<PropertySet, Map<Class, SoftReference<BeanPropertyAccessor>>> cAccessors =
+        new HashMap<PropertySet, Map<Class, SoftReference<BeanPropertyAccessor>>>();
 
     /**
      * Returns a new or cached BeanPropertyAccessor for the given class.
      */
     public static <B> BeanPropertyAccessor<B> forClass(Class<B> clazz) {
+        return forClass(clazz, PropertySet.ALL);
+    }
+
+    public static <B> BeanPropertyAccessor<B> forClass(Class<B> clazz, PropertySet set) {
         synchronized (cAccessors) {
+            Map<Class, SoftReference<BeanPropertyAccessor>> accessors = cAccessors.get(set);
+            if (accessors == null) {
+                accessors = new WeakIdentityMap<Class, SoftReference<BeanPropertyAccessor>>();
+                cAccessors.put(set, accessors);
+            }
+
             BeanPropertyAccessor bpa;
-            SoftReference<BeanPropertyAccessor> ref = cAccessors.get(clazz);
+            SoftReference<BeanPropertyAccessor> ref = accessors.get(clazz);
             if (ref != null) {
                 bpa = ref.get();
                 if (bpa != null) {
                     return bpa;
                 }
             }
-            bpa = generate(clazz);
-            cAccessors.put(clazz, new SoftReference<BeanPropertyAccessor>(bpa));
+            bpa = generate(clazz, set);
+            accessors.put(clazz, new SoftReference<BeanPropertyAccessor>(bpa));
             return bpa;
         }
     }
 
-    private static <B> BeanPropertyAccessor<B> generate(Class<B> beanType) {
+    private static <B> BeanPropertyAccessor<B> generate(Class<B> beanType, PropertySet set) {
         ClassInjector ci = ClassInjector.create
             (BeanPropertyAccessor.class.getName(), beanType.getClassLoader());
-        Class clazz = ci.defineClass(generateClassFile(ci.getClassName(), beanType));
+        Class clazz = ci.defineClass(generateClassFile(ci.getClassName(), beanType, set));
 
         try {
             return (BeanPropertyAccessor<B>) clazz.newInstance();
@@ -86,9 +113,10 @@ public abstract class BeanPropertyAccessor<B> {
     }
 
     private static ClassFile generateClassFile(String className,
-                                               Class beanType)
+                                               Class beanType,
+                                               PropertySet set)
     {
-        BeanProperty[][] props = getBeanProperties(beanType);
+        BeanProperty[][] props = getBeanProperties(beanType, set);
 
         ClassFile cf = new ClassFile(className, BeanPropertyAccessor.class);
         cf.markSynthetic();
@@ -437,7 +465,7 @@ public abstract class BeanPropertyAccessor<B> {
      * Returns two arrays of BeanProperties. Array 0 contains read
      * BeanProperties, array 1 contains the write BeanProperties.
      */
-    private static BeanProperty[][] getBeanProperties(Class beanType) {
+    private static BeanProperty[][] getBeanProperties(Class beanType, PropertySet set) {
         List readProperties = new ArrayList();
         List writeProperties = new ArrayList();
 
@@ -446,11 +474,28 @@ public abstract class BeanPropertyAccessor<B> {
         Iterator it = map.values().iterator();
         while (it.hasNext()) {
             BeanProperty bp = (BeanProperty)it.next();
+
+            if (set == PropertySet.READ_WRITE ||
+                set == PropertySet.READ_WRITE_UNCHECKED_EXCEPTIONS)
+            {
+                if (bp.getReadMethod() == null || bp.getWriteMethod() == null) {
+                    continue;
+                }
+            }
+ 
+            boolean checkedAllowed = 
+                set != PropertySet.UNCHECKED_EXCEPTIONS &&
+                set != PropertySet.READ_WRITE_UNCHECKED_EXCEPTIONS;
+
             if (bp.getReadMethod() != null) {
-                readProperties.add(bp);
+                if (checkedAllowed || !throwsCheckedException(bp.getReadMethod())) {
+                    readProperties.add(bp);
+                }
             }
             if (bp.getWriteMethod() != null) {
-                writeProperties.add(bp);
+                if (checkedAllowed || !throwsCheckedException(bp.getWriteMethod())) {
+                    writeProperties.add(bp);
+                }
             }
         }
 
@@ -462,6 +507,25 @@ public abstract class BeanPropertyAccessor<B> {
         writeProperties.toArray(props[1]);
 
         return props;
+    }
+
+    static boolean throwsCheckedException(Method method) {
+        Class<?>[] exceptionTypes = method.getExceptionTypes();
+        if (exceptionTypes == null) {
+            return false;
+        }
+
+        for (Class<?> exceptionType : exceptionTypes) {
+            if (RuntimeException.class.isAssignableFrom(exceptionType)) {
+                continue;
+            }
+            if (Error.class.isAssignableFrom(exceptionType)) {
+                continue;
+            }
+            return true;
+        }
+
+        return false;
     }
 
     protected BeanPropertyAccessor() {
