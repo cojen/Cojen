@@ -70,8 +70,8 @@ public abstract class BeanPropertyMapFactory<B> {
                 BeanProperty property = entry.getValue();
                 if (property.getReadMethod() == null ||
                     property.getWriteMethod() == null ||
-                    throwsCheckedException(property.getReadMethod()) ||
-                    throwsCheckedException(property.getWriteMethod()))
+                    BeanPropertyAccessor.throwsCheckedException(property.getReadMethod()) ||
+                    BeanPropertyAccessor.throwsCheckedException(property.getWriteMethod()))
                 {
                     // Exclude property.
                     if (supportedProperties == properties) {
@@ -85,7 +85,9 @@ public abstract class BeanPropertyMapFactory<B> {
                 factory = Empty.INSTANCE;
             } else {
                 factory = new Standard<B>
-                    (BeanPropertyAccessor.forClass(clazz), supportedProperties);
+                    (BeanPropertyAccessor.forClass
+                     (clazz, BeanPropertyAccessor.PropertySet.READ_WRITE_UNCHECKED_EXCEPTIONS),
+                     supportedProperties);
             }
 
             cFactories.put(clazz, new SoftReference<BeanPropertyMapFactory>(factory));
@@ -114,25 +116,6 @@ public abstract class BeanPropertyMapFactory<B> {
      * @throws IllegalArgumentException if bean is null
      */
     public abstract SortedMap<String, Object> createMap(B bean);
-
-    private static boolean throwsCheckedException(Method method) {
-        Class<?>[] exceptionTypes = method.getExceptionTypes();
-        if (exceptionTypes == null) {
-            return false;
-        }
-
-        for (Class<?> exceptionType : exceptionTypes) {
-            if (RuntimeException.class.isAssignableFrom(exceptionType)) {
-                continue;
-            }
-            if (Error.class.isAssignableFrom(exceptionType)) {
-                continue;
-            }
-            return true;
-        }
-
-        return false;
-    }
 
     private static class Empty extends BeanPropertyMapFactory {
         static final Empty INSTANCE = new Empty();
