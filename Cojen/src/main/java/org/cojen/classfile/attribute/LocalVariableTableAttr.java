@@ -73,6 +73,10 @@ public class LocalVariableTableAttr extends Attribute {
             final ConstantUTFInfo varDesc = 
                 (ConstantUTFInfo)cp.getConstant(descriptor_index);
 
+            if (varDesc == null) {
+                continue;
+            }
+
             final Location startLocation = new FixedLocation(start_pc);
             final Location endLocation = new FixedLocation(end_pc);
 
@@ -85,7 +89,7 @@ public class LocalVariableTableAttr extends Attribute {
                 private TypeDesc mType;
 
                 {
-                    mName = varName.getValue();
+                    mName = varName == null ? null : varName.getValue();
                     mType = TypeDesc.forDescriptor(varDesc.getValue());
                 }
 

@@ -9,6 +9,7 @@ Change History
 - Added WeakValuedHashMap class.
 - Moved some utility classes from Carbonado into Cojen.
 - Added BeanPropertyMapFactory class.
+- Fixed potential NullPointerException when disassembling local variable table.
 
 2.0 to 2.0.1
 -------------------------------
