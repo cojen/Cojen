@@ -42,8 +42,8 @@ class InstructionList implements CodeBuffer {
 
     boolean mResolved = false;
 
-    private List mExceptionHandlers = new ArrayList(4);
-    private List mLocalVariables = new ArrayList();
+    private List<ExceptionHandler> mExceptionHandlers = new ArrayList<ExceptionHandler>(4);
+    private List<LocalVariable> mLocalVariables = new ArrayList<LocalVariable>();
     private int mNextFixedVariableNumber;
 
     private int mMaxStack;
@@ -60,17 +60,17 @@ class InstructionList implements CodeBuffer {
      * Returns an immutable collection of all the instructions in this
      * InstructionList.
      */
-    public Collection getInstructions() {
-        return new AbstractCollection() {
-            public Iterator iterator() {
-                return new Iterator() {
+    public Collection<Instruction> getInstructions() {
+        return new AbstractCollection<Instruction>() {
+            public Iterator<Instruction> iterator() {
+                return new Iterator<Instruction>() {
                     private Instruction mNext = mFirst;
 
                     public boolean hasNext() {
                         return mNext != null;
                     }
 
-                    public Object next() {
+                    public Instruction next() {
                         if (mNext == null) {
                             throw new NoSuchElementException();
                         }
@@ -115,7 +115,7 @@ class InstructionList implements CodeBuffer {
         resolve();
 
         ExceptionHandler[] handlers = new ExceptionHandler[mExceptionHandlers.size()];
-        return (ExceptionHandler[])mExceptionHandlers.toArray(handlers);
+        return mExceptionHandlers.toArray(handlers);
     }
 
     public void addExceptionHandler(ExceptionHandler handler) {
@@ -152,9 +152,8 @@ class InstructionList implements CodeBuffer {
             } finally {
                 System.out.println("-- Instructions --");
 
-                Iterator it = getInstructions().iterator();
-                while (it.hasNext()) {
-                    System.out.println(it.next());
+                for (Instruction i : getInstructions()) {
+                    System.out.println(i);
                 }
             }
         }
@@ -175,9 +174,7 @@ class InstructionList implements CodeBuffer {
 
         // Make sure exception handlers are registered with all guarded
         // instructions.
-        Iterator it = mExceptionHandlers.iterator();
-        while (it.hasNext()) {
-            ExceptionHandler handler = (ExceptionHandler)it.next();
+        for (ExceptionHandler handler : mExceptionHandlers) {
             instr = (Instruction)handler.getStartLocation();
             Instruction end = (Instruction)handler.getEndLocation();
             for ( ; instr != null && instr != end; instr = instr.mNext) {
@@ -203,7 +200,7 @@ class InstructionList implements CodeBuffer {
             livenessAnalysis(liveIn, liveOut);
             
             // Register number -> list of variables that use that register.
-            List registerUsers = new ArrayList();
+            List<List<LocalVariable>> registerUsers = new ArrayList<List<LocalVariable>>();
             
             // First fill up list with variables that have a fixed number.
             for (int v=0; v<size; v++) {
@@ -262,13 +259,11 @@ class InstructionList implements CodeBuffer {
         // Perform stack flow analysis to determine the max stack size.
         {
             // Start the flow analysis at the first instruction.
-            Map subAdjustMap = new HashMap(11);
+            Map<Instruction, Integer> subAdjustMap = new HashMap<Instruction, Integer>(11);
             stackResolve(0, mFirst, subAdjustMap);
             
             // Continue flow analysis into exception handler entry points.
-            it = mExceptionHandlers.iterator();
-            while (it.hasNext()) {
-                ExceptionHandler handler = (ExceptionHandler)it.next();
+            for (ExceptionHandler handler : mExceptionHandlers) {
                 Instruction enter = (Instruction)handler.getCatchLocation();
                 stackResolve(1, enter, subAdjustMap);
             }
@@ -353,7 +348,7 @@ class InstructionList implements CodeBuffer {
 
     private void livenessAnalysis(BitList[] liveIn, BitList[] liveOut) {
         // Track stores to variables to see if the result is discarded.
-        List[] localStores = new List[liveIn.length];
+        List<StoreLocalInstruction>[] localStores = new List[liveIn.length];
 
         int passCount = -1;
         boolean passAgain;
@@ -379,12 +374,12 @@ class InstructionList implements CodeBuffer {
                     if (loi.isStore()) {
                         defIndex = varIndex;
                         if (passCount == 0 && loi instanceof StoreLocalInstruction) {
-                            List stores = localStores[varIndex];
+                            List<StoreLocalInstruction> stores = localStores[varIndex];
                             if (stores == null) {
-                                stores = new ArrayList();
+                                stores = new ArrayList<StoreLocalInstruction>();
                                 localStores[varIndex] = stores;
                             }
-                            stores.add(instr);
+                            stores.add((StoreLocalInstruction)loi);
                         }
                     }
                 }
@@ -419,10 +414,9 @@ class InstructionList implements CodeBuffer {
                         }
                     }
 
-                    Iterator handlers = instr.getExceptionHandlers();
+                    Collection<ExceptionHandler> handlers = instr.getExceptionHandlers();
                     if (handlers != null) {
-                        while (handlers.hasNext()) {
-                            ExceptionHandler handler = (ExceptionHandler)handlers.next();
+                        for (ExceptionHandler handler : handlers) {
                             Instruction catchInstr = (Instruction)handler.getCatchLocation();
                             if (liveIn[v].get(catchInstr.getLocation())) {
                                 setLiveOut = true;
@@ -443,10 +437,10 @@ class InstructionList implements CodeBuffer {
 
         // See which local store instructions should discard their results.
         for (int v=localStores.length; --v>=0; ) {
-            List stores = localStores[v];
+            List<StoreLocalInstruction> stores = localStores[v];
             if (stores != null) {
                 for (int i=stores.size(); --i>=0; ) {
-                    StoreLocalInstruction instr = (StoreLocalInstruction)stores.get(i);
+                    StoreLocalInstruction instr = stores.get(i);
                     if (!liveOut[v].get(instr.getLocation())) {
                         instr.discardResult();
                     }
@@ -455,7 +449,7 @@ class InstructionList implements CodeBuffer {
         }
     }
 
-    private void addRegisterUser(List registerUsers, LocalVariable var) {
+    private void addRegisterUser(List<List<LocalVariable>> registerUsers, LocalVariable var) {
         int num = var.getNumber();
         if (num < 0) {
             throw new IllegalStateException("Local variable number not resolved");
@@ -466,11 +460,11 @@ class InstructionList implements CodeBuffer {
         }
     }
 
-    private List getRegisterUsers(List registerUsers, int num) {
+    private List<LocalVariable> getRegisterUsers(List<List<LocalVariable>> registerUsers,int num) {
         while (registerUsers.size() <= num) {
-            registerUsers.add(new ArrayList());
+            registerUsers.add(new ArrayList<LocalVariable>());
         }
-        return (List)registerUsers.get(num);
+        return registerUsers.get(num);
     }
 
     /**
@@ -479,7 +473,8 @@ class InstructionList implements CodeBuffer {
      * @return index into registerUsers which is available, which may be equal
      * to r or equal to the size of registerUsers
      */
-    private int findAvailableRegister(List registerUsers, int r, BitList[] live, int v) {
+    private int findAvailableRegister(List<List<LocalVariable>> registerUsers,
+                                      int r, BitList[] live, int v) {
         registerScan:
         for (; r<registerUsers.size(); r++) {
             List users = getRegisterUsers(registerUsers, r);
@@ -496,7 +491,7 @@ class InstructionList implements CodeBuffer {
 
     private int stackResolve(int stackDepth, 
                              Instruction instr, 
-                             Map subAdjustMap) {
+                             Map<Instruction, Integer> subAdjustMap) {
         while (instr != null) {
             // Set the stack depth, marking this instruction as being visited.
             // If already visited, break out of this flow.
@@ -545,7 +540,7 @@ class InstructionList implements CodeBuffer {
                     if (!instr.isSubroutineCall()) {
                         stackResolve(stackDepth, targetInstr, subAdjustMap);
                     } else {
-                        Integer subAdjust = (Integer)subAdjustMap.get(targetInstr);
+                        Integer subAdjust = subAdjustMap.get(targetInstr);
 
                         if (subAdjust == null) {
                             int newDepth = stackResolve(stackDepth, targetInstr, subAdjustMap);
@@ -610,7 +605,7 @@ class InstructionList implements CodeBuffer {
             return mNumber;
         }
 
-        public Set getLocationRangeSet() {
+        public Set<LocationRange> getLocationRangeSet() {
             // TODO
             return null;
         }
@@ -660,7 +655,7 @@ class InstructionList implements CodeBuffer {
         // Indicates the address of this instruction is, or -1 if not known.
         int mLocation = -1;
 
-        private Set mExceptionHandlers;
+        private Set<ExceptionHandler> mExceptionHandlers;
 
         /**
          * Newly created instructions are automatically added to the
@@ -819,11 +814,8 @@ class InstructionList implements CodeBuffer {
          * Returns an all the exception handlers that wraps this instruction,
          * or null if none.
          */
-        public Iterator getExceptionHandlers() {
-            if (mExceptionHandlers == null) {
-                return null;
-            }
-            return mExceptionHandlers.iterator();
+        public Collection<ExceptionHandler> getExceptionHandlers() {
+            return mExceptionHandlers;
         }
 
         /**
@@ -831,7 +823,7 @@ class InstructionList implements CodeBuffer {
          */
         public void addExceptionHandler(ExceptionHandler handler) {
             if (mExceptionHandlers == null) {
-                mExceptionHandlers = new HashSet(4);
+                mExceptionHandlers = new HashSet<ExceptionHandler>(4);
             }
             mExceptionHandlers.add(handler);
         }
@@ -861,11 +853,10 @@ class InstructionList implements CodeBuffer {
          */
         public abstract boolean isResolved();
 
-        public int compareTo(Object obj) {
-            if (this == obj) {
+        public int compareTo(Location other) {
+            if (this == other) {
                 return 0;
             }
-            Location other = (Location)obj;
 
             int loca = getLocation();
             int locb = other.getLocation();

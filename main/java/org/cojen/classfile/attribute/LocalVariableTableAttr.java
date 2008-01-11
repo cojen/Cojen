@@ -43,8 +43,8 @@ import org.cojen.classfile.constant.ConstantUTFInfo;
  */
 public class LocalVariableTableAttr extends Attribute {
 
-    private List mEntries = new ArrayList(10);
-    private List mCleanEntries;
+    private List<Entry> mEntries = new ArrayList<Entry>(10);
+    private List<Entry> mCleanEntries;
     private int mRangeCount;
     
     public LocalVariableTableAttr(ConstantPool cp) {
@@ -80,9 +80,8 @@ public class LocalVariableTableAttr extends Attribute {
             final Location startLocation = new FixedLocation(start_pc);
             final Location endLocation = new FixedLocation(end_pc);
 
-            Set ranges = new HashSet();
-            ranges.add(new LocationRangeImpl(startLocation, endLocation));
-            final Set fRanges = Collections.unmodifiableSet(ranges);
+            final Set<LocationRange> ranges = Collections
+                .singleton((LocationRange) new LocationRangeImpl(startLocation, endLocation));
 
             LocalVariable localVar = new LocalVariable() {
                 private String mName;
@@ -113,8 +112,8 @@ public class LocalVariableTableAttr extends Attribute {
                     return index;
                 }
 
-                public Set getLocationRangeSet() {
-                    return fRanges;
+                public Set<LocationRange> getLocationRangeSet() {
+                    return ranges;
                 }
             };
 
@@ -147,10 +146,10 @@ public class LocalVariableTableAttr extends Attribute {
 
         int size = mCleanEntries.size();
         for (int i=0; i<size; i++) {
-            Entry entry = (Entry)mEntries.get(i);
+            Entry entry = mEntries.get(i);
             LocalVariable localVar = entry.mLocalVar;
 
-            Set ranges = localVar.getLocationRangeSet();
+            Set<LocationRange> ranges = localVar.getLocationRangeSet();
             if (ranges == null) {
                 continue;
             }
@@ -163,10 +162,7 @@ public class LocalVariableTableAttr extends Attribute {
             check("local variable table entry descriptor index", descriptor_index);
             check("local variable table entry index", index);
 
-            Iterator it = ranges.iterator();
-            while (it.hasNext()) {
-                LocationRange range = (LocationRange)it.next();
-
+            for (LocationRange range : ranges) {
                 Location startLocation = range.getStartLocation();
                 Location endLocation = range.getEndLocation();
 
@@ -199,23 +195,20 @@ public class LocalVariableTableAttr extends Attribute {
         // Clean out entries that are incomplete or bogus.
 
         int size = mEntries.size();
-        mCleanEntries = new ArrayList(size);
+        mCleanEntries = new ArrayList<Entry>(size);
         mRangeCount = 0;
 
     outer:
         for (int i=0; i<size; i++) {
-            Entry entry = (Entry)mEntries.get(i);
+            Entry entry = mEntries.get(i);
             LocalVariable localVar = entry.mLocalVar;
 
-            Set ranges = localVar.getLocationRangeSet();
+            Set<LocationRange> ranges = localVar.getLocationRangeSet();
             if (ranges == null || ranges.size() == 0) {
                 continue;
             }
 
-            Iterator it = ranges.iterator();
-            while (it.hasNext()) {
-                LocationRange range = (LocationRange)it.next();
-
+            for (LocationRange range : ranges) {
                 Location startLocation = range.getStartLocation();
                 Location endLocation = range.getEndLocation();
 

@@ -18,6 +18,7 @@ package org.cojen.classfile;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.io.PrintWriter;
@@ -45,11 +46,11 @@ public class CodeAssemblerPrinter extends AbstractCodeAssembler implements CodeA
 
     private int mTypeDescCounter;
     // Maps TypeDesc objects to String variable names.
-    private Map mTypeDescNames;
+    private Map<TypeDesc, String> mTypeDescNames;
 
     private int mTypeDescArrayCounter;
     // Maps TypeDesc arrays to String variable names.
-    private Map mTypeDescArrayNames;
+    private Map<List<TypeDesc>, String> mTypeDescArrayNames;
 
     public CodeAssemblerPrinter(TypeDesc[] paramTypes, boolean isStatic,
                                 PrintWriter writer)
@@ -78,8 +79,8 @@ public class CodeAssemblerPrinter extends AbstractCodeAssembler implements CodeA
             builder += '.';
         }
         mBulder = builder;
-        mTypeDescNames = new HashMap();
-        mTypeDescArrayNames = new HashMap();
+        mTypeDescNames = new HashMap<TypeDesc, String>();
+        mTypeDescArrayNames = new HashMap<List<TypeDesc>, String>();
 
         mParams = new LocalVariable[paramTypes.length];
 
@@ -653,7 +654,7 @@ public class CodeAssemblerPrinter extends AbstractCodeAssembler implements CodeA
             return "null";
         }
 
-        String name = (String)mTypeDescNames.get(type);
+        String name = mTypeDescNames.get(type);
 
         if (name == null) {
             if (type.isPrimitive()) {
@@ -698,8 +699,8 @@ public class CodeAssemblerPrinter extends AbstractCodeAssembler implements CodeA
             return "null";
         }
 
-        Object key = Arrays.asList(types);
-        String name = (String)mTypeDescArrayNames.get(key);
+        List<TypeDesc> key = Arrays.asList(types);
+        String name = mTypeDescArrayNames.get(key);
 
         if (name == null) {
             name = "params_" + (++mTypeDescArrayCounter);
@@ -830,7 +831,7 @@ public class CodeAssemblerPrinter extends AbstractCodeAssembler implements CodeA
             return null;
         }
 
-        public Set getLocationRangeSet() {
+        public Set<LocationRange> getLocationRangeSet() {
             return null;
         }
     }
@@ -851,7 +852,7 @@ public class CodeAssemblerPrinter extends AbstractCodeAssembler implements CodeA
             return -1;
         }
 
-        public int compareTo(Object obj) {
+        public int compareTo(Location obj) {
             return 0;
         }
     }

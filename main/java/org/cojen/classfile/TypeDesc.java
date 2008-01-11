@@ -79,23 +79,24 @@ public abstract class TypeDesc extends Descriptor implements Serializable {
     public final static TypeDesc STRING;
 
     // Pool of all shared instances. Ensures identity comparison works.
-    final static WeakCanonicalSet cInstances;
+    final static WeakCanonicalSet<Descriptor> cInstances;
 
     // Cache that maps Classes to TypeDescs.
-    private final static Map cClassesToInstances;
+    private final static Map<Class, TypeDesc> cClassesToInstances;
 
     // Cache that maps String names to TypeDescs.
-    private final static Map cNamesToInstances;
+    private final static Map<String, TypeDesc> cNamesToInstances;
 
     // Cache that maps String descriptors to TypeDescs.
-    private final static Map cDescriptorsToInstances;
+    private final static Map<String, TypeDesc> cDescriptorsToInstances;
 
     static {
-        cInstances = new WeakCanonicalSet();
+        cInstances = new WeakCanonicalSet<Descriptor>();
 
-        cClassesToInstances = Collections.synchronizedMap(new WeakIdentityMap());
-        cNamesToInstances = Collections.synchronizedMap(new SoftValuedHashMap());
-        cDescriptorsToInstances = Collections.synchronizedMap(new SoftValuedHashMap());
+        cClassesToInstances = Collections.synchronizedMap(new WeakIdentityMap<Class, TypeDesc>());
+        cNamesToInstances = Collections.synchronizedMap(new SoftValuedHashMap<String, TypeDesc>());
+        cDescriptorsToInstances = Collections.synchronizedMap
+            (new SoftValuedHashMap<String, TypeDesc>());
 
         VOID = intern(new PrimitiveType("V", VOID_CODE));
         BOOLEAN = intern(new PrimitiveType("Z", BOOLEAN_CODE));
@@ -112,7 +113,7 @@ public abstract class TypeDesc extends Descriptor implements Serializable {
     }
 
     static TypeDesc intern(TypeDesc type) {
-        return (TypeDesc)cInstances.put(type);
+        return cInstances.put(type);
     }
 
     /**
@@ -663,7 +664,7 @@ public abstract class TypeDesc extends Descriptor implements Serializable {
 
         // Since cClassesToInstances may reference this instance, softly
         // reference back to class to allow it to be garbage collected.
-        private transient SoftReference mClassRef;
+        private transient SoftReference<Class> mClassRef;
 
         ObjectType(String desc, String name) {
             super(desc);
@@ -778,13 +779,13 @@ public abstract class TypeDesc extends Descriptor implements Serializable {
         public final synchronized Class toClass() {
             Class clazz;
             if (mClassRef != null) {
-                clazz = (Class)mClassRef.get();
+                clazz = mClassRef.get();
                 if (clazz != null) {
                     return clazz;
                 }
             }
             clazz = toClass(null);
-            mClassRef = new SoftReference(clazz);
+            mClassRef = new SoftReference<Class>(clazz);
             return clazz;
         }
 
@@ -826,7 +827,7 @@ public abstract class TypeDesc extends Descriptor implements Serializable {
         }
 
         void setClass(Class clazz) {
-            mClassRef = new SoftReference(clazz);
+            mClassRef = new SoftReference<Class>(clazz);
         }
     }
 

@@ -58,7 +58,7 @@ public class MethodInfo {
     private ConstantUTFInfo mNameConstant;
     private ConstantUTFInfo mDescriptorConstant;
     
-    private List mAttributes = new ArrayList(2);
+    private List<Attribute> mAttributes = new ArrayList<Attribute>(2);
 
     private CodeAttr mCode;
     private ExceptionsAttr mExceptions;
@@ -175,8 +175,8 @@ public class MethodInfo {
 
     public boolean isSynthetic() {
         for (int i = mAttributes.size(); --i >= 0; ) {
-            Object obj = mAttributes.get(i);
-            if (obj instanceof SyntheticAttr) {
+            Attribute attr = mAttributes.get(i);
+            if (attr instanceof SyntheticAttr) {
                 return true;
             }
         }
@@ -185,8 +185,8 @@ public class MethodInfo {
 
     public boolean isDeprecated() {
         for (int i = mAttributes.size(); --i >= 0; ) {
-            Object obj = mAttributes.get(i);
-            if (obj instanceof DeprecatedAttr) {
+            Attribute attr = mAttributes.get(i);
+            if (attr instanceof DeprecatedAttr) {
                 return true;
             }
         }
@@ -199,9 +199,9 @@ public class MethodInfo {
      */
     public Annotation[] getRuntimeInvisibleAnnotations() {
         for (int i = mAttributes.size(); --i >= 0; ) {
-            Object obj = mAttributes.get(i);
-            if (obj instanceof RuntimeInvisibleAnnotationsAttr) {
-                return ((AnnotationsAttr) obj).getAnnotations();
+            Attribute attr = mAttributes.get(i);
+            if (attr instanceof RuntimeInvisibleAnnotationsAttr) {
+                return ((AnnotationsAttr) attr).getAnnotations();
             }
         }
         return new Annotation[0];
@@ -213,9 +213,9 @@ public class MethodInfo {
      */
     public Annotation[] getRuntimeVisibleAnnotations() {
         for (int i = mAttributes.size(); --i >= 0; ) {
-            Object obj = mAttributes.get(i);
-            if (obj instanceof RuntimeVisibleAnnotationsAttr) {
-                return ((AnnotationsAttr) obj).getAnnotations();
+            Attribute attr = mAttributes.get(i);
+            if (attr instanceof RuntimeVisibleAnnotationsAttr) {
+                return ((AnnotationsAttr) attr).getAnnotations();
             }
         }
         return new Annotation[0];
@@ -227,9 +227,9 @@ public class MethodInfo {
     public Annotation addRuntimeInvisibleAnnotation(TypeDesc type) {
         AnnotationsAttr attr = null;
         for (int i = mAttributes.size(); --i >= 0; ) {
-            Object obj = mAttributes.get(i);
-            if (obj instanceof RuntimeInvisibleAnnotationsAttr) {
-                attr = (AnnotationsAttr) obj;
+            Attribute a = mAttributes.get(i);
+            if (a instanceof RuntimeInvisibleAnnotationsAttr) {
+                attr = (AnnotationsAttr) a;
             }
         }
         if (attr == null) {
@@ -248,9 +248,9 @@ public class MethodInfo {
     public Annotation addRuntimeVisibleAnnotation(TypeDesc type) {
         AnnotationsAttr attr = null;
         for (int i = mAttributes.size(); --i >= 0; ) {
-            Object obj = mAttributes.get(i);
-            if (obj instanceof RuntimeVisibleAnnotationsAttr) {
-                attr = (AnnotationsAttr) obj;
+            Attribute a = mAttributes.get(i);
+            if (a instanceof RuntimeVisibleAnnotationsAttr) {
+                attr = (AnnotationsAttr) a;
             }
         }
         if (attr == null) {
@@ -270,9 +270,9 @@ public class MethodInfo {
     // TODO: Eventually remove this method
     public SignatureAttr getSignatureAttr() {
         for (int i = mAttributes.size(); --i >= 0; ) {
-            Object obj = mAttributes.get(i);
-            if (obj instanceof SignatureAttr) {
-                return (SignatureAttr) obj;
+            Attribute attr = mAttributes.get(i);
+            if (attr instanceof SignatureAttr) {
+                return (SignatureAttr) attr;
             }
         }
         return null;
@@ -365,8 +365,7 @@ public class MethodInfo {
     }
 
     public Attribute[] getAttributes() {
-        Attribute[] attrs = new Attribute[mAttributes.size()];
-        return (Attribute[])mAttributes.toArray(attrs);
+        return mAttributes.toArray(new Attribute[mAttributes.size()]);
     }
 
     /**
@@ -377,7 +376,7 @@ public class MethodInfo {
         
         int size = mAttributes.size();
         for (int i=0; i<size; i++) {
-            length += ((Attribute)mAttributes.get(i)).getLength();
+            length += mAttributes.get(i).getLength();
         }
         
         return length;
@@ -391,7 +390,7 @@ public class MethodInfo {
         int size = mAttributes.size();
         dout.writeShort(size);
         for (int i=0; i<size; i++) {
-            Attribute attr = (Attribute)mAttributes.get(i);
+            Attribute attr = mAttributes.get(i);
             try {
                 attr.writeTo(dout);
             } catch (IllegalStateException e) {

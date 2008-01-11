@@ -32,11 +32,10 @@ public class FixedLocation implements Location {
         return mLocation;
     }
 
-    public int compareTo(Object obj) {
-        if (this == obj) {
+    public int compareTo(Location other) {
+        if (this == other) {
             return 0;
         }
-        Location other = (Location)obj;
         
         int loca = getLocation();
         int locb = other.getLocation();

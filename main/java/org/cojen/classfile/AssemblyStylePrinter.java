@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.cojen.util.IntHashMap;
 import org.cojen.classfile.attribute.Annotation;
 import org.cojen.classfile.attribute.CodeAttr;
 import org.cojen.classfile.attribute.SignatureAttr;
@@ -55,13 +56,13 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
     // Current address being decompiled.
     private int mAddress;
 
-    // Maps Integer address keys to String labels.
-    private Map mLabels;
+    // Maps int address keys to String labels.
+    private IntHashMap<Object> mLabels;
 
     private ExceptionHandler[] mExceptionHandlers;
 
-    // Maps Integer catch locations to Lists of ExceptionHandler objects.
-    private Map mCatchLocations;
+    // Maps int catch locations to Lists of ExceptionHandler objects.
+    private IntHashMap<List<ExceptionHandler>> mCatchLocations;
 
     public AssemblyStylePrinter() {
     }
@@ -561,11 +562,10 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
                 return mAddress;
             }
 
-            public int compareTo(Object obj) {
-                if (this == obj) {
+            public int compareTo(Location other) {
+                if (this == other) {
                     return 0;
                 }
-                Location other = (Location)obj;
                 
                 int loca = getLocation();
                 int locb = other.getLocation();
@@ -1046,20 +1046,20 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
     }
 
     private void gatherLabels() {
-        mLabels = new HashMap();
-        mCatchLocations = new HashMap(mExceptionHandlers.length * 2 + 1);
+        mLabels = new IntHashMap<Object>();
+        mCatchLocations = new IntHashMap<List<ExceptionHandler>>
+            (mExceptionHandlers.length * 2 + 1);
 
         // Gather labels for any exception handlers.
         for (int i = mExceptionHandlers.length - 1; i >= 0; i--) {
             ExceptionHandler handler = mExceptionHandlers[i];
             createLabel(new Integer(handler.getStartLocation().getLocation()));
             createLabel(new Integer(handler.getEndLocation().getLocation()));
-            Integer labelKey =
-                new Integer(handler.getCatchLocation().getLocation());
+            int labelKey = handler.getCatchLocation().getLocation();
             createLabel(labelKey);
-            List list = (List)mCatchLocations.get(labelKey);
+            List<ExceptionHandler> list = mCatchLocations.get(labelKey);
             if (list == null) {
-                list = new ArrayList(2);
+                list = new ArrayList<ExceptionHandler>(2);
                 mCatchLocations.put(labelKey, list);
             }
             list.add(handler);
@@ -1317,8 +1317,8 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
         }
     }
 
-    private void createLabel(Integer labelKey) {
-        mLabels.put(labelKey, labelKey);
+    private void createLabel(int labelKey) {
+        mLabels.put(labelKey, (Object) labelKey);
     }
 
     private ConstantInfo getConstant(int index) {
@@ -1339,7 +1339,7 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
     }
 
     private void locateLabel(String indent) {
-        Integer labelKey = new Integer(mAddress);
+        int labelKey = mAddress;
         Object labelValue = mLabels.get(labelKey);
 
         if (labelValue == null) {
@@ -1354,11 +1354,11 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
         print(labelValue);
         println(":");
 
-        List handlers = (List)mCatchLocations.get(labelKey);
+        List<ExceptionHandler> handlers = mCatchLocations.get(labelKey);
 
         if (handlers != null) {
             for (int i=0; i<handlers.size(); i++) {
-                ExceptionHandler handler = (ExceptionHandler)handlers.get(i);
+                ExceptionHandler handler = handlers.get(i);
                 print(indent, "try (");
                 print(getLabel(handler.getStartLocation().getLocation()));
                 print("..");
@@ -1487,7 +1487,7 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
      *   - non-final
      *   - transient
      */
-    private class MemberComparator implements Comparator {
+    private class MemberComparator implements Comparator<Object> {
         public int compare(Object a, Object b) {
             Modifiers aFlags, bFlags;
 

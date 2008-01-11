@@ -133,7 +133,7 @@ public class ClassFile {
                                      AttributeFactory attrFactory)
         throws IOException
     {
-        return readFrom(din, loader, attrFactory, new HashMap(11), null);
+        return readFrom(din, loader, attrFactory, new HashMap<String, ClassFile>(11), null);
     }
 
     /**
@@ -143,7 +143,7 @@ public class ClassFile {
     private static ClassFile readFrom(DataInput din,
                                       ClassFileDataLoader loader,
                                       AttributeFactory attrFactory,
-                                      Map loadedClassFiles,
+                                      Map<String, ClassFile> loadedClassFiles,
                                       ClassFile outerClass)
         throws IOException
     {
@@ -239,7 +239,7 @@ public class ClassFile {
                                 innerClass.mInnerClassName = info.getInnerClassName().getValue();
                             }
                             if (cf.mInnerClasses == null) {
-                                cf.mInnerClasses = new ArrayList();
+                                cf.mInnerClasses = new ArrayList<ClassFile>();
                             }
                             cf.mInnerClasses.add(innerClass);
                         }
@@ -254,12 +254,12 @@ public class ClassFile {
     private static ClassFile readOuterClass(ConstantClassInfo outer,
                                             ClassFileDataLoader loader,
                                             AttributeFactory attrFactory,
-                                            Map loadedClassFiles)
+                                            Map<String, ClassFile> loadedClassFiles)
         throws IOException
     {
         String name = outer.getType().getRootName();
 
-        ClassFile outerClass = (ClassFile)loadedClassFiles.get(name);
+        ClassFile outerClass = loadedClassFiles.get(name);
         if (outerClass != null) {
             return outerClass;
         }
@@ -279,7 +279,7 @@ public class ClassFile {
     private static ClassFile readInnerClass(ConstantClassInfo inner,
                                             ClassFileDataLoader loader,
                                             AttributeFactory attrFactory,
-                                            Map loadedClassFiles,
+                                            Map<String, ClassFile> loadedClassFiles,
                                             ClassFile outerClass)
         throws IOException
     {
@@ -294,7 +294,7 @@ public class ClassFile {
         }
 
         // Prevent classes from being loaded multiple times.
-        ClassFile innerClass = (ClassFile)loadedClassFiles.get(name);
+        ClassFile innerClass = loadedClassFiles.get(name);
         if (innerClass != null) {
             return innerClass;
         }
@@ -329,18 +329,16 @@ public class ClassFile {
     private ConstantClassInfo mThisClass;
     private ConstantClassInfo mSuperClass;
     
-    // Holds ConstantInfo objects.
-    private List mInterfaces = new ArrayList(2);
-    private Set mInterfaceSet = new HashSet(7);
+    private List<ConstantClassInfo> mInterfaces = new ArrayList<ConstantClassInfo>(2);
+    private Set<String> mInterfaceSet = new HashSet<String>(7);
     
-    // Holds objects.
-    private List mFields = new ArrayList();
-    private List mMethods = new ArrayList();
-    private List mAttributes = new ArrayList();
+    private List<FieldInfo> mFields = new ArrayList<FieldInfo>();
+    private List<MethodInfo> mMethods = new ArrayList<MethodInfo>();
+    private List<Attribute> mAttributes = new ArrayList<Attribute>();
     
     private SourceFileAttr mSource;
 
-    private List mInnerClasses;
+    private List<ClassFile> mInnerClasses;
     private int mAnonymousInnerClassCount = 0;
     private InnerClassesAttr mInnerClassesAttr;
 
@@ -460,8 +458,7 @@ public class ClassFile {
         String[] names = new String[size];
 
         for (int i=0; i<size; i++) {
-            names[i] = ((ConstantClassInfo)mInterfaces.get(i))
-                .getType().getRootName();
+            names[i] = mInterfaces.get(i).getType().getRootName();
         }
 
         return names;
@@ -471,8 +468,7 @@ public class ClassFile {
      * Returns all the fields defined in this class.
      */
     public FieldInfo[] getFields() {
-        FieldInfo[] fields = new FieldInfo[mFields.size()];
-        return (FieldInfo[])mFields.toArray(fields);
+        return mFields.toArray(new FieldInfo[mFields.size()]);
     }
 
     /**
@@ -481,18 +477,17 @@ public class ClassFile {
      */
     public MethodInfo[] getMethods() {
         int size = mMethods.size();
-        List methodsOnly = new ArrayList(size);
+        List<MethodInfo> methodsOnly = new ArrayList<MethodInfo>(size);
 
         for (int i=0; i<size; i++) {
-            MethodInfo method = (MethodInfo)mMethods.get(i);
+            MethodInfo method = mMethods.get(i);
             String name = method.getName();
             if (!"<init>".equals(name) && !"<clinit>".equals(name)) {
                 methodsOnly.add(method);
             }
         }
 
-        MethodInfo[] methodsArray = new MethodInfo[methodsOnly.size()];
-        return (MethodInfo[])methodsOnly.toArray(methodsArray);
+        return methodsOnly.toArray(new MethodInfo[methodsOnly.size()]);
     }
 
     /**
@@ -500,17 +495,16 @@ public class ClassFile {
      */
     public MethodInfo[] getConstructors() {
         int size = mMethods.size();
-        List ctorsOnly = new ArrayList(size);
+        List<MethodInfo> ctorsOnly = new ArrayList<MethodInfo>(size);
 
         for (int i=0; i<size; i++) {
-            MethodInfo method = (MethodInfo)mMethods.get(i);
+            MethodInfo method = mMethods.get(i);
             if ("<init>".equals(method.getName())) {
                 ctorsOnly.add(method);
             }
         }
 
-        MethodInfo[] ctorsArray = new MethodInfo[ctorsOnly.size()];
-        return (MethodInfo[])ctorsOnly.toArray(ctorsArray);
+        return ctorsOnly.toArray(new MethodInfo[ctorsOnly.size()]);
     }
 
     /**
@@ -521,7 +515,7 @@ public class ClassFile {
         int size = mMethods.size();
 
         for (int i=0; i<size; i++) {
-            MethodInfo method = (MethodInfo)mMethods.get(i);
+            MethodInfo method = mMethods.get(i);
             if ("<clinit>".equals(method.getName())) {
                 return method;
             }
@@ -539,8 +533,7 @@ public class ClassFile {
             return new ClassFile[0];
         }
 
-        ClassFile[] innerClasses = new ClassFile[mInnerClasses.size()];
-        return (ClassFile[])mInnerClasses.toArray(innerClasses);
+        return mInnerClasses.toArray(new ClassFile[mInnerClasses.size()]);
     }
 
     /**
@@ -597,8 +590,8 @@ public class ClassFile {
 
     public boolean isSynthetic() {
         for (int i = mAttributes.size(); --i >= 0; ) {
-            Object obj = mAttributes.get(i);
-            if (obj instanceof SyntheticAttr) {
+            Attribute attr = mAttributes.get(i);
+            if (attr instanceof SyntheticAttr) {
                 return true;
             }
         }
@@ -607,8 +600,8 @@ public class ClassFile {
 
     public boolean isDeprecated() {
         for (int i = mAttributes.size(); --i >= 0; ) {
-            Object obj = mAttributes.get(i);
-            if (obj instanceof DeprecatedAttr) {
+            Attribute attr = mAttributes.get(i);
+            if (attr instanceof DeprecatedAttr) {
                 return true;
             }
         }
@@ -621,9 +614,9 @@ public class ClassFile {
      */
     public Annotation[] getRuntimeInvisibleAnnotations() {
         for (int i = mAttributes.size(); --i >= 0; ) {
-            Object obj = mAttributes.get(i);
-            if (obj instanceof RuntimeInvisibleAnnotationsAttr) {
-                return ((AnnotationsAttr) obj).getAnnotations();
+            Attribute attr = mAttributes.get(i);
+            if (attr instanceof RuntimeInvisibleAnnotationsAttr) {
+                return ((AnnotationsAttr) attr).getAnnotations();
             }
         }
         return new Annotation[0];
@@ -635,9 +628,9 @@ public class ClassFile {
      */
     public Annotation[] getRuntimeVisibleAnnotations() {
         for (int i = mAttributes.size(); --i >= 0; ) {
-            Object obj = mAttributes.get(i);
-            if (obj instanceof RuntimeVisibleAnnotationsAttr) {
-                return ((AnnotationsAttr) obj).getAnnotations();
+            Attribute attr = mAttributes.get(i);
+            if (attr instanceof RuntimeVisibleAnnotationsAttr) {
+                return ((AnnotationsAttr) attr).getAnnotations();
             }
         }
         return new Annotation[0];
@@ -649,9 +642,9 @@ public class ClassFile {
     public Annotation addRuntimeInvisibleAnnotation(TypeDesc type) {
         AnnotationsAttr attr = null;
         for (int i = mAttributes.size(); --i >= 0; ) {
-            Object obj = mAttributes.get(i);
-            if (obj instanceof RuntimeInvisibleAnnotationsAttr) {
-                attr = (AnnotationsAttr) obj;
+            Attribute a = mAttributes.get(i);
+            if (a instanceof RuntimeInvisibleAnnotationsAttr) {
+                attr = (AnnotationsAttr) a;
             }
         }
         if (attr == null) {
@@ -670,9 +663,9 @@ public class ClassFile {
     public Annotation addRuntimeVisibleAnnotation(TypeDesc type) {
         AnnotationsAttr attr = null;
         for (int i = mAttributes.size(); --i >= 0; ) {
-            Object obj = mAttributes.get(i);
-            if (obj instanceof RuntimeVisibleAnnotationsAttr) {
-                attr = (AnnotationsAttr) obj;
+            Attribute a = mAttributes.get(i);
+            if (a instanceof RuntimeVisibleAnnotationsAttr) {
+                attr = (AnnotationsAttr) a;
             }
         }
         if (attr == null) {
@@ -692,9 +685,9 @@ public class ClassFile {
     // TODO: Eventually remove this method
     public SignatureAttr getSignatureAttr() {
         for (int i = mAttributes.size(); --i >= 0; ) {
-            Object obj = mAttributes.get(i);
-            if (obj instanceof SignatureAttr) {
-                return (SignatureAttr) obj;
+            Attribute attr = mAttributes.get(i);
+            if (attr instanceof SignatureAttr) {
+                return (SignatureAttr) attr;
             }
         }
         return null;
@@ -882,7 +875,7 @@ public class ClassFile {
         inner.mOuterClass = this;
 
         if (mInnerClasses == null) {
-            mInnerClasses = new ArrayList();
+            mInnerClasses = new ArrayList<ClassFile>();
         }
 
         mInnerClasses.add(inner);
@@ -949,8 +942,7 @@ public class ClassFile {
     }
 
     public Attribute[] getAttributes() {
-        Attribute[] attrs = new Attribute[mAttributes.size()];
-        return (Attribute[])mAttributes.toArray(attrs);
+        return mAttributes.toArray(new Attribute[mAttributes.size()]);
     }
 
     /**
@@ -1001,8 +993,7 @@ public class ClassFile {
      */
     public void setVersion(int major, int minor) {
         if (major > 65535 || minor > 65535) {
-            throw new IllegalArgumentException
-                ("Version number element cannot exceed 65535");
+            throw new IllegalArgumentException("Version number element cannot exceed 65535");
         }
 
         mVersion = (minor << 16) | (major & 0xffff);
@@ -1086,45 +1077,41 @@ public class ClassFile {
         
         int size = mInterfaces.size();
         if (size > 65535) {
-            throw new IllegalStateException
-                ("Interfaces count cannot exceed 65535: " + size);
+            throw new IllegalStateException("Interfaces count cannot exceed 65535: " + size);
         }
         dout.writeShort(size);
         for (int i=0; i<size; i++) {
-            int index = ((ConstantInfo)mInterfaces.get(i)).getIndex();
+            int index = mInterfaces.get(i).getIndex();
             dout.writeShort(index);
         }
         
         size = mFields.size();
         if (size > 65535) {
-            throw new IllegalStateException
-                ("Field count cannot exceed 65535: " + size);
+            throw new IllegalStateException("Field count cannot exceed 65535: " + size);
         }
         dout.writeShort(size);
         for (int i=0; i<size; i++) {
-            FieldInfo field = (FieldInfo)mFields.get(i);
+            FieldInfo field = mFields.get(i);
             field.writeTo(dout);
         }
         
         size = mMethods.size();
         if (size > 65535) {
-            throw new IllegalStateException
-                ("Method count cannot exceed 65535: " + size);
+            throw new IllegalStateException("Method count cannot exceed 65535: " + size);
         }
         dout.writeShort(size);
         for (int i=0; i<size; i++) {
-            MethodInfo method = (MethodInfo)mMethods.get(i);
+            MethodInfo method = mMethods.get(i);
             method.writeTo(dout);
         }
         
         size = mAttributes.size();
         if (size > 65535) {
-            throw new IllegalStateException
-                ("Attribute count cannot exceed 65535: " + size);
+            throw new IllegalStateException("Attribute count cannot exceed 65535: " + size);
         }
         dout.writeShort(size);
         for (int i=0; i<size; i++) {
-            Attribute attr = (Attribute)mAttributes.get(i);
+            Attribute attr = mAttributes.get(i);
             attr.writeTo(dout);
         }
     }

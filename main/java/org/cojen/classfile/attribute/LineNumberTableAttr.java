@@ -37,7 +37,7 @@ import org.cojen.classfile.Location;
  */
 public class LineNumberTableAttr extends Attribute {
 
-    private List mEntries = new ArrayList();
+    private List<Entry> mEntries = new ArrayList<Entry>();
     private boolean mClean = false;
     
     public LineNumberTableAttr(ConstantPool cp) {
@@ -73,7 +73,7 @@ public class LineNumberTableAttr extends Attribute {
                 return -1;
             }
         }
-        return ((Entry)mEntries.get(index)).mLineNumber;
+        return mEntries.get(index).mLineNumber;
     }
 
     public void addEntry(Location start, int line_number) throws IllegalArgumentException {
@@ -94,7 +94,7 @@ public class LineNumberTableAttr extends Attribute {
         int size = mEntries.size();
         dout.writeShort(size);
         for (int i=0; i<size; i++) {
-            Entry entry = (Entry)mEntries.get(i);
+            Entry entry = mEntries.get(i);
             
             int start_pc = entry.mStart.getLocation();
 
@@ -119,16 +119,16 @@ public class LineNumberTableAttr extends Attribute {
             // a pc location, but before they did not. Since entries must be
             // sorted ascending by start_pc, use a sorted set.
 
-            Set reduced = new TreeSet();
+            Set<Entry> reduced = new TreeSet<Entry>();
             for (int i = mEntries.size(); --i >= 0; ) {
                 reduced.add(mEntries.get(i));
             }
 
-            mEntries = new ArrayList(reduced);
+            mEntries = new ArrayList<Entry>(reduced);
         }
     }
 
-    private static class Entry implements Comparable {
+    private static class Entry implements Comparable<Entry> {
         public final Location mStart;
         public final int mLineNumber;
         
@@ -137,9 +137,9 @@ public class LineNumberTableAttr extends Attribute {
             mLineNumber = line_number;
         }
 
-        public int compareTo(Object other) {
+        public int compareTo(Entry other) {
             int thisLoc = mStart.getLocation();
-            int thatLoc = ((Entry)other).mStart.getLocation();
+            int thatLoc = other.mStart.getLocation();
             
             if (thisLoc < thatLoc) {
                 return -1;
@@ -152,8 +152,7 @@ public class LineNumberTableAttr extends Attribute {
 
         public boolean equals(Object other) {
             if (other instanceof Entry) {
-                return mStart.getLocation() == 
-                    ((Entry)other).mStart.getLocation();
+                return mStart.getLocation() == ((Entry)other).mStart.getLocation();
             }
             return false;
         }
