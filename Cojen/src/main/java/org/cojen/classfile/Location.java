@@ -21,7 +21,7 @@ package org.cojen.classfile;
  *
  * @author Brian S O'Neill
  */
-public interface Location extends Comparable {
+public interface Location extends Comparable<Location> {
     /**
      * Returns -1 if the location isn't yet fully resolved.
      *

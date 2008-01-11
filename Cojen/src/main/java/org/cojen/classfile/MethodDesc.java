@@ -38,10 +38,10 @@ public class MethodDesc extends Descriptor implements Serializable {
     private static final TypeDesc[] EMPTY_PARAMS = new TypeDesc[0];
 
     // MethodDesc and TypeDesc can share the same instance cache.
-    private final static WeakCanonicalSet mInstances = TypeDesc.cInstances;
+    private final static WeakCanonicalSet<Descriptor> cInstances = TypeDesc.cInstances;
 
     static MethodDesc intern(MethodDesc desc) {
-        return (MethodDesc)mInstances.put(desc);
+        return cInstances.put(desc);
     }
 
     /**
@@ -75,7 +75,7 @@ public class MethodDesc extends Descriptor implements Serializable {
             }
 
             StringBuffer buf = new StringBuffer();
-            List list = new ArrayList();
+            List<TypeDesc> list = new ArrayList<TypeDesc>();
 
             while ((c = desc.charAt(cursor++)) != ')') {
                 switch (c) {
@@ -112,8 +112,7 @@ public class MethodDesc extends Descriptor implements Serializable {
 
             TypeDesc ret = TypeDesc.forDescriptor(desc.substring(cursor));
 
-            TypeDesc[] tds = new TypeDesc[list.size()];
-            tds = (TypeDesc[])list.toArray(tds);
+            TypeDesc[] tds = list.toArray(new TypeDesc[list.size()]);
 
             return intern(new MethodDesc(desc, ret, tds));
         } catch (NullPointerException e) {

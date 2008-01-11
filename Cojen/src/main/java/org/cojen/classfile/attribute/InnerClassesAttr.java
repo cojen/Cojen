@@ -36,7 +36,7 @@ import org.cojen.classfile.constant.ConstantUTFInfo;
  */
 public class InnerClassesAttr extends Attribute {
 
-    private List mInnerClasses = new ArrayList();
+    private List<Info> mInnerClasses = new ArrayList<Info>();
 
     public InnerClassesAttr(ConstantPool cp) {
         super(cp, INNER_CLASSES);
@@ -113,8 +113,7 @@ public class InnerClassesAttr extends Attribute {
     }
 
     public Info[] getInnerClassesInfo() {
-        Info[] infos = new Info[mInnerClasses.size()];
-        return (Info[])mInnerClasses.toArray(infos);
+        return mInnerClasses.toArray(new Info[mInnerClasses.size()]);
     }
 
     public int getLength() {
@@ -125,7 +124,7 @@ public class InnerClassesAttr extends Attribute {
         int size = mInnerClasses.size();
         dout.writeShort(size);
         for (int i=0; i<size; i++) {
-            ((Info)mInnerClasses.get(i)).writeTo(dout);
+            mInnerClasses.get(i).writeTo(dout);
         }
     }
 

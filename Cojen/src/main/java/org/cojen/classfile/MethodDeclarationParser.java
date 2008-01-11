@@ -232,7 +232,7 @@ public class MethodDeclarationParser {
         }
         pos[0]++;
 
-        ArrayList list = new ArrayList();
+        ArrayList<TypeDesc> list = new ArrayList<TypeDesc>();
 
         boolean expectParam = false;
         while (pos[0] < length) {
@@ -276,7 +276,7 @@ public class MethodDeclarationParser {
             }
         }
 
-        return (TypeDesc[]) list.toArray(new TypeDesc[list.size()]);
+        return list.toArray(new TypeDesc[list.size()]);
     }
 
     private final Modifiers mModifiers;

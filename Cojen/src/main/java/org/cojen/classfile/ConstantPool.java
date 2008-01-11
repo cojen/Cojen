@@ -54,9 +54,9 @@ import org.cojen.classfile.constant.ConstantUTFInfo;
  */
 public class ConstantPool {
     // A set of ConstantInfo objects.
-    private Map mConstants = new HashMap();
+    private Map<ConstantInfo, ConstantInfo> mConstants = new HashMap<ConstantInfo, ConstantInfo>();
     // Indexed list of constants.
-    private Vector mIndexedConstants;
+    private Vector<ConstantInfo> mIndexedConstants;
     private int mEntries;
 
     // Preserve the order only if the constant pool was read in.
@@ -65,12 +65,12 @@ public class ConstantPool {
     ConstantPool() {
     }
 
-    private ConstantPool(Vector indexedConstants) {
+    private ConstantPool(Vector<ConstantInfo> indexedConstants) {
         mIndexedConstants = indexedConstants;
 
         int size = indexedConstants.size();
         for (int i=1; i<size; i++) {
-            ConstantInfo ci = (ConstantInfo)indexedConstants.get(i);
+            ConstantInfo ci = indexedConstants.get(i);
             if (ci != null) {
                 mConstants.put(ci, ci);
                 mEntries += ci.getEntryCount();
@@ -95,7 +95,7 @@ public class ConstantPool {
                 ("Constant pool indexes have not been assigned");
         }
 
-        return (ConstantInfo)mIndexedConstants.get(index);
+        return mIndexedConstants.get(index);
     }
 
     /**
@@ -254,7 +254,7 @@ public class ConstantPool {
      * @return The actual constant in the pool.
      */
     public ConstantInfo addConstant(ConstantInfo constant) {
-        ConstantInfo info = (ConstantInfo)mConstants.get(constant);
+        ConstantInfo info = mConstants.get(constant);
         if (info != null) {
             return info;
         }
@@ -285,7 +285,7 @@ public class ConstantPool {
         dout.writeShort(size);
 
         if (mIndexedConstants == null || !mPreserveOrder) {
-            mIndexedConstants = new Vector(size);
+            mIndexedConstants = new Vector<ConstantInfo>(size);
             mIndexedConstants.setSize(size);
             int index = 1; // one-based constant pool index
             
@@ -331,14 +331,14 @@ public class ConstantPool {
 
     public static ConstantPool readFrom(DataInput din) throws IOException {
         int size = din.readUnsignedShort();
-        Vector constants = new Vector(size);
+        Vector<ConstantInfo> constants = new Vector<ConstantInfo>(size);
         constants.setSize(size);
 
         int index = 1;
         while (index < size) {
             int tag = din.readByte();
             int entryCount = 1;
-            Object constant;
+            ConstantInfo constant;
 
             switch (tag) {
             case ConstantInfo.TAG_UTF8:
@@ -391,26 +391,23 @@ public class ConstantPool {
         return new ConstantPool(constants);
     }
 
-    private static ConstantInfo resolve(List constants, int index) {
-        Object constant = constants.get(index);
+    private static ConstantInfo resolve(List<ConstantInfo> constants, int index) {
+        ConstantInfo constant = constants.get(index);
         if (constant == null) {
             return null;
         }
         
-        if (constant instanceof ConstantInfo) {
-            return (ConstantInfo)constant;
+        if (!(constant instanceof TempEntry)) {
+            return constant;
         }
 
         TempEntry entry = (TempEntry)constant;
         int data = entry.mData;
         int index1 = data & 0xffff;
 
-        ConstantInfo ci1;
-        Object constant1 = constants.get(index1);
+        ConstantInfo ci1 = constants.get(index1);
 
-        if (constant1 instanceof ConstantInfo) {
-            ci1 = (ConstantInfo)constant1;
-        } else {
+        if (ci1 instanceof TempEntry) {
             ci1 = resolve(constants, index1);
         }
 
@@ -430,12 +427,9 @@ public class ConstantPool {
         case ConstantInfo.TAG_NAME_AND_TYPE:
             int index2 = data >> 16;
             
-            ConstantInfo ci2;
-            Object constant2 = constants.get(index2);
+            ConstantInfo ci2 = constants.get(index2);
             
-            if (constant2 instanceof ConstantInfo) {
-                ci2 = (ConstantInfo)constant2;
-            } else {
+            if (ci2 instanceof TempEntry) {
                 ci2 = resolve(constants, index2);
             }
 
@@ -467,11 +461,12 @@ public class ConstantPool {
         return ci;
     }
 
-    private static class TempEntry {
+    private static class TempEntry extends ConstantInfo {
         public int mTag;
         public int mData;
 
         public TempEntry(int tag, int data) {
+            super(-1);
             mTag = tag;
             mData = data;
         }
