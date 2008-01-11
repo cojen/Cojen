@@ -60,7 +60,7 @@ public class WeakCanonicalSet<T> extends AbstractSet<T> {
      *
      * @param obj candidate canonical object; null is also accepted
      */
-    public synchronized T put(T obj) {
+    public synchronized <U extends T> U put(U obj) {
         // This implementation is based on the WeakIdentityMap.put method.
 
         if (obj == null) {
@@ -109,7 +109,7 @@ public class WeakCanonicalSet<T> extends AbstractSet<T> {
                        obj.getClass() == iobj.getClass() &&
                        equals(obj, iobj)) {
                 // Found canonical instance.
-                return iobj;
+                return (U) iobj;
             } else {
                 prev = e;
             }
