@@ -32,11 +32,11 @@ import org.cojen.classfile.ConstantPool;
  */
 public abstract class AnnotationsAttr extends Attribute {
 
-    private List mAnnotations;
+    private List<Annotation> mAnnotations;
     
     public AnnotationsAttr(ConstantPool cp, String name) {
         super(cp, name);
-        mAnnotations = new ArrayList(2);
+        mAnnotations = new ArrayList<Annotation>(2);
     }
     
     public AnnotationsAttr(ConstantPool cp, String name, int length, DataInput din)
@@ -45,7 +45,7 @@ public abstract class AnnotationsAttr extends Attribute {
         super(cp, name);
         
         int size = din.readUnsignedShort();
-        mAnnotations = new ArrayList(size);
+        mAnnotations = new ArrayList<Annotation>(size);
         
         for (int i=0; i<size; i++) {
             addAnnotation(new Annotation(cp, din));
@@ -53,8 +53,7 @@ public abstract class AnnotationsAttr extends Attribute {
     }
 
     public Annotation[] getAnnotations() {
-        Annotation[] copy = new Annotation[mAnnotations.size()];
-        return (Annotation[])mAnnotations.toArray(copy);
+        return mAnnotations.toArray(new Annotation[mAnnotations.size()]);
     }
 
     public void addAnnotation(Annotation annotation) {
@@ -64,7 +63,7 @@ public abstract class AnnotationsAttr extends Attribute {
     public int getLength() {
         int length = 2;
         for (int i=mAnnotations.size(); --i>=0; ) {
-            length += ((Annotation)mAnnotations.get(i)).getLength();
+            length += mAnnotations.get(i).getLength();
         }
         return length;
     }
@@ -73,7 +72,7 @@ public abstract class AnnotationsAttr extends Attribute {
         int size = mAnnotations.size();
         dout.writeShort(size);
         for (int i=0; i<size; i++) {
-            ((Annotation)mAnnotations.get(i)).writeTo(dout);
+            mAnnotations.get(i).writeTo(dout);
         }
     }
 }

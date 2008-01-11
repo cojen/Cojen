@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+import org.cojen.util.IntHashMap;
 import org.cojen.classfile.attribute.CodeAttr;
 import org.cojen.classfile.constant.ConstantClassInfo;
 import org.cojen.classfile.constant.ConstantDoubleInfo;
@@ -51,19 +52,19 @@ public class CodeDisassembler {
     private CodeAssembler mAssembler;
 
     // List of all the LocalVariable objects in use.
-    private Vector mLocals;
+    private Vector<Object> mLocals;
 
     // True if the method being decompiled still has a "this" reference.
     private boolean mHasThis;
 
     private Location mReturnLocation;
 
-    // Maps Integer address keys to itself, but to Label objects after first
+    // Maps int address keys to itself, but to Label objects after first
     // needed.
-    private Map mLabels;
+    private IntHashMap<Object> mLabels;
 
-    // Maps Integer catch locations to Lists of ExceptionHandler objects.
-    private Map mCatchLocations;
+    // Maps int catch locations to Lists of ExceptionHandler objects.
+    private IntHashMap<List<ExceptionHandler>> mCatchLocations;
 
     // Current address being decompiled.
     private int mAddress;
@@ -104,7 +105,7 @@ public class CodeDisassembler {
     public synchronized void disassemble(CodeAssembler assembler,
                                          LocalVariable[] params, Location returnLocation) {
         mAssembler = assembler;
-        mLocals = new Vector();
+        mLocals = new Vector<Object>();
         if (mHasThis = !mMethod.getModifiers().isStatic()) {
             // Reserve a slot for "this" parameter.
             mLocals.add(null);
@@ -150,11 +151,10 @@ public class CodeDisassembler {
                 return mAddress;
             }
 
-            public int compareTo(Object obj) {
-                if (this == obj) {
+            public int compareTo(Location other) {
+                if (this == other) {
                     return 0;
                 }
-                Location other = (Location)obj;
                 
                 int loca = getLocation();
                 int locb = other.getLocation();
@@ -1228,21 +1228,22 @@ public class CodeDisassembler {
     }
 
     private void gatherLabels() {
-        mLabels = new HashMap();
-        mCatchLocations = new HashMap(mExceptionHandlers.length * 2 + 1);
-        Integer labelKey;
+        mLabels = new IntHashMap<Object>();
+        mCatchLocations = new IntHashMap<List<ExceptionHandler>>
+            (mExceptionHandlers.length * 2 + 1);
+        int labelKey;
 
         // Gather labels for any exception handlers.
         for (int i = mExceptionHandlers.length - 1; i >= 0; i--) {
             ExceptionHandler handler = mExceptionHandlers[i];
-            labelKey = new Integer(handler.getStartLocation().getLocation());
-            mLabels.put(labelKey, labelKey);
-            labelKey = new Integer(handler.getEndLocation().getLocation());
-            mLabels.put(labelKey, labelKey);
-            labelKey = new Integer(handler.getCatchLocation().getLocation());
-            List list = (List)mCatchLocations.get(labelKey);
+            labelKey = handler.getStartLocation().getLocation();
+            mLabels.put(labelKey, (Object) labelKey);
+            labelKey = handler.getEndLocation().getLocation();
+            mLabels.put(labelKey, (Object) labelKey);
+            labelKey = handler.getCatchLocation().getLocation();
+            List<ExceptionHandler> list = mCatchLocations.get(labelKey);
             if (list == null) {
-                list = new ArrayList(2);
+                list = new ArrayList<ExceptionHandler>(2);
                 mCatchLocations.put(labelKey, list);
             }
             list.add(handler);
@@ -1278,14 +1279,14 @@ public class CodeDisassembler {
             case Opcode.IF_ICMPGE:
             case Opcode.IF_ICMPGT:
             case Opcode.IF_ICMPLE:
-                labelKey = new Integer(mAddress + readShort());
-                mLabels.put(labelKey, labelKey);
+                labelKey = mAddress + readShort();
+                mLabels.put(labelKey, (Object) labelKey);
                 break;
 
             case Opcode.GOTO_W:
             case Opcode.JSR_W:
-                labelKey = new Integer(mAddress + readInt());
-                mLabels.put(labelKey, labelKey);
+                labelKey = mAddress + readInt();
+                mLabels.put(labelKey, (Object) labelKey);
                 break;
 
             case Opcode.TABLESWITCH:
@@ -1297,8 +1298,8 @@ public class CodeDisassembler {
                 }
                 
                 // Read the default location.
-                labelKey = new Integer(opcodeAddress + readInt());
-                mLabels.put(labelKey, labelKey);
+                labelKey = opcodeAddress + readInt();
+                mLabels.put(labelKey, (Object) labelKey);
                 
                 if (opcode == Opcode.TABLESWITCH) {
                     int lowValue = readInt();
@@ -1307,8 +1308,8 @@ public class CodeDisassembler {
 
                     for (int i=0; i<caseCount; i++) {
                         // Read the branch location.
-                        labelKey = new Integer(opcodeAddress + readInt());
-                        mLabels.put(labelKey, labelKey);
+                        labelKey = opcodeAddress + readInt();
+                        mLabels.put(labelKey, (Object) labelKey);
                     }
                 } else {
                     int caseCount = readInt();
@@ -1317,8 +1318,8 @@ public class CodeDisassembler {
                         // Skip the case value.
                         mAddress += 4;
                         // Read the branch location.
-                        labelKey = new Integer(opcodeAddress + readInt());
-                        mLabels.put(labelKey, labelKey);
+                        labelKey = opcodeAddress + readInt();
+                        mLabels.put(labelKey, (Object) labelKey);
                     }
                 }
                 break;
@@ -1547,7 +1548,7 @@ public class CodeDisassembler {
                 return local;
             }
             // Variable takes on multiple types, so convert entry to a list.
-            List locals = new ArrayList(4);
+            List<LocalVariable> locals = new ArrayList<LocalVariable>(4);
             locals.add(local);
             local = mAssembler.createLocalVariable(null, type);
             locals.add(local);
@@ -1555,9 +1556,9 @@ public class CodeDisassembler {
             return local;
         }
         
-        List locals = (List)obj;
+        List<LocalVariable> locals = (List<LocalVariable>)obj;
         for (int i=locals.size(); --i>=0; ) {
-            local = (LocalVariable)locals.get(i);
+            local = locals.get(i);
             if (compatibleType(type, local.getType())) {
                 return local;
             }
@@ -1591,7 +1592,7 @@ public class CodeDisassembler {
     }
 
     private void locateLabel() {
-        Integer labelKey = new Integer(mAddress);
+        int labelKey = mAddress;
         Object labelValue = mLabels.get(labelKey);
         if (labelValue != null) {
             if (labelValue instanceof Label) {
@@ -1602,15 +1603,13 @@ public class CodeDisassembler {
             }
         }
 
-        List handlers = (List)mCatchLocations.get(labelKey);
+        List<ExceptionHandler> handlers = mCatchLocations.get(labelKey);
 
         if (handlers != null) {
             for (int i=0; i<handlers.size(); i++) {
-                ExceptionHandler handler = (ExceptionHandler)handlers.get(i);
-                Label start =
-                    getLabel(handler.getStartLocation().getLocation());
-                Label end =
-                    getLabel(handler.getEndLocation().getLocation());
+                ExceptionHandler handler = handlers.get(i);
+                Label start = getLabel(handler.getStartLocation().getLocation());
+                Label end = getLabel(handler.getEndLocation().getLocation());
                 String catchClassName;
                 if (handler.getCatchType() == null) {
                     catchClassName = null;
@@ -1623,7 +1622,7 @@ public class CodeDisassembler {
     }
 
     private Label getLabel(int address) {
-        Integer labelKey = new Integer(address);
+        int labelKey = address;
         Object labelValue = mLabels.get(labelKey);
         // labelValue will never be null unless gatherLabels is broken.
         if (!(labelValue instanceof Label)) {

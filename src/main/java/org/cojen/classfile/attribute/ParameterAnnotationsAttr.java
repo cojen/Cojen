@@ -32,11 +32,11 @@ import org.cojen.classfile.ConstantPool;
 public abstract class ParameterAnnotationsAttr extends Attribute {
 
     /** Contains Vectors of annotations */
-    private Vector mParameterAnnotations;
+    private Vector<Vector<Annotation>> mParameterAnnotations;
     
     public ParameterAnnotationsAttr(ConstantPool cp, String name) {
         super(cp, name);
-        mParameterAnnotations = new Vector(2);
+        mParameterAnnotations = new Vector<Vector<Annotation>>(2);
     }
     
     public ParameterAnnotationsAttr(ConstantPool cp, String name, int length, DataInput din)
@@ -45,11 +45,11 @@ public abstract class ParameterAnnotationsAttr extends Attribute {
         super(cp, name);
 
         int size = din.readUnsignedByte();
-        mParameterAnnotations = new Vector(size);
+        mParameterAnnotations = new Vector<Vector<Annotation>>(size);
 
         for (int i=0; i<size; i++) {
             int subSize = din.readUnsignedShort();
-            Vector annotations = new Vector(subSize);
+            Vector<Annotation> annotations = new Vector<Annotation>(subSize);
 
             for (int j=0; j<subSize; j++) {
                 annotations.add(new Annotation(cp, din));
@@ -65,11 +65,11 @@ public abstract class ParameterAnnotationsAttr extends Attribute {
     public Annotation[][] getAnnotations() {
         Annotation[][] copy = new Annotation[mParameterAnnotations.size()][];
         for (int i=copy.length; --i>=0; ) {
-            Vector annotations = (Vector)mParameterAnnotations.get(i);
+            Vector<Annotation> annotations = mParameterAnnotations.get(i);
             if (annotations == null) {
                 copy[i] = new Annotation[0];
             } else {
-                copy[i] = (Annotation[])annotations.toArray(new Annotation[annotations.size()]);
+                copy[i] = annotations.toArray(new Annotation[annotations.size()]);
             }
         }
         return copy;
@@ -83,11 +83,11 @@ public abstract class ParameterAnnotationsAttr extends Attribute {
      * @param parameter zero-based parameter number
      */
     public Annotation[] getAnnotations(int parameter) {
-        Vector annotations = (Vector)mParameterAnnotations.get(parameter);
+        Vector<Annotation> annotations = mParameterAnnotations.get(parameter);
         if (annotations == null) {
             return new Annotation[0];
         } else {
-            return (Annotation[])annotations.toArray(new Annotation[annotations.size()]);
+            return annotations.toArray(new Annotation[annotations.size()]);
         }
     }
 
@@ -98,9 +98,9 @@ public abstract class ParameterAnnotationsAttr extends Attribute {
         if (parameter >= mParameterAnnotations.size()) {
             mParameterAnnotations.setSize(parameter);
         }
-        Vector annotations = (Vector)mParameterAnnotations.get(parameter);
+        Vector<Annotation> annotations = mParameterAnnotations.get(parameter);
         if (annotations == null) {
-            annotations = new Vector(2);
+            annotations = new Vector<Annotation>(2);
             mParameterAnnotations.set(parameter, annotations);
         }
         annotations.add(annotation);
@@ -109,9 +109,9 @@ public abstract class ParameterAnnotationsAttr extends Attribute {
     public int getLength() {
         int length = 1;
         for (int i=mParameterAnnotations.size(); --i>=0; ) {
-            Vector annotations = (Vector)mParameterAnnotations.get(i);
+            Vector<Annotation> annotations = mParameterAnnotations.get(i);
             for (int j=annotations.size(); --j>=0; ) {
-                length += 2 + ((Annotation)annotations.get(j)).getLength();
+                length += 2 + annotations.get(j).getLength();
             }
         }
         return length;
@@ -121,11 +121,11 @@ public abstract class ParameterAnnotationsAttr extends Attribute {
         int size = mParameterAnnotations.size();
         dout.writeByte(size);
         for (int i=0; i<size; i++) {
-            Vector annotations = (Vector)mParameterAnnotations.get(i);
+            Vector<Annotation> annotations = mParameterAnnotations.get(i);
             int subSize = annotations.size();
             dout.writeShort(subSize);
             for (int j=0; j<subSize; j++) {
-                ((Annotation)annotations.get(j)).writeTo(dout);
+                annotations.get(j).writeTo(dout);
             }
         }
     }

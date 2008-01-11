@@ -45,5 +45,5 @@ public interface LocalVariable {
      *
      * @return an unmodifiable set of {@link LocationRange} objects.
      */
-    java.util.Set getLocationRangeSet();
+    java.util.Set<LocationRange> getLocationRangeSet();
 }

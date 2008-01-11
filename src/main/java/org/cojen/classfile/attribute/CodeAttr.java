@@ -42,7 +42,7 @@ import org.cojen.classfile.Location;
 public class CodeAttr extends Attribute {
 
     private CodeBuffer mCodeBuffer;
-    private List mAttributes = new ArrayList(2);
+    private List<Attribute> mAttributes = new ArrayList<Attribute>(2);
     
     private LineNumberTableAttr mLineNumberTable;
     private LocalVariableTableAttr mLocalVariableTable;
@@ -88,11 +88,11 @@ public class CodeAttr extends Attribute {
             }
             
             public byte[] getByteCodes() {
-                return (byte[])byteCodes.clone();
+                return byteCodes.clone();
             }
             
             public ExceptionHandler[] getExceptionHandlers() {
-                return (ExceptionHandler[])handlers.clone();
+                return handlers.clone();
             }
         };
 
@@ -183,8 +183,7 @@ public class CodeAttr extends Attribute {
     }
     
     public Attribute[] getAttributes() {
-        Attribute[] attrs = new Attribute[mAttributes.size()];
-        return (Attribute[])mAttributes.toArray(attrs);
+        return mAttributes.toArray(new Attribute[mAttributes.size()]);
     }
 
     /**
@@ -203,7 +202,7 @@ public class CodeAttr extends Attribute {
         
         int size = mAttributes.size();
         for (int i=0; i<size; i++) {
-            length += ((Attribute)mAttributes.get(i)).getLength();
+            length += mAttributes.get(i).getLength();
             length += 6; // attributes have an intial 6 byte length
         }
         
@@ -238,7 +237,7 @@ public class CodeAttr extends Attribute {
         int size = mAttributes.size();
         dout.writeShort(size);
         for (int i=0; i<size; i++) {
-            Attribute attr = (Attribute)mAttributes.get(i);
+            Attribute attr = mAttributes.get(i);
             attr.writeTo(dout);
         }
 
