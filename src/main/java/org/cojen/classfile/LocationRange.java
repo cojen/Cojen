@@ -20,14 +20,14 @@ package org.cojen.classfile;
  *
  * @author Brian S O'Neill
  */
-public interface LocationRange {
+public interface LocationRange<L extends Location> {
     /**
      * Returns the start of this location range, inclusive.
      */
-    Location getStartLocation();
+    L getStartLocation();
 
     /**
      * Returns end of this location range, exclusive.
      */
-    Location getEndLocation();
+    L getEndLocation();
 }
