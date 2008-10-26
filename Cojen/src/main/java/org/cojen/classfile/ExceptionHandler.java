@@ -27,10 +27,10 @@ import org.cojen.classfile.constant.ConstantClassInfo;
  *
  * @author Brian S O'Neill
  */
-public class ExceptionHandler implements LocationRange {
-    private Location mStart;
-    private Location mEnd;
-    private Location mCatch;
+public class ExceptionHandler<L extends Location> implements LocationRange<L> {
+    private L mStart;
+    private L mEnd;
+    private L mCatch;
     private ConstantClassInfo mCatchType;
     
     /**
@@ -39,9 +39,9 @@ public class ExceptionHandler implements LocationRange {
      * @param catchLocation
      * @param catchType if null, then catch every object.
      */
-    public ExceptionHandler(Location startLocation,
-                            Location endLocation,
-                            Location catchLocation,
+    public ExceptionHandler(L startLocation,
+                            L endLocation,
+                            L catchLocation,
                             ConstantClassInfo catchType) {
         mStart = startLocation;
         mEnd = endLocation;
@@ -49,15 +49,15 @@ public class ExceptionHandler implements LocationRange {
         mCatchType = catchType;
     }
     
-    public Location getStartLocation() {
+    public L getStartLocation() {
         return mStart;
     }
     
-    public Location getEndLocation() {
+    public L getEndLocation() {
         return mEnd;
     }
     
-    public Location getCatchLocation() {
+    public L getCatchLocation() {
         return mCatch;
     }
     
@@ -99,8 +99,9 @@ public class ExceptionHandler implements LocationRange {
         }
     }
 
-    public static ExceptionHandler readFrom(ConstantPool cp,
-                                            DataInput din) throws IOException {
+    public static ExceptionHandler<FixedLocation> readFrom(ConstantPool cp, DataInput din)
+        throws IOException
+    {
         int start_pc = din.readUnsignedShort();
         int end_pc = din.readUnsignedShort();
         int handler_pc = din.readUnsignedShort();
@@ -113,9 +114,9 @@ public class ExceptionHandler implements LocationRange {
             catchTypeConstant = (ConstantClassInfo)cp.getConstant(catch_type);
         }
 
-        return new ExceptionHandler(new FixedLocation(start_pc),
-                                    new FixedLocation(end_pc),
-                                    new FixedLocation(handler_pc),
-                                    catchTypeConstant);
+        return new ExceptionHandler<FixedLocation>(new FixedLocation(start_pc),
+                                                   new FixedLocation(end_pc),
+                                                   new FixedLocation(handler_pc),
+                                                   catchTypeConstant);
     }
 }

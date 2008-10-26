@@ -28,6 +28,7 @@ import org.cojen.classfile.ConstantPool;
 import org.cojen.classfile.ExceptionHandler;
 import org.cojen.classfile.LocalVariable;
 import org.cojen.classfile.Location;
+import org.cojen.classfile.MethodInfo;
 
 /**
  * This class corresponds to the Code_attribute structure as defined in
@@ -49,6 +50,9 @@ public class CodeAttr extends Attribute {
 
     private LineNumberTableAttr mOldLineNumberTable;
     private LocalVariableTableAttr mOldLocalVariableTable;
+
+    private StackMapTableAttr mOldStackMapTable;
+    private StackMapTableAttr mStackMapTable;
 
     public CodeAttr(ConstantPool cp) {
         super(cp, CODE);
@@ -117,10 +121,13 @@ public class CodeAttr extends Attribute {
         mCodeBuffer = code;
         mOldLineNumberTable = mLineNumberTable;
         mOldLocalVariableTable = mLocalVariableTable;
+        mOldStackMapTable = mStackMapTable;
         mAttributes.remove(mLineNumberTable);
         mAttributes.remove(mLocalVariableTable);
+        mAttributes.remove(mStackMapTable);
         mLineNumberTable = null;
         mLocalVariableTable = null;
+        mStackMapTable = null;
     }
     
     /**
@@ -166,6 +173,18 @@ public class CodeAttr extends Attribute {
         mLocalVariableTable.addEntry(localVar);
     }
 
+    public StackMapTableAttr getStackMapTable() {
+        return mStackMapTable;
+    }
+
+    public void initialStackMapFrame(MethodInfo method) {
+        if (mStackMapTable == null) {
+            // FIXME: add one?
+        } else {
+            mStackMapTable.initialStackMapFrame(method);
+        }
+    }
+
     public void addAttribute(Attribute attr) {
         if (attr instanceof LineNumberTableAttr) {
             if (mLineNumberTable != null) {
@@ -177,6 +196,11 @@ public class CodeAttr extends Attribute {
                 mAttributes.remove(mLocalVariableTable);
             }
             mLocalVariableTable = (LocalVariableTableAttr)attr;
+        } else if (attr instanceof StackMapTableAttr) {
+            if (mStackMapTable != null) {
+                mAttributes.remove(mStackMapTable);
+            }
+            mStackMapTable = (StackMapTableAttr)attr;
         }
 
         mAttributes.add(attr);
@@ -243,5 +267,6 @@ public class CodeAttr extends Attribute {
 
         mOldLineNumberTable = null;
         mOldLocalVariableTable = null;
+        mOldStackMapTable = null;
     }
 }
