@@ -10,6 +10,8 @@ Change History
 - Moved some utility classes from Carbonado into Cojen.
 - Added BeanPropertyMapFactory class.
 - Fixed potential NullPointerException when disassembling local variable table.
+- Fixed ClassFile.addInnerClass(String, String, Class) so that it passes the
+  correct arguments.
 
 2.0 to 2.0.1
 -------------------------------

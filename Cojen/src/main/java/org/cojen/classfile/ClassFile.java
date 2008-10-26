@@ -847,7 +847,7 @@ public class ClassFile {
      */
     public ClassFile addInnerClass(String fullInnerClassName, String innerClassName,
                                    Class superClass) {
-        return addInnerClass(innerClassName, superClass.getName());
+        return addInnerClass(fullInnerClassName, innerClassName, superClass.getName());
     }
 
     /**
