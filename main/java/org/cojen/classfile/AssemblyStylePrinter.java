@@ -30,6 +30,7 @@ import org.cojen.util.IntHashMap;
 import org.cojen.classfile.attribute.Annotation;
 import org.cojen.classfile.attribute.CodeAttr;
 import org.cojen.classfile.attribute.SignatureAttr;
+import org.cojen.classfile.attribute.StackMapTableAttr;
 import org.cojen.classfile.constant.ConstantClassInfo;
 import org.cojen.classfile.constant.ConstantDoubleInfo;
 import org.cojen.classfile.constant.ConstantFieldInfo;
@@ -547,7 +548,7 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
         CodeBuffer buffer = code.getCodeBuffer();
         mExceptionHandlers = buffer.getExceptionHandlers();
         print(indent);
-        print("// max stack: ");
+        print("// max stack:  ");
         println(String.valueOf(buffer.getMaxStackDepth()));
         print(indent);
         print("// max locals: ");
@@ -580,6 +581,13 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
             }
         };
 
+        StackMapTableAttr.StackMapFrame frame;
+        if (code.getStackMapTable() == null) {
+            frame = null;
+        } else {
+            frame = code.getStackMapTable().getInitialFrame();
+        }
+
         int currentLine = -1;
 
         for (mAddress = 0; mAddress < mByteCodes.length; mAddress++) {
@@ -592,6 +600,8 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
 
             // Check if a label needs to be created and/or located.
             locateLabel(indent);
+
+            frame = stackMap(indent, frame);
 
             byte opcode = mByteCodes[mAddress];
 
@@ -1372,6 +1382,49 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
                 println(")");
             }
         }
+    }
+
+    private StackMapTableAttr.StackMapFrame stackMap(String indent,
+                                                     StackMapTableAttr.StackMapFrame frame)
+    {
+        if (frame == null) {
+            return null;
+        }
+
+        if (mAddress < frame.getOffset()) {
+            return frame;
+        }
+
+        print(indent);
+        print("// stack:  ");
+        print(frame.getStackItemInfos());
+        println();
+        print(indent);
+        print("// locals: ");
+        print(frame.getLocalInfos());
+        println();
+
+        return frame.getNext();
+    }
+
+    private void print(StackMapTableAttr.VerificationTypeInfo[] infos) {
+        print('{');
+        int num = 0;
+        for (int i=0; i<infos.length; i++) {
+            if (i > 0) {
+                print(", ");
+            }
+            print(num);
+            print('=');
+            StackMapTableAttr.VerificationTypeInfo info = infos[i];
+            print(info.toString());
+            if (info.getType() == null || !info.getType().isDoubleWord()) {
+                num += 1;
+            } else {
+                num += 2;
+            }
+        }
+        print('}');
     }
 
     private int readByte() {

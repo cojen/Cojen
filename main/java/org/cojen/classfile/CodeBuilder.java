@@ -138,39 +138,43 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
         return mInstructions.getExceptionHandlers();
     }
 
-    private void addCode(int stackAdjust, byte opcode) {
-        mInstructions.new CodeInstruction(stackAdjust, new byte[] {opcode});
+    /**
+     * @param pushed type of argument pushed to operand stack after instruction
+     * executes; pass TypeDesc.VOID if nothing
+     */
+    private void addInstruction(int stackAdjust, TypeDesc pushed, byte opcode) {
+        mInstructions.new SimpleInstruction(stackAdjust, pushed, new byte[] {opcode});
     }
 
-    private void addCode(int stackAdjust, byte opcode, byte operand) {
-        mInstructions.new CodeInstruction
-            (stackAdjust, new byte[] {opcode, operand});
+    /**
+     * @param pushed type of argument pushed to operand stack after instruction
+     * executes; pass TypeDesc.VOID if nothing
+     */
+    private void addInstruction(int stackAdjust, TypeDesc pushed, byte opcode, byte operand) {
+        mInstructions.new SimpleInstruction(stackAdjust, pushed, new byte[] {opcode, operand});
     }
 
-    private void addCode(int stackAdjust, byte opcode, short operand) {
-        mInstructions.new CodeInstruction
-            (stackAdjust, 
+    /**
+     * @param pushed type of argument pushed to operand stack after instruction
+     * executes; pass TypeDesc.VOID if nothing
+     */
+    private void addInstruction(int stackAdjust, TypeDesc pushed, byte opcode, short operand) {
+        mInstructions.new SimpleInstruction
+            (stackAdjust, pushed,
              new byte[] {opcode, (byte)(operand >> 8), (byte)operand});
     }
 
-    private void addCode(int stackAdjust, byte opcode, int operand) {
-        byte[] bytes = new byte[5];
-
-        bytes[0] = opcode;
-        bytes[1] = (byte)(operand >> 24);
-        bytes[2] = (byte)(operand >> 16);
-        bytes[3] = (byte)(operand >> 8);
-        bytes[4] = (byte)operand;
-
-        mInstructions.new CodeInstruction(stackAdjust, bytes);
-    }
-
-    private void addCode(int stackAdjust, byte opcode, ConstantInfo info) {
-        // The zeros get filled in later, when the ConstantInfo index 
-        // is resolved.
+    /**
+     * @param pushed type of argument pushed to operand stack after instruction
+     * executes; pass TypeDesc.VOID if nothing
+     */
+    private void addInstruction(int stackAdjust, TypeDesc pushed, byte opcode,
+                                ConstantInfo operand) {
         mInstructions.new ConstantOperandInstruction
-            (stackAdjust,
-             new byte[] {opcode, (byte)0, (byte)0}, info);
+            (stackAdjust, pushed,
+             // The zeros get filled in later, when the ConstantInfo index is
+             // resolved.
+             new byte[] {opcode, (byte)0, (byte)0}, operand);
     }
 
     private String getClassName(TypeDesc classDesc) throws IllegalArgumentException {
@@ -207,7 +211,15 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
 
     public void exceptionHandler(Location startLocation,
                                  Location endLocation,
-                                 String catchClassName) {
+                                 String catchClassName)
+    {
+        if (!(startLocation instanceof InstructionList.LabelInstruction)) {
+            throw new IllegalArgumentException("Start location is not a label instruction");
+        }
+        if (!(endLocation instanceof InstructionList.LabelInstruction)) {
+            throw new IllegalArgumentException("End location is not a label instruction");
+        }
+
         Location catchLocation = createLabel().setLocation();
 
         ConstantClassInfo catchClass;
@@ -217,9 +229,12 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
             catchClass = mCp.addConstantClass(catchClassName);
         }
 
-        ExceptionHandler handler = 
-            new ExceptionHandler(startLocation, endLocation, 
-                                 catchLocation, catchClass);
+        ExceptionHandler<InstructionList.LabelInstruction> handler = 
+            new ExceptionHandler<InstructionList.LabelInstruction>
+            ((InstructionList.LabelInstruction)startLocation,
+             (InstructionList.LabelInstruction)endLocation,
+             (InstructionList.LabelInstruction)catchLocation,
+             catchClass);
 
         mInstructions.addExceptionHandler(handler);
     }
@@ -233,7 +248,7 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
     // load-constant-to-stack style instructions
 
     public void loadNull() {
-        addCode(1, Opcode.ACONST_NULL);
+        addInstruction(1, null, Opcode.ACONST_NULL);
     }
 
     public void loadConstant(String value) {
@@ -247,7 +262,7 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
         if (strlen <= (65535 / 3)) {
             // Guaranteed to fit in a Java UTF encoded string.
             ConstantInfo info = mCp.addConstantString(value);
-            mInstructions.new LoadConstantInstruction(1, info);
+            mInstructions.new LoadConstantInstruction(1, TypeDesc.STRING, info);
             return;
         }
 
@@ -268,7 +283,7 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
 
         if (utflen <= 65535) {
             ConstantInfo info = mCp.addConstantString(value);
-            mInstructions.new LoadConstantInstruction(1, info);
+            mInstructions.new LoadConstantInstruction(1, TypeDesc.STRING, info);
             return;
         }
 
@@ -319,7 +334,7 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
             String substr = value.substring(beginIndex, endIndex);
 
             ConstantInfo info = mCp.addConstantString(substr);
-            mInstructions.new LoadConstantInstruction(1, info);
+            mInstructions.new LoadConstantInstruction(1, TypeDesc.STRING, info);
 
             invokeVirtual(stringBufferDesc, "append",
                           stringBufferDesc, stringParam);
@@ -346,7 +361,7 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
                     ("Loading constant object classes not supported below target version 1.5");
             }
             ConstantInfo info = mCp.addConstantClass(type);
-            mInstructions.new LoadConstantInstruction(1, info);
+            mInstructions.new LoadConstantInstruction(1, TypeDesc.forClass(Class.class), info);
         }
     }
 
@@ -384,49 +399,49 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
                 op = Opcode.NOP;
             }
 
-            addCode(1, op);
+            addInstruction(1, TypeDesc.INT, op);
         } else if (-128 <= value && value <= 127) {
-            addCode(1, Opcode.BIPUSH, (byte)value);
+            addInstruction(1, TypeDesc.INT, Opcode.BIPUSH, (byte)value);
         } else if (-32768 <= value && value <= 32767) {
-            addCode(1, Opcode.SIPUSH, (short)value);
+            addInstruction(1, TypeDesc.INT, Opcode.SIPUSH, (short)value);
         } else {
             ConstantInfo info = mCp.addConstantInteger(value);
-            mInstructions.new LoadConstantInstruction(1, info);
+            mInstructions.new LoadConstantInstruction(1, TypeDesc.INT, info);
         }
     }
 
     public void loadConstant(long value) {
         if (value == 0) {
-            addCode(2, Opcode.LCONST_0);
+            addInstruction(2, TypeDesc.LONG, Opcode.LCONST_0);
         } else if (value == 1) {
-            addCode(2, Opcode.LCONST_1);
+            addInstruction(2, TypeDesc.LONG, Opcode.LCONST_1);
         } else {
             ConstantInfo info = mCp.addConstantLong(value);
-            mInstructions.new LoadConstantInstruction(2, info, true);
+            mInstructions.new LoadConstantInstruction(2, TypeDesc.LONG, info, true);
         }
     }
 
     public void loadConstant(float value) {
         if (value == 0) {
-            addCode(1, Opcode.FCONST_0);
+            addInstruction(1, TypeDesc.FLOAT, Opcode.FCONST_0);
         } else if (value == 1) {
-            addCode(1, Opcode.FCONST_1);
+            addInstruction(1, TypeDesc.FLOAT, Opcode.FCONST_1);
         } else if (value == 2) {
-            addCode(1, Opcode.FCONST_2);
+            addInstruction(1, TypeDesc.FLOAT, Opcode.FCONST_2);
         } else {
             ConstantInfo info = mCp.addConstantFloat(value);
-            mInstructions.new LoadConstantInstruction(1, info);
+            mInstructions.new LoadConstantInstruction(1, TypeDesc.FLOAT, info);
         }
     }
 
     public void loadConstant(double value) {
         if (value == 0) {
-            addCode(2, Opcode.DCONST_0);
+            addInstruction(2, TypeDesc.DOUBLE, Opcode.DCONST_0);
         } else if (value == 1) {
-            addCode(2, Opcode.DCONST_1);
+            addInstruction(2, TypeDesc.DOUBLE, Opcode.DCONST_1);
         } else {
             ConstantInfo info = mCp.addConstantDouble(value);
-            mInstructions.new LoadConstantInstruction(2, info, true);
+            mInstructions.new LoadConstantInstruction(2, TypeDesc.DOUBLE, info, true);
         }
     }
 
@@ -495,7 +510,7 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
             break;
         }
 
-        addCode(stackAdjust, op);
+        addInstruction(stackAdjust, type, op);
     }
 
     // store-to-array-from-stack style instructions
@@ -534,7 +549,7 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
             break;
         }
 
-        addCode(stackAdjust, op);
+        addInstruction(stackAdjust, TypeDesc.VOID, op);
     }
 
     // load-field-to-stack style instructions
@@ -582,80 +597,60 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
         loadStaticField(getClassName(classDesc), fieldName, type);
     }
 
-    private void getfield(int stackAdjust, byte opcode, ConstantInfo info, 
-                          TypeDesc type) {
+    private void getfield(int stackAdjust, byte opcode, ConstantInfo info, TypeDesc type) {
         if (type.isDoubleWord()) {
             stackAdjust++;
         }
-        addCode(stackAdjust, opcode, info);
+        addInstruction(stackAdjust, type, opcode, info);
     }
 
-    private ConstantFieldInfo constantField(String fieldName,
-                                            TypeDesc type) {
-        return mCp.addConstantField
-            (mClassFile.getClassName(), fieldName, type);
+    private ConstantFieldInfo constantField(String fieldName, TypeDesc type) {
+        return mCp.addConstantField(mClassFile.getClassName(), fieldName, type);
     }
 
     // store-to-field-from-stack style instructions
 
-    public void storeField(String fieldName,
-                           TypeDesc type) {
-
+    public void storeField(String fieldName, TypeDesc type) {
         putfield(-1, Opcode.PUTFIELD, constantField(fieldName, type), type);
     }
 
-    public void storeField(String className,
-                           String fieldName,
-                           TypeDesc type) {
-
+    public void storeField(String className, String fieldName, TypeDesc type) {
         putfield(-1, Opcode.PUTFIELD, 
                  mCp.addConstantField(className, fieldName, type), 
                  type);
     }
 
-    public void storeField(TypeDesc classDesc,
-                           String fieldName,
-                           TypeDesc type) {
-
+    public void storeField(TypeDesc classDesc, String fieldName, TypeDesc type) {
         storeField(getClassName(classDesc), fieldName, type);
     }
 
-    public void storeStaticField(String fieldName,
-                                 TypeDesc type) {
-
+    public void storeStaticField(String fieldName, TypeDesc type) {
         putfield(0, Opcode.PUTSTATIC, constantField(fieldName, type), type);
     }
 
-    public void storeStaticField(String className,
-                                 String fieldName,
-                                 TypeDesc type) {
-
+    public void storeStaticField(String className, String fieldName, TypeDesc type) {
         putfield(0, Opcode.PUTSTATIC,
                  mCp.addConstantField(className, fieldName, type), 
                  type);
     }
 
-    public void storeStaticField(TypeDesc classDesc,
-                                 String fieldName,
-                                 TypeDesc type) {
-
+    public void storeStaticField(TypeDesc classDesc, String fieldName, TypeDesc type) {
         storeStaticField(getClassName(classDesc), fieldName, type);
     }
 
-    private void putfield(int stackAdjust, byte opcode, ConstantInfo info, 
-                          TypeDesc type) {
+    private void putfield(int stackAdjust, byte opcode, ConstantInfo info, TypeDesc type) {
         if (type.isDoubleWord()) {
             stackAdjust -= 2;
         } else {
             stackAdjust--;
         }
-        addCode(stackAdjust, opcode, info);
+        addInstruction(stackAdjust, TypeDesc.VOID, opcode, info);
     }
 
     // return style instructions
 
     public void returnVoid() {
-        addCode(0, Opcode.RETURN);
+        addInstruction(0, TypeDesc.VOID, Opcode.RETURN);
     }
 
     public void returnValue(TypeDesc type) {
@@ -690,7 +685,7 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
             break;
         }
 
-        addCode(stackAdjust, op);
+        addInstruction(stackAdjust, TypeDesc.VOID, op);
     }
 
     // numerical conversion style instructions
@@ -823,7 +818,7 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
                 case TypeDesc.BYTE_CODE:
                 case TypeDesc.CHAR_CODE:
                 case TypeDesc.SHORT_CODE:
-                    addCode(-1, Opcode.L2I);
+                    addInstruction(-1, TypeDesc.INT, Opcode.L2I);
                     convert(TypeDesc.INT, toPrimitiveType);
                     // fall through
                 case TypeDesc.LONG_CODE:
@@ -861,7 +856,7 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
                 case TypeDesc.BYTE_CODE:
                 case TypeDesc.CHAR_CODE:
                 case TypeDesc.SHORT_CODE:
-                    addCode(0, Opcode.F2I);
+                    addInstruction(0, TypeDesc.INT, Opcode.F2I);
                     convert(TypeDesc.INT, toPrimitiveType);
                     // fall through
                 case TypeDesc.FLOAT_CODE:
@@ -899,7 +894,7 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
                 case TypeDesc.BYTE_CODE:
                 case TypeDesc.CHAR_CODE:
                 case TypeDesc.SHORT_CODE:
-                    addCode(-1, Opcode.D2I);
+                    addInstruction(-1, TypeDesc.INT, Opcode.D2I);
                     convert(TypeDesc.INT, toPrimitiveType);
                     // fall through
                 case TypeDesc.DOUBLE_CODE:
@@ -1127,7 +1122,26 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
             }
         }
 
-        addCode(stackAdjust, op);
+        TypeDesc pushed;
+        switch (op) {
+        case Opcode.I2F:
+            pushed = TypeDesc.FLOAT;
+            break;
+        case Opcode.L2D:
+            pushed = TypeDesc.DOUBLE;
+            break;
+        case Opcode.F2I:
+            pushed = TypeDesc.INT;
+            break;
+        case Opcode.D2L:
+            pushed = TypeDesc.LONG;
+            break;
+        default:
+            pushed = TypeDesc.VOID;
+            break;
+        }
+
+        addInstruction(stackAdjust, pushed, op);
     }    
 
     // Check if from object is null. If so, no need to convert, and don't throw
@@ -1157,75 +1171,46 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
     public void invokeVirtual(String methodName,
                               TypeDesc ret,
                               TypeDesc[] params) {
-
-        ConstantInfo info = mCp.addConstantMethod
-            (mClassFile.getClassName(), methodName, ret, params);
-
-        int stackAdjust = returnSize(ret) - 1;
-        if (params != null) {
-            stackAdjust -= argSize(params);
-        }
-
-        addCode(stackAdjust, Opcode.INVOKEVIRTUAL, info);
+        invokeVirtual(mClassFile.getClassName(), methodName, ret, params);
     }
 
     public void invokeVirtual(String className,
                               String methodName,
                               TypeDesc ret,
                               TypeDesc[] params) {
-        ConstantInfo info = 
-            mCp.addConstantMethod(className, methodName, ret, params);
-
-        int stackAdjust = returnSize(ret) - 1;
-        if (params != null) {
-            stackAdjust -= argSize(params);
-        }
-
-        addCode(stackAdjust, Opcode.INVOKEVIRTUAL, info);
+        mInstructions.new InvokeInstruction
+            (Opcode.INVOKEVIRTUAL,
+             mCp.addConstantMethod(className, methodName, ret, params),
+             ret, params);
     }
 
     public void invokeVirtual(TypeDesc classDesc,
                               String methodName,
                               TypeDesc ret,
                               TypeDesc[] params) {
-
         invokeVirtual(getClassName(classDesc), methodName, ret, params);
     }
 
     public void invokeStatic(String methodName,
                              TypeDesc ret,
                              TypeDesc[] params) {
-        ConstantInfo info = mCp.addConstantMethod
-            (mClassFile.getClassName(), methodName, ret, params);
-
-        int stackAdjust = returnSize(ret) - 0;
-        if (params != null) {
-            stackAdjust -= argSize(params);
-        }
-
-        addCode(stackAdjust, Opcode.INVOKESTATIC, info);
+        invokeStatic(mClassFile.getClassName(), methodName, ret, params);
     }
 
     public void invokeStatic(String className,
                              String methodName,
                              TypeDesc ret,
                              TypeDesc[] params) {
-        ConstantInfo info =
-            mCp.addConstantMethod(className, methodName, ret, params);
-
-        int stackAdjust = returnSize(ret) - 0;
-        if (params != null) {
-            stackAdjust -= argSize(params);
-        }
-
-        addCode(stackAdjust, Opcode.INVOKESTATIC, info);
+        mInstructions.new InvokeInstruction
+            (Opcode.INVOKESTATIC,
+             mCp.addConstantMethod(className, methodName, ret, params),
+             ret, params);
     }
 
     public void invokeStatic(TypeDesc classDesc,
                              String methodName,
                              TypeDesc ret,
                              TypeDesc[] params) {
-
         invokeStatic(getClassName(classDesc), methodName, ret, params);
     }
 
@@ -1233,122 +1218,64 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
                                 String methodName,
                                 TypeDesc ret,
                                 TypeDesc[] params) {
-
-        ConstantInfo info = 
-            mCp.addConstantInterfaceMethod(className, methodName, ret, params);
-
-        int paramCount = 1;
-        if (params != null) {
-            paramCount += argSize(params);
-        }
-
-        int stackAdjust = returnSize(ret) - paramCount;
-
-        byte[] bytes = new byte[5];
-
-        bytes[0] = Opcode.INVOKEINTERFACE;
-        //bytes[1] = (byte)0;
-        //bytes[2] = (byte)0;
-        bytes[3] = (byte)paramCount;
-        //bytes[4] = (byte)0;
-
-        mInstructions.new ConstantOperandInstruction(stackAdjust, bytes, info);
+        mInstructions.new InvokeInstruction
+            (Opcode.INVOKEINTERFACE,
+             mCp.addConstantInterfaceMethod(className, methodName, ret, params),
+             ret, params);
     }
 
     public void invokeInterface(TypeDesc classDesc,
                                 String methodName,
                                 TypeDesc ret,
                                 TypeDesc[] params) {
-
         invokeInterface(getClassName(classDesc), methodName, ret, params);
     }
 
     public void invokePrivate(String methodName,
                               TypeDesc ret,
                               TypeDesc[] params) {
-        ConstantInfo info = mCp.addConstantMethod
-            (mClassFile.getClassName(), methodName, ret, params);
-
-        int stackAdjust = returnSize(ret) - 1;
-        if (params != null) {
-            stackAdjust -= argSize(params);
-        }
-
-        addCode(stackAdjust, Opcode.INVOKESPECIAL, info);
+        mInstructions.new InvokeInstruction
+            (Opcode.INVOKESPECIAL,
+             mCp.addConstantMethod(mClassFile.getClassName(), methodName, ret, params),
+             ret, params);
     }
 
     public void invokeSuper(String superClassName,
                             String methodName,
                             TypeDesc ret,
                             TypeDesc[] params) {
-        ConstantInfo info = 
-            mCp.addConstantMethod(superClassName, methodName, ret, params);
-
-        int stackAdjust = returnSize(ret) - 1;
-        if (params != null) {
-            stackAdjust -= argSize(params);
-        }
-
-        addCode(stackAdjust, Opcode.INVOKESPECIAL, info);
+        mInstructions.new InvokeInstruction
+            (Opcode.INVOKESPECIAL,
+             mCp.addConstantMethod(superClassName, methodName, ret, params),
+             ret, params);
     }
 
     public void invokeSuper(TypeDesc superClassDesc,
                             String methodName,
                             TypeDesc ret,
                             TypeDesc[] params) {
-
         invokeSuper(getClassName(superClassDesc), methodName, ret, params);
     }
 
     public void invokeConstructor(TypeDesc[] params) {
-        ConstantInfo info = 
-            mCp.addConstantConstructor(mClassFile.getClassName(), params);
-
-        int stackAdjust = -1;
-        if (params != null) {
-            stackAdjust -= argSize(params);
-        }
-
-        addCode(stackAdjust, Opcode.INVOKESPECIAL, info);
+        invokeConstructor(mClassFile.getClassName(), mClassFile.getType(), params);
     }
 
     public void invokeConstructor(String className, TypeDesc[] params) {
-        ConstantInfo info = mCp.addConstantConstructor(className, params);
-
-        int stackAdjust = -1;
-        if (params != null) {
-            stackAdjust -= argSize(params);
-        }
-
-        addCode(stackAdjust, Opcode.INVOKESPECIAL, info);
+        invokeConstructor(className, TypeDesc.forClass(className), params);
     }
 
     public void invokeConstructor(TypeDesc classDesc, TypeDesc[] params) {
-        invokeConstructor(getClassName(classDesc), params);
+        invokeConstructor(getClassName(classDesc), classDesc, params);
+    }
+
+    private void invokeConstructor(String className, TypeDesc classDesc, TypeDesc[] params) {
+        mInstructions.new InvokeConstructorInstruction
+            (mCp.addConstantConstructor(className, params), classDesc, params);
     }
 
     public void invokeSuperConstructor(TypeDesc[] params) {
         invokeConstructor(mClassFile.getSuperClassName(), params);
-    }
-
-    private int returnSize(TypeDesc ret) {
-        if (ret == null || ret == TypeDesc.VOID) {
-            return 0;
-        }
-        if (ret.isDoubleWord()) {
-            return 2;
-        }
-        return 1;
-    }
-
-    private int argSize(TypeDesc[] params) {
-        int size = 0;
-        if (params != null) {
-            for (int i=0; i<params.length; i++) {
-                size += returnSize(params[i]);
-            }
-        }
-        return size;
     }
 
     // creation style instructions
@@ -1357,16 +1284,14 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
         if (type.isArray()) {
             newObject(type, 1);
         } else {
-            ConstantInfo info = mCp.addConstantClass(type);
-            addCode(1, Opcode.NEW, info);
+            mInstructions.new NewObjectInstruction(mCp.addConstantClass(type));
         }
     }
 
     public void newObject(TypeDesc type, int dimensions) {
         if (dimensions <= 0) {
             // If type refers to an array, then this code is bogus.
-            ConstantInfo info = mCp.addConstantClass(type);
-            addCode(1, Opcode.NEW, info);
+            mInstructions.new NewObjectInstruction(mCp.addConstantClass(type));
             return;
         }
 
@@ -1374,10 +1299,10 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
 
         if (dimensions == 1) {
             if (componentType.isPrimitive()) {
-                addCode(0, Opcode.NEWARRAY, (byte)componentType.getTypeCode());
+                addInstruction(0, type, Opcode.NEWARRAY, (byte)componentType.getTypeCode());
                 return;
             }
-            addCode(0, Opcode.ANEWARRAY, mCp.addConstantClass(componentType));
+            addInstruction(0, type, Opcode.ANEWARRAY, mCp.addConstantClass(componentType));
             return;
         }
 
@@ -1390,45 +1315,45 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
         //bytes[2] = (byte)0;
         bytes[3] = (byte)dimensions;
         
-        mInstructions.new ConstantOperandInstruction(stackAdjust, bytes, info);
+        mInstructions.new ConstantOperandInstruction(stackAdjust, type, bytes, info);
     }
 
     // stack operation style instructions
 
     public void dup() {
-        addCode(1, Opcode.DUP);
+        mInstructions.new StackOperationInstruction(Opcode.DUP);
     }
 
     public void dupX1() {
-        addCode(1, Opcode.DUP_X1);
+        mInstructions.new StackOperationInstruction(Opcode.DUP_X1);
     }
 
     public void dupX2() {
-        addCode(1, Opcode.DUP_X2);
+        mInstructions.new StackOperationInstruction(Opcode.DUP_X2);
     }
 
     public void dup2() {
-        addCode(2, Opcode.DUP2);
+        mInstructions.new StackOperationInstruction(Opcode.DUP2);
     }
 
     public void dup2X1() {
-        addCode(2, Opcode.DUP2_X1);
+        mInstructions.new StackOperationInstruction(Opcode.DUP2_X1);
     }
 
     public void dup2X2() {
-        addCode(2, Opcode.DUP2_X2);
+        mInstructions.new StackOperationInstruction(Opcode.DUP2_X2);
     }
 
     public void pop() {
-        addCode(-1, Opcode.POP);
+        mInstructions.new StackOperationInstruction(Opcode.POP);
     }
 
     public void pop2() {
-        addCode(-2, Opcode.POP2);
+        mInstructions.new StackOperationInstruction(Opcode.POP2);
     }
 
     public void swap() {
-        addCode(0, Opcode.SWAP);
+        mInstructions.new StackOperationInstruction(Opcode.SWAP);
     }
 
     public void swap2() {
@@ -1439,7 +1364,11 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
     // flow control instructions
 
     private void branch(int stackAdjust, Location location, byte opcode) {
-        mInstructions.new BranchInstruction(stackAdjust, opcode, location);
+        if (!(location instanceof InstructionList.LabelInstruction)) {
+            throw new IllegalArgumentException("Branch location is not a label instruction");
+        }
+        mInstructions.new BranchInstruction(stackAdjust, opcode,
+                                            (InstructionList.LabelInstruction)location);
     }
 
     public void branch(Location location) {
@@ -1506,9 +1435,7 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
         branch(-2, location, opcode);
     }
 
-    public void switchBranch(int[] cases, 
-                             Location[] locations, Location defaultLocation) {
-
+    public void switchBranch(int[] cases, Location[] locations, Location defaultLocation) {
         mInstructions.new SwitchInstruction(cases, locations, defaultLocation);
     }
 
@@ -1585,27 +1512,84 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
                 ("Not a math opcode: " + Opcode.getMnemonic(opcode));
         }
 
-        addCode(stackAdjust, opcode);
+        TypeDesc pushed;
+
+        switch(opcode) {
+        case Opcode.INEG:
+        case Opcode.IADD:
+        case Opcode.ISUB:
+        case Opcode.IMUL:
+        case Opcode.IDIV:
+        case Opcode.IREM:
+        case Opcode.IAND:
+        case Opcode.IOR:
+        case Opcode.IXOR:
+        case Opcode.ISHL:
+        case Opcode.ISHR:
+        case Opcode.IUSHR:
+        case Opcode.LCMP:
+        case Opcode.FCMPG:
+        case Opcode.FCMPL:
+        case Opcode.DCMPG:
+        case Opcode.DCMPL:
+            pushed = TypeDesc.INT;
+            break;
+        case Opcode.LNEG:
+        case Opcode.LADD:
+        case Opcode.LSUB:
+        case Opcode.LMUL:
+        case Opcode.LDIV:
+        case Opcode.LREM:
+        case Opcode.LAND:
+        case Opcode.LOR:
+        case Opcode.LXOR:
+        case Opcode.LSHL:
+        case Opcode.LSHR:
+        case Opcode.LUSHR:
+            pushed = TypeDesc.LONG;
+            break;
+        case Opcode.FNEG:
+        case Opcode.FADD:
+        case Opcode.FSUB:
+        case Opcode.FMUL:
+        case Opcode.FDIV:
+        case Opcode.FREM:
+            pushed = TypeDesc.FLOAT;
+            break;
+        case Opcode.DNEG:
+        case Opcode.DADD:
+        case Opcode.DSUB:
+        case Opcode.DMUL:
+        case Opcode.DDIV:
+        case Opcode.DREM:
+            pushed = TypeDesc.DOUBLE;
+            break;
+        default:
+            throw new IllegalArgumentException
+                ("Not a math opcode: " + Opcode.getMnemonic(opcode));
+        }
+
+        addInstruction(stackAdjust, pushed, opcode);
     }
 
     // miscellaneous instructions
 
     public void arrayLength() {
-        addCode(0, Opcode.ARRAYLENGTH);
+        addInstruction(0, TypeDesc.INT, Opcode.ARRAYLENGTH);
     }
 
     public void throwObject() {
-        addCode(-1, Opcode.ATHROW);
+        addInstruction(-1, TypeDesc.VOID, Opcode.ATHROW);
     }
 
     public void checkCast(TypeDesc type) {
         ConstantInfo info = mCp.addConstantClass(type);
-        addCode(0, Opcode.CHECKCAST, info);
+        addInstruction(0, TypeDesc.VOID, Opcode.CHECKCAST, info);
     }
 
     public void instanceOf(TypeDesc type) {
         ConstantInfo info = mCp.addConstantClass(type);
-        addCode(0, Opcode.INSTANCEOF, info);
+        addInstruction(0, TypeDesc.INT, Opcode.INSTANCEOF, info);
     }
 
     public void integerIncrement(LocalVariable local, int amount) {
@@ -1627,18 +1611,18 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
     }
 
     public void monitorEnter() {
-        addCode(-1, Opcode.MONITORENTER);
+        addInstruction(-1, TypeDesc.VOID, Opcode.MONITORENTER);
     }
 
     public void monitorExit() {
-        addCode(-1, Opcode.MONITOREXIT);
+        addInstruction(-1, TypeDesc.VOID, Opcode.MONITOREXIT);
     }
 
     public void nop() {
-        addCode(0, Opcode.NOP);
+        addInstruction(0, TypeDesc.VOID, Opcode.NOP);
     }
 
     public void breakpoint() {
-        addCode(0, Opcode.BREAKPOINT);
+        addInstruction(0, TypeDesc.VOID, Opcode.BREAKPOINT);
     }
 }

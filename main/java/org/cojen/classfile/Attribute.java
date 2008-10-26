@@ -33,6 +33,7 @@ import org.cojen.classfile.attribute.RuntimeVisibleAnnotationsAttr;
 import org.cojen.classfile.attribute.RuntimeVisibleParameterAnnotationsAttr;
 import org.cojen.classfile.attribute.SignatureAttr;
 import org.cojen.classfile.attribute.SourceFileAttr;
+import org.cojen.classfile.attribute.StackMapTableAttr;
 import org.cojen.classfile.attribute.SyntheticAttr;
 import org.cojen.classfile.attribute.UnknownAttr;
 import org.cojen.classfile.constant.ConstantUTFInfo;
@@ -64,6 +65,7 @@ public abstract class Attribute {
         "RuntimeVisibleParamaterAnnotations";
     public static final String RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS =
         "RuntimeInvisibleParamaterAnnotations";
+    public static final String STACK_MAP_TABLE = "StackMapTable";
 
     /** The ConstantPool that this attribute is defined against. */
     private final ConstantPool mCp;
@@ -112,7 +114,7 @@ public abstract class Attribute {
      * This method writes the 16 bit name constant index followed by the
      * 32 bit attribute length, followed by the attribute specific data.
      */
-    public final void writeTo(DataOutput dout) throws IOException {
+    public void writeTo(DataOutput dout) throws IOException {
         dout.writeShort(mNameConstant.getIndex());
         dout.writeInt(getLength());
         writeDataTo(dout);
@@ -203,6 +205,8 @@ public abstract class Attribute {
                         return new SyntheticAttr(cp, name, length, din);
                     } else if (name.equals(SIGNATURE)) {
                         return new SignatureAttr(cp, name, length, din);
+                    } else if (name.equals(STACK_MAP_TABLE)) {
+                        return new StackMapTableAttr(cp, name, length, din);
                     }
                     break;
                 }
