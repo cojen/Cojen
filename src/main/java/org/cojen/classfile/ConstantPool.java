@@ -101,7 +101,7 @@ public class ConstantPool {
     /**
      * Returns all the constants in the pool, in no particular order.
      */
-    public Set getAllConstants() {
+    public Set<ConstantInfo> getAllConstants() {
         return Collections.unmodifiableSet(mConstants.keySet());
     }
 
