@@ -73,7 +73,7 @@ public class WeakIdentityMap<K, V> extends AbstractMap<K, V> implements Map<K, V
         while (hasNext) {
             Object obj = it.next();
             buf.append(obj == c ? "(this Collection)" : obj);
-            if (hasNext) {
+            if (hasNext = it.hasNext()) {
                 buf.append(", ");
             }
         }
