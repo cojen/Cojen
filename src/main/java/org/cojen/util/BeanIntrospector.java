@@ -19,6 +19,7 @@ package org.cojen.util;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -110,8 +111,17 @@ public class BeanIntrospector {
             }
             if (properties.containsKey(name)) {
                 property = (SimpleProperty) properties.get(name);
-                if (type != property.getType() || property.getReadMethod() != null) {
-                    continue;
+                SimpleProperty withCovariant = property.addCovariantType(type);
+                if (withCovariant == null) {
+                    if (property.getReadMethod() != null) {
+                        continue;
+                    }
+                } else {
+                    properties.put(name, property = withCovariant);
+                    if (type != property.getType() && property.getReadMethod() != null) {
+                        // Primary type not changed so don't change read method.
+                        continue;
+                    }
                 }
             } else {
                 property = new SimpleProperty(name, type);
@@ -153,8 +163,17 @@ public class BeanIntrospector {
             type = params[0];
             if (properties.containsKey(name)) {
                 property = (SimpleProperty) properties.get(name);
-                if (type != property.getType() || property.getWriteMethod() != null) {
-                    continue;
+                SimpleProperty withCovariant = property.addCovariantType(type);
+                if (withCovariant == null) {
+                    if (property.getWriteMethod() != null) {
+                        continue;
+                    }
+                } else {
+                    properties.put(name, property = withCovariant);
+                    if (type != property.getType() && property.getWriteMethod() != null) {
+                        // Primary type not changed so don't change write method.
+                        continue;
+                    }
                 }
             } else {
                 property = new SimpleProperty(name, type);
@@ -248,15 +267,27 @@ public class BeanIntrospector {
     }
 
     private static class SimpleProperty implements BeanProperty {
+        private static final Class[] EMPTY = new Class[0];
+
         private final String mName;
         private final Class mType;
+        private final Class[] mCovariantTypes;
 
         private Method mReadMethod;
         private Method mWriteMethod;
 
         SimpleProperty(String name, Class type) {
+            this(name, type, null);
+        }
+
+        SimpleProperty(String name, Class type, Class[] covariantTypes) {
             mName = name;
             mType = type;
+            if (covariantTypes == null || covariantTypes.length == 0) {
+                mCovariantTypes = EMPTY;
+            } else {
+                mCovariantTypes = covariantTypes;
+            }
         }
 
         public String getName() {
@@ -265,6 +296,13 @@ public class BeanIntrospector {
 
         public Class getType() {
             return mType;
+        }
+
+        public Class[] getCovariantTypes() {
+            if (mCovariantTypes.length == 0) {
+                return EMPTY;
+            }
+            return mCovariantTypes.clone();
         }
 
         public Method getReadMethod() {
@@ -292,8 +330,51 @@ public class BeanIntrospector {
         }
 
         public String toString() {
-            return "BeanProperty[name=" + getName() +
-                ", type=" + getType().getName() + ']';
+            String str = "BeanProperty{name=" + getName() + ", type=" + getType().getName();
+            Class[] covariantTypes = getCovariantTypes();
+            if (covariantTypes.length > 0) {
+                str = str + ", covariantTypes=" + Arrays.toString(covariantTypes);
+            }
+            return str + '}';
+        }
+
+        /**
+         * @return null if no change
+         */
+        SimpleProperty addCovariantType(Class type) {
+            if (mType == type) {
+                return null;
+            }
+            for (Class covariant : mCovariantTypes) {
+                if (covariant == type) {
+                    return null;
+                }
+            }
+
+            // Find most specialized type.
+
+            Class newType = mType;
+
+            if (mType.isAssignableFrom(type)) {
+                newType = type;
+            }
+            for (Class covariant : mCovariantTypes) {
+                if (covariant.isAssignableFrom(type)) {
+                    newType = type;
+                }
+            }
+
+            Class[] newCovariant = new Class[1 + mCovariantTypes.length];
+            System.arraycopy(mCovariantTypes, 0, newCovariant, 1, mCovariantTypes.length);
+
+            newCovariant[0] = newType == mType ? type : mType;
+
+            SimpleProperty property = new SimpleProperty(mName, newType, newCovariant);
+
+            property.mReadMethod = mReadMethod;
+            property.mWriteMethod = mWriteMethod;
+
+            return property;
         }
 
         void setReadMethod(Method method) {
@@ -313,8 +394,12 @@ public class BeanIntrospector {
             super(name, type);
         }
 
+        IndexedProperty(String name, Class type, Class[] covariantTypes) {
+            super(name, type, covariantTypes);
+        }
+
         IndexedProperty(BeanProperty property) {
-            super(property.getName(), property.getType());
+            super(property.getName(), property.getType(), property.getCovariantTypes());
             setReadMethod(property.getReadMethod());
             setWriteMethod(property.getWriteMethod());
         }
@@ -359,10 +444,15 @@ public class BeanIntrospector {
 
         public String toString() {
             StringBuffer buf = new StringBuffer();
-            buf.append("BeanProperty[name=");
+            buf.append("BeanProperty{name=");
             buf.append(getName());
             buf.append(", type=");
             buf.append(getType().getName());
+            Class[] covariantTypes = getCovariantTypes();
+            if (covariantTypes.length > 0) {
+                buf.append(", covariantTypes=");
+                buf.append(Arrays.toString(covariantTypes));
+            }
             buf.append(", ");
             int count = getIndexTypesCount();
             for (int i=0; i<count; i++) {
@@ -374,8 +464,21 @@ public class BeanIntrospector {
                 buf.append("]=");
                 buf.append(getIndexType(0));
             }
-            buf.append(']');
+            buf.append('}');
             return buf.toString();
+        }
+
+        IndexedProperty addCovariantType(Class type) {
+            SimpleProperty property = super.addCovariantType(type);
+            if (property == null) {
+                return null;
+            }
+
+            IndexedProperty ix = new IndexedProperty(property);
+            ix.mIndexedReadMethods = mIndexedReadMethods;
+            ix.mIndexedWriteMethods = mIndexedWriteMethods;
+
+            return ix;
         }
 
         void addIndexedReadMethod(Method method) {
