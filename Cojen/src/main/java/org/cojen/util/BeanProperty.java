@@ -31,9 +31,15 @@ public interface BeanProperty {
     String getName();
 
     /**
-     * Returns the type of this property.
+     * Returns the primary type of this property.
      */
     Class getType();
+
+    /**
+     * Returns additional types of this property, all of which are assignable
+     * by the primary type.
+     */
+    Class[] getCovariantTypes();
 
     /**
      * Returns a no-arg method used to read the property value, or null if
