@@ -44,11 +44,12 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 
-import org.cojen.classfile.ClassFile;
 import org.cojen.classfile.CodeBuilder;
+import org.cojen.classfile.ClassFile;
 import org.cojen.classfile.Label;
 import org.cojen.classfile.MethodDesc;
 import org.cojen.classfile.Modifiers;
+import org.cojen.classfile.RuntimeClassFile;
 import org.cojen.classfile.TypeDesc;
 
 /**
@@ -287,8 +288,7 @@ public abstract class BelatedCreator<T, E extends Exception> {
     }
 
     private Class<T> createWrapper() {
-        ClassInjector ci = ClassInjector.create();
-        ClassFile cf = new ClassFile(ci.getClassName());
+        RuntimeClassFile cf = new RuntimeClassFile(mType.getName());
         cf.addInterface(mType);
         cf.markSynthetic();
         cf.setSourceFile(BelatedCreator.class.getName());
@@ -335,7 +335,7 @@ public abstract class BelatedCreator<T, E extends Exception> {
             }
         }
 
-        Class<T> clazz = ci.defineClass(cf);
+        Class<T> clazz = cf.defineClass();
         return clazz;
     }
 

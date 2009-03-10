@@ -1,7 +1,11 @@
-Cojen version 2.1
+Cojen version 2.2
 -------------------------------
 
 Change History
+
+2.1 to 2.2
+-------------------------------
+- Added RuntimeClassFile and deprecated ClassInjector.
 
 2.0.1 to 2.1
 -------------------------------

@@ -36,9 +36,9 @@ package org.cojen.util;
 
 import java.lang.reflect.UndeclaredThrowableException;
 
-import org.cojen.classfile.ClassFile;
 import org.cojen.classfile.CodeBuilder;
 import org.cojen.classfile.Modifiers;
+import org.cojen.classfile.RuntimeClassFile;
 import org.cojen.classfile.TypeDesc;
 
 /**
@@ -285,8 +285,7 @@ public abstract class ThrowUnchecked {
     }
 
     private static ThrowUnchecked generateImpl() {
-        ClassInjector ci = ClassInjector.create();
-        ClassFile cf = new ClassFile(ci.getClassName(), ThrowUnchecked.class);
+        RuntimeClassFile cf = new RuntimeClassFile(null, ThrowUnchecked.class.getName());
         cf.addDefaultConstructor();
         CodeBuilder b = new CodeBuilder
             (cf.addMethod(Modifiers.PROTECTED, "doFire",
@@ -294,7 +293,7 @@ public abstract class ThrowUnchecked {
         b.loadLocal(b.getParameter(0));
         b.throwObject();
         try {
-            return (ThrowUnchecked) ci.defineClass(cf).newInstance();
+            return (ThrowUnchecked) cf.defineClass().newInstance();
         } catch (Exception e) {
             throw new Error(e);
         }

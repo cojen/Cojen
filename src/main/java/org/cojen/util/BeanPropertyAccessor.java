@@ -35,6 +35,7 @@ import org.cojen.classfile.LocalVariable;
 import org.cojen.classfile.MethodInfo;
 import org.cojen.classfile.Modifiers;
 import org.cojen.classfile.Opcode;
+import org.cojen.classfile.RuntimeClassFile;
 import org.cojen.classfile.TypeDesc;
 
 /**
@@ -99,10 +100,7 @@ public abstract class BeanPropertyAccessor<B> {
     }
 
     private static <B> BeanPropertyAccessor<B> generate(Class<B> beanType, PropertySet set) {
-        ClassInjector ci = ClassInjector.create
-            (BeanPropertyAccessor.class.getName(), beanType.getClassLoader());
-        Class clazz = ci.defineClass(generateClassFile(ci.getClassName(), beanType, set));
-
+        Class clazz = generateClassFile(beanType, set).defineClass();
         try {
             return (BeanPropertyAccessor<B>) clazz.newInstance();
         } catch (InstantiationException e) {
@@ -112,13 +110,13 @@ public abstract class BeanPropertyAccessor<B> {
         }
     }
 
-    private static ClassFile generateClassFile(String className,
-                                               Class beanType,
-                                               PropertySet set)
-    {
+    private static RuntimeClassFile generateClassFile(Class beanType, PropertySet set) {
         BeanProperty[][] props = getBeanProperties(beanType, set);
 
-        ClassFile cf = new ClassFile(className, BeanPropertyAccessor.class);
+        RuntimeClassFile cf = new RuntimeClassFile
+            (BeanPropertyAccessor.class.getName(),
+             BeanPropertyAccessor.class.getName(),
+             beanType.getClassLoader());
         cf.markSynthetic();
         cf.setSourceFile(BeanPropertyAccessor.class.getName());
         try {

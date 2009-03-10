@@ -24,13 +24,13 @@ import java.util.Map;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
-import org.cojen.classfile.ClassFile;
 import org.cojen.classfile.CodeBuilder;
 import org.cojen.classfile.Label;
 import org.cojen.classfile.LocalVariable;
 import org.cojen.classfile.MethodInfo;
 import org.cojen.classfile.Modifiers;
 import org.cojen.classfile.Opcode;
+import org.cojen.classfile.RuntimeClassFile;
 import org.cojen.classfile.TypeDesc;
 
 /**
@@ -486,13 +486,8 @@ public class BeanComparator<T> implements Comparator<T>, Serializable {
     }
 
     private Class generateComparatorClass(Rules rules) {
-        ClassInjector ci = ClassInjector.create
-            (getClass().getName(), mBeanClass.getClassLoader());
-        return ci.defineClass(generateClassFile(ci.getClassName(), rules));
-    }
-
-    private static ClassFile generateClassFile(String className, Rules rules) {
-        ClassFile cf = new ClassFile(className);
+        RuntimeClassFile cf = new RuntimeClassFile
+            (getClass().getName(), null, mBeanClass.getClassLoader());
         cf.markSynthetic();
         cf.setSourceFile(BeanComparator.class.getName());
         try {
@@ -742,7 +737,7 @@ public class BeanComparator<T> implements Comparator<T>, Serializable {
         builder.loadConstant(0);
         builder.returnValue(TypeDesc.INT);
 
-        return cf;
+        return cf.defineClass();
     }
 
     private static void generatePrimitiveComparison(CodeBuilder builder,
