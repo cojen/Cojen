@@ -40,8 +40,8 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.Map;
 
-import org.cojen.classfile.ClassFile;
 import org.cojen.classfile.CodeBuilder;
+import org.cojen.classfile.RuntimeClassFile;
 import org.cojen.classfile.TypeDesc;
 
 /**
@@ -129,9 +129,8 @@ public class QuickConstructorGenerator {
                 prefix = prefix.substring(index + 1);
             }
         }
-        ClassInjector ci = ClassInjector.create(prefix, objectType.getClassLoader());
 
-        ClassFile cf = null;
+        RuntimeClassFile cf = null;
 
         for (Method method : factory.getMethods()) {
             if (!Modifier.isAbstract(method.getModifiers())) {
@@ -171,7 +170,7 @@ public class QuickConstructorGenerator {
             }
 
             if (cf == null) {
-                cf = new ClassFile(ci.getClassName());
+                cf = new RuntimeClassFile(prefix, null, objectType.getClassLoader());
                 cf.setSourceFile(QuickConstructorGenerator.class.getName());
                 cf.setTarget("1.5");
                 cf.addInterface(factory);
@@ -197,7 +196,7 @@ public class QuickConstructorGenerator {
         }
 
         try {
-            instance = (F) ci.defineClass(cf).newInstance();
+            instance = (F) cf.defineClass().newInstance();
         } catch (IllegalAccessException e) {
             throw new UndeclaredThrowableException(e);
         } catch (InstantiationException e) {
