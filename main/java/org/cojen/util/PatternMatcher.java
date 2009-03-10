@@ -26,13 +26,13 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
-import org.cojen.classfile.ClassFile;
 import org.cojen.classfile.CodeBuilder;
 import org.cojen.classfile.Label;
 import org.cojen.classfile.LocalVariable;
 import org.cojen.classfile.MethodInfo;
 import org.cojen.classfile.Modifiers;
 import org.cojen.classfile.Opcode;
+import org.cojen.classfile.RuntimeClassFile;
 import org.cojen.classfile.TypeDesc;
 
 /**
@@ -53,15 +53,7 @@ public abstract class PatternMatcher<V> {
         Class clazz = (Class)cPatternMatcherClasses.get(maker.getKey());
 
         if (clazz == null) {
-            Class patternMatcherClass = PatternMatcher.class;
-
-            ClassInjector ci = ClassInjector.create
-                (patternMatcherClass.getName(),
-                 patternMatcherClass.getClassLoader());
-            
-            ClassFile cf = maker.createClassFile(ci.getClassName());
-            clazz = ci.defineClass(cf);
-
+            clazz = maker.createClassFile().defineClass();
             cPatternMatcherClasses.put(maker.getKey(), clazz);
         }
 
@@ -251,8 +243,12 @@ public abstract class PatternMatcher<V> {
             return mMappedValues;
         }
 
-        public ClassFile createClassFile(String className) {
-            ClassFile cf = new ClassFile(className, PatternMatcher.class);
+        public RuntimeClassFile createClassFile() {
+            RuntimeClassFile cf = new RuntimeClassFile
+                (PatternMatcher.class.getName(),
+                 PatternMatcher.class.getName(),
+                 PatternMatcher.class.getClassLoader());
+
             cf.markSynthetic();
             cf.setSourceFile(PatternMatcher.class.getName());
             

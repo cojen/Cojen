@@ -41,17 +41,22 @@ import org.cojen.classfile.ClassFile;
  * original bytecode was never preserved.
  * <p>
  * Debugging can be enabled via the java command-line option
- * "-Dcojen.util.ClassInjector.DEBUG=true". This causes all generated classes
+ * "-Dorg.cojen.util.ClassInjector.DEBUG=true". This causes all generated classes
  * to be written to the temp directory, and a message is written to System.out
  * indicating exactly where.
  *
  * @author Brian S O'Neill
+ * @deprecated use {@link org.cojen.classfile.RuntimeClassFile}
  */
+@Deprecated
 public class ClassInjector {
     private static final boolean DEBUG;
 
     static {
-        DEBUG = Boolean.getBoolean("org.cojen.util.ClassInjector.DEBUG");
+        DEBUG =
+            Boolean.getBoolean("org.cojen.classfile.RuntimeClassFile.DEBUG") ||
+            Boolean.getBoolean("org.cojen.util.ClassInjector.DEBUG") ||
+            Boolean.getBoolean("cojen.util.ClassInjector.DEBUG");
     }
 
     private static final Random cRandom = new Random();
