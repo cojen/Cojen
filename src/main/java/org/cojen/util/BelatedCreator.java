@@ -44,6 +44,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+
 import org.cojen.classfile.CodeBuilder;
 import org.cojen.classfile.ClassFile;
 import org.cojen.classfile.Label;
@@ -187,11 +190,17 @@ public abstract class BelatedCreator<T, E extends Exception> {
 
         if (mBogus == null) {
             mRef = new AtomicReference<T>(createBogus());
-            try {
-                mBogus = getWrapper().newInstance(mRef);
-            } catch (Exception e) {
-                ThrowUnchecked.fire(e);
-            }
+
+            mBogus = AccessController.doPrivileged(new PrivilegedAction<T>() {
+                public T run() {
+                    try {
+                        return getWrapper().newInstance(mRef);
+                    } catch (Exception e) {
+                        ThrowUnchecked.fire(e);
+                        return null;
+                    }
+                }
+            });
         }
 
         return mBogus;

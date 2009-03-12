@@ -39,6 +39,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.Map;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 import org.cojen.classfile.CodeBuilder;
 import org.cojen.classfile.RuntimeClassFile;
@@ -100,7 +102,9 @@ public class QuickConstructorGenerator {
      * if it is malformed
      */
     @SuppressWarnings("unchecked")
-    public static synchronized <F> F getInstance(Class<?> objectType, Class<F> factory) {
+    public static synchronized <F> F getInstance(final Class<?> objectType,
+                                                 final Class<F> factory)
+    {
         Map<Class<?>, Object> innerCache = cCache.get(factory);
         if (innerCache == null) {
             innerCache = new SoftValuedHashMap();
@@ -121,6 +125,17 @@ public class QuickConstructorGenerator {
             throw new IllegalArgumentException("Factory must be an interface");
         }
 
+        final Map<Class<?>, Object> fInnerCache = innerCache;
+        return AccessController.doPrivileged(new PrivilegedAction<F>() {
+            public F run() {
+                return getInstance(fInnerCache, objectType, factory);
+            }
+        });
+    }
+
+    private static synchronized <F> F getInstance(Map<Class<?>, Object> innerCache,
+                                                  Class<?> objectType, Class<F> factory)
+    {
         String prefix = objectType.getName();
         if (prefix.startsWith("java.")) {
             // Defining classes in java packages is restricted.
@@ -195,6 +210,7 @@ public class QuickConstructorGenerator {
             throw new IllegalArgumentException("No methods in factory to implement");
         }
 
+        F instance;
         try {
             instance = (F) cf.defineClass().newInstance();
         } catch (IllegalAccessException e) {
