@@ -257,11 +257,13 @@ public class RuntimeClassFile extends ClassFile {
         // ProtectionDomain doesn't have an equals method, so break it apart
         // and add the elements to the composite key.
 
+        Object domainKey = null;
         Object csKey = null;
         Object permsKey = null;
         Object principalsKey = null;
 
         if (domain != null) {
+            domainKey = "";
             csKey = domain.getCodeSource();
 
             PermissionCollection pc = domain.getPermissions();
@@ -289,7 +291,7 @@ public class RuntimeClassFile extends ClassFile {
         }
 
         return KeyFactory.createKey(new Object[] {
-            parentLoader, packageName, csKey, permsKey, principalsKey
+            parentLoader, packageName, domainKey, csKey, permsKey, principalsKey
         });
     }
 
