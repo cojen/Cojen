@@ -24,6 +24,8 @@ import java.util.Map;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import org.cojen.classfile.CodeBuilder;
 import org.cojen.classfile.Label;
 import org.cojen.classfile.LocalVariable;
@@ -372,7 +374,11 @@ public class BeanComparator<T> implements Comparator<T>, Serializable {
     public int compare(T obj1, T obj2) throws ClassCastException {
         Comparator<T> c = mComparator;
         if (c == null) {
-            c = mComparator = generateComparator();
+            mComparator = c = AccessController.doPrivileged(new PrivilegedAction<Comparator<T>>() {
+                public Comparator<T> run() {
+                    return generateComparator();
+                }
+            });
         }
         return c.compare(obj1, obj2);
     }

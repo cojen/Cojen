@@ -26,6 +26,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import org.cojen.classfile.CodeBuilder;
 import org.cojen.classfile.Label;
 import org.cojen.classfile.LocalVariable;
@@ -49,28 +51,32 @@ public abstract class PatternMatcher<V> {
     private static Map cPatternMatcherClasses = new SoftValuedHashMap();
 
     public static synchronized <V> PatternMatcher<V> forPatterns(Map<String, V> patternMap) {
-        Maker maker = new Maker(patternMap);
-        Class clazz = (Class)cPatternMatcherClasses.get(maker.getKey());
+        final Maker maker = new Maker(patternMap);
+        final Class clazz = (Class)cPatternMatcherClasses.get(maker.getKey());
 
-        if (clazz == null) {
-            clazz = maker.createClassFile().defineClass();
-            cPatternMatcherClasses.put(maker.getKey(), clazz);
-        }
+        return AccessController.doPrivileged(new PrivilegedAction<PatternMatcher<V>>() {
+            public PatternMatcher<V> run() {
+                Class clz = clazz;
 
-        try {
-            Constructor ctor =
-                clazz.getConstructor(new Class[]{Object[].class});
-            return (PatternMatcher)ctor.newInstance
-                (new Object[]{maker.getMappedValues()});
-        } catch (NoSuchMethodException e) {
-            throw new InternalError(e.toString());
-        } catch (InstantiationException e) {
-            throw new InternalError(e.toString());
-        } catch (IllegalAccessException e) {
-            throw new InternalError(e.toString());
-        } catch (InvocationTargetException e) {
-            throw new InternalError(e.toString());
-        }
+                if (clz == null) {
+                    clz = maker.createClassFile().defineClass();
+                    cPatternMatcherClasses.put(maker.getKey(), clz);
+                }
+
+                try {
+                    Constructor ctor = clz.getConstructor(new Class[]{Object[].class});
+                    return (PatternMatcher)ctor.newInstance(new Object[]{maker.getMappedValues()});
+                } catch (NoSuchMethodException e) {
+                    throw new InternalError(e.toString());
+                } catch (InstantiationException e) {
+                    throw new InternalError(e.toString());
+                } catch (IllegalAccessException e) {
+                    throw new InternalError(e.toString());
+                } catch (InvocationTargetException e) {
+                    throw new InternalError(e.toString());
+                }
+            }
+        });
     }
 
     protected final V[] mValues;
