@@ -36,6 +36,9 @@ package org.cojen.util;
 
 import java.lang.reflect.UndeclaredThrowableException;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+
 import org.cojen.classfile.CodeBuilder;
 import org.cojen.classfile.Modifiers;
 import org.cojen.classfile.RuntimeClassFile;
@@ -92,7 +95,12 @@ public abstract class ThrowUnchecked {
                 synchronized (ThrowUnchecked.class) {
                     impl = cImpl;
                     if (impl == null) {
-                        cImpl = impl = generateImpl();
+                        cImpl = impl =
+                            AccessController.doPrivileged(new PrivilegedAction<ThrowUnchecked>() {
+                                public ThrowUnchecked run() {
+                                    return generateImpl();
+                                }
+                            });
                     }
                 }
             }

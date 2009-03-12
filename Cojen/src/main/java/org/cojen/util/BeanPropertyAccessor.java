@@ -28,6 +28,9 @@ import java.util.Map;
 
 import java.math.BigInteger;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+
 import org.cojen.classfile.ClassFile;
 import org.cojen.classfile.CodeBuilder;
 import org.cojen.classfile.Label;
@@ -99,15 +102,21 @@ public abstract class BeanPropertyAccessor<B> {
         }
     }
 
-    private static <B> BeanPropertyAccessor<B> generate(Class<B> beanType, PropertySet set) {
-        Class clazz = generateClassFile(beanType, set).defineClass();
-        try {
-            return (BeanPropertyAccessor<B>) clazz.newInstance();
-        } catch (InstantiationException e) {
-            throw new InternalError(e.toString());
-        } catch (IllegalAccessException e) {
-            throw new InternalError(e.toString());
-        }
+    private static <B> BeanPropertyAccessor<B> generate(final Class<B> beanType,
+                                                        final PropertySet set)
+    {
+        return AccessController.doPrivileged(new PrivilegedAction<BeanPropertyAccessor<B>>() {
+            public BeanPropertyAccessor<B> run() {
+                Class clazz = generateClassFile(beanType, set).defineClass();
+                try {
+                    return (BeanPropertyAccessor<B>) clazz.newInstance();
+                } catch (InstantiationException e) {
+                    throw new InternalError(e.toString());
+                } catch (IllegalAccessException e) {
+                    throw new InternalError(e.toString());
+                }
+            }
+        });
     }
 
     private static RuntimeClassFile generateClassFile(Class beanType, PropertySet set) {
