@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import java.security.CodeSource;
 import java.security.Permission;
 import java.security.PermissionCollection;
 import java.security.Principal;
@@ -258,38 +257,39 @@ public class RuntimeClassFile extends ClassFile {
         // ProtectionDomain doesn't have an equals method, so break it apart
         // and add the elements to the composite key.
 
-        CodeSource cs = null;
-        Set<Permission> permSet = Collections.emptySet();
-        Set<Principal> principalSet = Collections.emptySet();
+        Object csKey = null;
+        Object permsKey = null;
+        Object principalsKey = null;
 
         if (domain != null) {
-            cs = domain.getCodeSource();
+            csKey = domain.getCodeSource();
 
             PermissionCollection pc = domain.getPermissions();
             if (pc != null) {
                 List<Permission> permList = Collections.list(pc.elements());
                 if (permList.size() == 1) {
-                    permSet = Collections.singleton(permList.get(0));
+                    permsKey = permList.get(0);
                 } else if (permList.size() > 1) {
-                    permSet = new HashSet<Permission>(permList);
+                    permsKey = new HashSet<Permission>(permList);
                 }
             }
 
             Principal[] principals = domain.getPrincipals();
             if (principals != null && principals.length > 0) {
                 if (principals.length == 1) {
-                    principalSet = Collections.singleton(principals[0]);
+                    principalsKey = principals[0];
                 } else {
-                    principalSet = new HashSet<Principal>(principals.length);
+                    Set<Principal> principalSet = new HashSet<Principal>(principals.length);
                     for (Principal principal : principals) {
                         principalSet.add(principal);
                     }
+                    principalsKey = principalSet;
                 }
             }
         }
 
         return KeyFactory.createKey(new Object[] {
-            parentLoader, packageName, cs, permSet, principalSet
+            parentLoader, packageName, csKey, permsKey, principalsKey
         });
     }
 
