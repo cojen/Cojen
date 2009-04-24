@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.WeakHashMap;
 
 import java.security.Permission;
 import java.security.PermissionCollection;
@@ -196,14 +197,9 @@ public class RuntimeClassFile extends ClassFile {
         }
 
         if (explicit) {
-            if (loader.reserveName(className)) {
-                try {
-                    loader.loadClass(className);
-                    throw new IllegalArgumentException("Class already defined: " + className);
-                } catch (ClassNotFoundException e) {
-                }
+            if (!loader.reserveName(className, true)) {
+                throw new IllegalArgumentException("Class already defined: " + className);
             }
-
             return new LoaderAndName(loader, className);
         }
 
@@ -226,15 +222,8 @@ public class RuntimeClassFile extends ClassFile {
 
             String mangled = className + '$' + id;
 
-            if (loader.reserveName(mangled)) {
-                try {
-                    loader.loadClass(mangled);
-                    // Class by same name exists.
-                } catch (ClassNotFoundException e) {
-                    return new LoaderAndName(loader, mangled);
-                } catch (LinkageError e) {
-                    // Class by same name exists, but it is broken.
-                }
+            if (loader.reserveName(mangled, false)) {
+                return new LoaderAndName(loader, mangled);
             }
         }
 
@@ -296,7 +285,7 @@ public class RuntimeClassFile extends ClassFile {
     }
 
     private static final class Loader extends ClassLoader {
-        private final Set<String> mReservedNames = new HashSet<String>();
+        private final Map<String, Boolean> mReservedNames = new WeakHashMap<String, Boolean>();
         private final ProtectionDomain mDomain;
 
         Loader(ClassLoader parent, ProtectionDomain domain) {
@@ -324,19 +313,51 @@ public class RuntimeClassFile extends ClassFile {
 
         // Prevent name collisions while multiple threads are defining classes
         // by reserving the name.
-        synchronized boolean reserveName(String name) {
-            return mReservedNames.add(name);
+        boolean reserveName(String name, boolean explicit) {
+            synchronized (mReservedNames) {
+                if (mReservedNames.put(name, Boolean.TRUE) != null && !explicit) {
+                    return false;
+                }
+            }
+
+            // If explicit and name has already been reserved, don't
+            // immediately return false. This allows the class to be defined if
+            // an earlier RuntimeClassFile instance was abandoned. A duplicate
+            // class definition can still be attempted later, which is
+            // converted to an IllegalStateException by the define method.
+
+            try {
+                loadClass(name);
+            } catch (ClassNotFoundException e) {
+                return true;
+            } catch (LinkageError e) {
+                // Class by same name exists, but it is broken.
+            }
+
+            return false;
         }
 
         Class define(String name, byte[] b) {
-            Class clazz;
-            if (mDomain == null) {
-                clazz = defineClass(name, b, 0, b.length);
-            } else {
-                clazz = defineClass(name, b, 0, b.length, mDomain);
+            try {
+                Class clazz;
+                if (mDomain == null) {
+                    clazz = defineClass(name, b, 0, b.length);
+                } else {
+                    clazz = defineClass(name, b, 0, b.length, mDomain);
+                }
+                resolveClass(clazz);
+                return clazz;
+            } catch (LinkageError e) {
+                // Replace duplicate name definition with a better exception.
+                try {
+                    loadClass(name);
+                    throw new IllegalStateException("Class already defined: " + name);
+                } catch (ClassNotFoundException e2) {
+                }
+                throw e;
+            } finally {
+                mReservedNames.remove(name);
             }
-            resolveClass(clazz);
-            return clazz;
         }
     }
 
