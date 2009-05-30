@@ -74,7 +74,7 @@ public class QuickConstructorGenerator {
      * constructed object or a supertype.
      *
      * <p>Here is a contrived example for constructing strings. In practice,
-     * such a string factory is is useless, since the "new" operator can be
+     * such a string factory is useless, since the "new" operator can be
      * invoked directly.
      *
      * <pre>
