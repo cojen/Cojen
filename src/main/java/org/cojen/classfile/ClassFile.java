@@ -971,6 +971,8 @@ public class ClassFile {
             major = 49; minor = 0;
         } else if ("1.6".equals(target)) {
             major = 50; minor = 0;
+        } else if ("1.7".equals(target)) {
+            major = 51; minor = 0;
         } else {
             throw new IllegalArgumentException
                 ("Unsupported target version: " + target);
@@ -1020,6 +1022,9 @@ public class ClassFile {
             break;
         case 50:
             target = minor == 0 ? "1.6" : null;
+            break;
+        case 51:
+            target = minor == 0 ? "1.7" : null;
             break;
         }
 
