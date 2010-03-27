@@ -52,8 +52,8 @@ Transient classes
 
  A "transient" class from Cojen's perspective is one that is dynamically
  created, never leaves the confines of the current virtual machine process, and
- whose bytecode is lost when it is unloaded. The
- {{{apidocs/org/cojen/util/ClassInjector.html}ClassInjector}}
+ whose bytecode is lost when it is unloaded. 
+ {{{apidocs/org/cojen/classfile/RuntimeClassFile.html}RuntimeClassFile}}
  is used for creating such classes. Internally, it uses a ClassLoader which
  defines classes, but it never remembers the bytecode used to construct them.
 
