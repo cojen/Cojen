@@ -1,5 +1,5 @@
 /*
- *  Copyright 2004 Brian S O'Neill
+ *  Copyright 2004-2010 Brian S O'Neill
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,19 +14,16 @@
  *  limitations under the License.
  */
 
-package cojen.example;
+package org.cojen.example;
 
 // Used to generate the class
-import cojen.classfile.ClassFile;
-import cojen.classfile.CodeBuilder;
-import cojen.classfile.Label;
-import cojen.classfile.LocalVariable;
-import cojen.classfile.MethodInfo;
-import cojen.classfile.Modifiers;
-import cojen.classfile.TypeDesc;
-
-// Used to load the generated class
-import cojen.util.ClassInjector;
+import org.cojen.classfile.CodeBuilder;
+import org.cojen.classfile.Label;
+import org.cojen.classfile.LocalVariable;
+import org.cojen.classfile.MethodInfo;
+import org.cojen.classfile.Modifiers;
+import org.cojen.classfile.RuntimeClassFile;
+import org.cojen.classfile.TypeDesc;
 
 // Used to execute the generated class
 import java.lang.reflect.Method;
@@ -57,15 +54,9 @@ import java.lang.reflect.Method;
  */
 public class HelloWorld {
     public static void main(String[] args) throws Exception {
-        // ClassInjector allows class to be loaded into the virtual machine
-        // without having to write a class file.
-        ClassInjector ci = ClassInjector.create();
-
-        // Create the ClassFile using the name selected by the ClassInjector.
-        ClassFile cf = createClassFile(ci.getClassName());
-
-        // Define the Class and load it.
-        Class clazz = ci.defineClass(cf);
+        // Create the RuntimeClassFile using an automatically selected name.
+        RuntimeClassFile cf = createClassFile();
+        Class clazz = cf.defineClass();
 
         // Find the generated main method and invoke it.
         Method m = clazz.getMethod("main", new Class[] {String[].class});
@@ -77,9 +68,9 @@ public class HelloWorld {
      *
      * @param className name given to class
      */
-    private static ClassFile createClassFile(String className) {
+    private static RuntimeClassFile createClassFile() {
         // Create a ClassFile with the super class of Object.
-        ClassFile cf = new ClassFile(className);
+        RuntimeClassFile cf = new RuntimeClassFile();
 
         // Default constructor works only if super class has an accessible
         // no-arg constructor.
