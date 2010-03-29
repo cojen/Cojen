@@ -22,7 +22,7 @@ package org.cojen.classfile;
  * <i>The Java Virual Machine Specification</i>.
  *
  * @author Brian S O'Neill
- * @see cojen.classfile.attribute.CodeAttr
+ * @see org.cojen.classfile.attribute.CodeAttr
  */
 public class Opcode {
     public final static byte NOP = (byte)0;
