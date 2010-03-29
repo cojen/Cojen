@@ -85,7 +85,7 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
         mCodeAttr = info.getCodeAttr();
         mClassFile = info.getClassFile();
         mCp = mClassFile.getConstantPool();
-        mInstructions = new InstructionList();
+        mInstructions = new InstructionList(saveLocalVariableInfo);
 
         mCodeAttr.setCodeBuffer(this);
 

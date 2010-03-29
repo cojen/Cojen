@@ -37,6 +37,50 @@ final class BitList implements Cloneable {
     }
 
     /**
+     * @param fromIndex inclusive
+     * @return -1 if not found
+     */
+    public int nextSetBit(int fromIndex) {
+        int i = fromIndex >> 5;
+        int[] data = mData;
+        if (i >= data.length) {
+            return -1;
+        }
+        int v = data[i] & (0xffffffff >>> fromIndex);
+        while (true) {
+            if (v != 0) {
+                return (i << 5) + Integer.numberOfLeadingZeros(v);
+            }
+            if (++i >= data.length) {
+                return -1;
+            }
+            v = data[i];
+        }
+    }
+
+    /**
+     * @param fromIndex inclusive
+     * @return non-negative index
+     */
+    public int nextClearBit(int fromIndex) {
+        int i = fromIndex >> 5;
+        int[] data = mData;
+        if (i >= data.length) {
+            return fromIndex;
+        }
+        int v = ~data[i] & (0xffffffff >>> fromIndex);
+        while (true) {
+            if (v != 0) {
+                return (i << 5) + Integer.numberOfLeadingZeros(v);
+            }
+            if (++i >= data.length) {
+                return data.length << 32;
+            }
+            v = ~data[i];
+        }
+    }
+
+    /**
      * @return true if any change made
      */
     public boolean set(int index) {
