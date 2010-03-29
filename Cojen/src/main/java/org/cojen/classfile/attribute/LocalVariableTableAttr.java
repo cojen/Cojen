@@ -121,6 +121,30 @@ public class LocalVariableTableAttr extends Attribute {
         }
     }
 
+    public LocalVariable getLocalVariable(Location useLocation, int number) {
+        return getLocalVariable(useLocation.getLocation(), number);
+    }
+
+    public LocalVariable getLocalVariable(int useLocation, int number) {
+        // TODO: Build some sort of index to improve performance.
+        for (Entry entry : mEntries) {
+            LocalVariable var = entry.mLocalVar;
+            if (var.getNumber() == number) {
+                for (LocationRange range : var.getLocationRangeSet()) {
+                    int start = range.getStartLocation().getLocation();
+                    int end = range.getEndLocation().getLocation();
+                    if (start >= 0 && end >= 0) {
+                        if (start <= useLocation && useLocation < end) {
+                            return var;
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Add an entry into the LocalVariableTableAttr.
      */
@@ -198,8 +222,7 @@ public class LocalVariableTableAttr extends Attribute {
         mCleanEntries = new ArrayList<Entry>(size);
         mRangeCount = 0;
 
-    outer:
-        for (int i=0; i<size; i++) {
+        outer: for (int i=0; i<size; i++) {
             Entry entry = mEntries.get(i);
             LocalVariable localVar = entry.mLocalVar;
 

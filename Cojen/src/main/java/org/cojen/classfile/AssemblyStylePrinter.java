@@ -29,6 +29,7 @@ import java.util.Map;
 import org.cojen.util.IntHashMap;
 import org.cojen.classfile.attribute.Annotation;
 import org.cojen.classfile.attribute.CodeAttr;
+import org.cojen.classfile.attribute.LocalVariableTableAttr;
 import org.cojen.classfile.attribute.SignatureAttr;
 import org.cojen.classfile.attribute.StackMapTableAttr;
 import org.cojen.classfile.constant.ConstantClassInfo;
@@ -423,6 +424,15 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
         print(type.getFullName());
     }
 
+    private void disassemble(LocalVariable var) {
+        if (var != null) {
+            print(" // ");
+            print(var.getName());
+            print(": ");
+            disassemble(var.getType());
+        }
+    }
+
     private void disassemble(String indent, Annotation[] annotations) {
         for (int i=0; i<annotations.length; i++) {
             print(indent);
@@ -709,26 +719,78 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
             case Opcode.ATHROW:
             case Opcode.MONITORENTER:
             case Opcode.MONITOREXIT:
-            case Opcode.ILOAD_0: case Opcode.ISTORE_0:
-            case Opcode.ILOAD_1: case Opcode.ISTORE_1:
-            case Opcode.ILOAD_2: case Opcode.ISTORE_2:
-            case Opcode.ILOAD_3: case Opcode.ISTORE_3:
-            case Opcode.LLOAD_0: case Opcode.LSTORE_0:
-            case Opcode.LLOAD_1: case Opcode.LSTORE_1:
-            case Opcode.LLOAD_2: case Opcode.LSTORE_2:
-            case Opcode.LLOAD_3: case Opcode.LSTORE_3:
-            case Opcode.FLOAD_0: case Opcode.FSTORE_0:
-            case Opcode.FLOAD_1: case Opcode.FSTORE_1:
-            case Opcode.FLOAD_2: case Opcode.FSTORE_2:
-            case Opcode.FLOAD_3: case Opcode.FSTORE_3:
-            case Opcode.DLOAD_0: case Opcode.DSTORE_0:
-            case Opcode.DLOAD_1: case Opcode.DSTORE_1:
-            case Opcode.DLOAD_2: case Opcode.DSTORE_2:
-            case Opcode.DLOAD_3: case Opcode.DSTORE_3:
-            case Opcode.ALOAD_0: case Opcode.ASTORE_0:
-            case Opcode.ALOAD_1: case Opcode.ASTORE_1:
-            case Opcode.ALOAD_2: case Opcode.ASTORE_2:
-            case Opcode.ALOAD_3: case Opcode.ASTORE_3:
+                println();
+                continue;
+
+            case Opcode.ILOAD_0:
+            case Opcode.LLOAD_0:
+            case Opcode.FLOAD_0:
+            case Opcode.DLOAD_0:
+            case Opcode.ALOAD_0:
+                disassemble(code.getLocalVariable(mAddress, 0));
+                println();
+                continue;
+
+            case Opcode.ISTORE_0:
+            case Opcode.LSTORE_0:
+            case Opcode.FSTORE_0:
+            case Opcode.DSTORE_0:
+            case Opcode.ASTORE_0:
+                disassemble(code.getLocalVariable(mAddress + 1, 0));
+                println();
+                continue;
+
+            case Opcode.ILOAD_1:
+            case Opcode.LLOAD_1:
+            case Opcode.FLOAD_1:
+            case Opcode.DLOAD_1:
+            case Opcode.ALOAD_1:
+                disassemble(code.getLocalVariable(mAddress, 1));
+                println();
+                continue;
+
+            case Opcode.ISTORE_1:
+            case Opcode.LSTORE_1:
+            case Opcode.FSTORE_1:
+            case Opcode.DSTORE_1:
+            case Opcode.ASTORE_1:
+                disassemble(code.getLocalVariable(mAddress + 1, 1));
+                println();
+                continue;
+
+            case Opcode.ILOAD_2:
+            case Opcode.LLOAD_2:
+            case Opcode.FLOAD_2:
+            case Opcode.DLOAD_2:
+            case Opcode.ALOAD_2:
+                disassemble(code.getLocalVariable(mAddress, 2));
+                println();
+                continue;
+
+            case Opcode.ISTORE_2:
+            case Opcode.LSTORE_2:
+            case Opcode.FSTORE_2:
+            case Opcode.DSTORE_2:
+            case Opcode.ASTORE_2:
+                disassemble(code.getLocalVariable(mAddress + 1, 2));
+                println();
+                continue;
+
+            case Opcode.ILOAD_3:
+            case Opcode.LLOAD_3:
+            case Opcode.FLOAD_3:
+            case Opcode.DLOAD_3:
+            case Opcode.ALOAD_3:
+                disassemble(code.getLocalVariable(mAddress, 3));
+                println();
+                continue;
+
+            case Opcode.ISTORE_3:
+            case Opcode.LSTORE_3:
+            case Opcode.FSTORE_3:
+            case Opcode.DSTORE_3:
+            case Opcode.ASTORE_3:
+                disassemble(code.getLocalVariable(mAddress + 1, 3));
                 println();
                 continue;
 
@@ -815,6 +877,7 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
             case Opcode.INVOKESPECIAL:
             case Opcode.INVOKESTATIC:
             case Opcode.INVOKEINTERFACE:
+            case Opcode.INVOKEDYNAMIC:
                 constant = getConstant(readUnsignedShort());
 
                 String className;
@@ -832,6 +895,11 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
                     className =
                         method.getParentClass().getType().getFullName();
                     nameAndType = method.getNameAndType();
+                } else if (opcode == Opcode.INVOKEDYNAMIC) {
+                    // Read and ignore extra bytes.
+                    readShort();
+                    className = null;
+                    nameAndType = (ConstantNameAndTypeInfo)constant;
                 } else {
                     if (!(constant instanceof ConstantMethodInfo)) {
                         print(constant);
@@ -850,8 +918,10 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
                 }
                 disassemble(((MethodDesc)type).getReturnType());
                 print(" ");
-                print(className);
-                print(".");
+                if (className != null) {
+                    print(className);
+                    print(".");
+                }
                 print(nameAndType.getName());
 
                 print("(");
@@ -869,22 +939,34 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
 
                 // Opcodes that load or store local variables...
 
-            case Opcode.ILOAD: case Opcode.ISTORE:
-            case Opcode.LLOAD: case Opcode.LSTORE:
-            case Opcode.FLOAD: case Opcode.FSTORE:
-            case Opcode.DLOAD: case Opcode.DSTORE:
-            case Opcode.ALOAD: case Opcode.ASTORE:
+            case Opcode.ILOAD:
+            case Opcode.LLOAD:
+            case Opcode.FLOAD:
+            case Opcode.DLOAD:
+            case Opcode.ALOAD:
             case Opcode.RET:
-                print(String.valueOf(readUnsignedByte()));
+                int varNum = readUnsignedByte();
+                print(String.valueOf(varNum));
+                disassemble(code.getLocalVariable(mAddress, varNum));
+                break;
+            case Opcode.ISTORE:
+            case Opcode.LSTORE:
+            case Opcode.FSTORE:
+            case Opcode.DSTORE:
+            case Opcode.ASTORE:
+                varNum = readUnsignedByte();
+                print(String.valueOf(varNum));
+                disassemble(code.getLocalVariable(mAddress + 1, varNum));
                 break;
             case Opcode.IINC:
-                print(String.valueOf(readUnsignedByte()));
+                print(String.valueOf(varNum = readUnsignedByte()));
                 print(" ");
                 int incValue = readByte();
                 if (incValue >= 0) {
                     print("+");
                 }
                 print(String.valueOf(incValue));
+                disassemble(code.getLocalVariable(mAddress, varNum));
                 break;
 
                 // End opcodes that load or store local variables.
@@ -1304,6 +1386,7 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
                 // Opcodes with four operand bytes...
 
             case Opcode.INVOKEINTERFACE:
+            case Opcode.INVOKEDYNAMIC:
                 mAddress += 4;
                 break;
 
