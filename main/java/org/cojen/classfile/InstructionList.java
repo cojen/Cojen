@@ -19,6 +19,7 @@ package org.cojen.classfile;
 import java.util.AbstractCollection;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -39,6 +40,8 @@ import org.cojen.classfile.constant.ConstantClassInfo;
 class InstructionList implements CodeBuffer {
     private static final boolean DEBUG = false;
 
+    private final boolean mSaveLocalVariableInfo;
+
     Instruction mFirst;
     Instruction mLast;
 
@@ -55,8 +58,8 @@ class InstructionList implements CodeBuffer {
     private byte[] mByteCodes;
     private int mBufferLength;
 
-    protected InstructionList() {
-        super();
+    protected InstructionList(boolean saveLocalVariableInfo) {
+        mSaveLocalVariableInfo = saveLocalVariableInfo;
     }
 
     /**
@@ -230,7 +233,55 @@ class InstructionList implements CodeBuffer {
                     live[v] = null;
                 }
             }
-            
+
+            if (mSaveLocalVariableInfo) {
+                // Create indexable list of instructions.
+                List<Instruction> instrList = new ArrayList<Instruction>(instrCount);
+                instrList.addAll(getInstructions());
+
+                for (int v=0; v<size; v++) {
+                    BitList list = live[v];
+                    if (list == null) {
+                        continue;
+                    }
+
+                    LocationRange firstRange = null;
+                    Set<LocationRange> rangeSet = null;
+
+                    int end = -1;
+                    do {
+                        int start = list.nextSetBit(end + 1);
+                        if (start < 0) {
+                            break;
+                        }
+                        end = list.nextClearBit(start + 1);
+                        Location startLoc = instrList.get(start);
+                        Location endLoc = instrList.get(end < instrCount ? end : instrCount - 1);
+                        LocationRange range = new LocationRangeImpl(startLoc, endLoc);
+
+                        if (firstRange == null) {
+                            firstRange = range;
+                        } else {
+                            if (rangeSet == null) {
+                                rangeSet = new HashSet<LocationRange>(5);
+                                rangeSet.add(firstRange);
+                            }
+                            rangeSet.add(range);
+                        }
+                    } while (end < instrCount);
+
+                    LocalVariableImpl var = (LocalVariableImpl)mLocalVariables.get(v);
+
+                    if (firstRange == null) {
+                        var.setLocationRangeSet(null);
+                    } else if (rangeSet == null || rangeSet.size() == 1) {
+                        var.setLocationRangeSet(Collections.singleton(firstRange));
+                    } else {
+                        var.setLocationRangeSet(Collections.unmodifiableSet(rangeSet));
+                    }
+                }
+            }
+
             for (int v=0; v<size; v++) {
                 if (live[v] == null) {
                     continue;
@@ -577,6 +628,8 @@ class InstructionList implements CodeBuffer {
         private int mNumber;
         private boolean mFixed;
 
+        private Set<LocationRange> mLocationRangeSet;
+
         public LocalVariableImpl(int index, String name, TypeDesc type, int number) {
             mIndex = index;
             mName = name;
@@ -615,8 +668,11 @@ class InstructionList implements CodeBuffer {
         }
 
         public Set<LocationRange> getLocationRangeSet() {
-            // TODO
-            return null;
+            return mLocationRangeSet;
+        }
+
+        void setLocationRangeSet(Set<LocationRange> set) {
+            mLocationRangeSet = set;
         }
 
         public void setNumber(int number) {

@@ -68,10 +68,8 @@ public class LocalVariableTableAttr extends Attribute {
             int descriptor_index = din.readUnsignedShort();
             final int index = din.readUnsignedShort();
 
-            final ConstantUTFInfo varName = 
-                (ConstantUTFInfo)cp.getConstant(name_index);
-            final ConstantUTFInfo varDesc = 
-                (ConstantUTFInfo)cp.getConstant(descriptor_index);
+            final ConstantUTFInfo varName = (ConstantUTFInfo)cp.getConstant(name_index);
+            final ConstantUTFInfo varDesc = (ConstantUTFInfo)cp.getConstant(descriptor_index);
 
             if (varDesc == null) {
                 continue;
@@ -150,12 +148,15 @@ public class LocalVariableTableAttr extends Attribute {
      */
     public void addEntry(LocalVariable localVar) {
         String varName = localVar.getName();
-        if (varName != null) {
-            ConstantUTFInfo name = getConstantPool().addConstantUTF(varName);
-            ConstantUTFInfo descriptor = 
-                getConstantPool().addConstantUTF(localVar.getType().getDescriptor());
-            mEntries.add(new Entry(localVar, name, descriptor));
+        if (varName == null) {
+            int num = localVar.getNumber();
+            varName = num < 0 ? "_" : ("v" + num + '$');
         }
+
+        ConstantUTFInfo name = getConstantPool().addConstantUTF(varName);
+        ConstantUTFInfo descriptor = 
+            getConstantPool().addConstantUTF(localVar.getType().getDescriptor());
+        mEntries.add(new Entry(localVar, name, descriptor));
 
         mCleanEntries = null;
     }
@@ -170,7 +171,7 @@ public class LocalVariableTableAttr extends Attribute {
 
         int size = mCleanEntries.size();
         for (int i=0; i<size; i++) {
-            Entry entry = mEntries.get(i);
+            Entry entry = mCleanEntries.get(i);
             LocalVariable localVar = entry.mLocalVar;
 
             Set<LocationRange> ranges = localVar.getLocationRangeSet();
