@@ -150,6 +150,38 @@ public class CodeAttr extends Attribute {
     }
 
     /**
+     * Returns local variable info at the given location, for the given number.
+     *
+     * @return null if unknown
+     */
+    public LocalVariable getLocalVariable(Location useLocation, int number) {
+        int useLoc = useLocation.getLocation();
+        if (useLoc < 0) {
+            return null;
+        } else {
+            return getLocalVariable(useLoc, number);
+        }
+    }
+
+    /**
+     * Returns local variable info at the given location, for the given number.
+     *
+     * @return null if unknown
+     */
+    public LocalVariable getLocalVariable(int useLocation, int number) {
+        LocalVariableTableAttr table = mOldLocalVariableTable;
+        if (table == null) {
+            table = mLocalVariableTable;
+        }
+
+        if (table == null) {
+            return null;
+        } else {
+            return table.getLocalVariable(useLocation, number);
+        }
+    }
+
+    /**
      * Map a bytecode address (start_pc) to a line number in the source code
      * as a debugging aid.
      */

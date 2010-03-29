@@ -639,6 +639,7 @@ public class CodeDisassembler {
             case Opcode.INVOKESPECIAL:
             case Opcode.INVOKESTATIC:
             case Opcode.INVOKEINTERFACE:
+            case Opcode.INVOKEDYNAMIC:
                 index = readUnsignedShort();
                 try {
                     ci = mCp.getConstant(index);
@@ -659,6 +660,13 @@ public class CodeDisassembler {
                     ConstantInterfaceMethodInfo method = (ConstantInterfaceMethodInfo)ci;
                     className = method.getParentClass().getType().getFullName();
                     nameAndType = method.getNameAndType();
+                } else if (opcode == Opcode.INVOKEDYNAMIC) {
+                    // Read and ignore extra bytes.
+                    readShort();
+                    ConstantInterfaceMethodInfo method = (ConstantInterfaceMethodInfo)ci;
+                    className = method.getParentClass().getType().getFullName();
+                    nameAndType = method.getNameAndType();
+                    System.out.println(nameAndType);
                 } else {
                     if (!(ci instanceof ConstantMethodInfo)) {
                         error(opcode, "Invalid constant type for method invocation: " + ci);
@@ -1482,6 +1490,7 @@ public class CodeDisassembler {
                 // Opcodes with four operand bytes...
 
             case Opcode.INVOKEINTERFACE:
+            case Opcode.INVOKEDYNAMIC:
                 mAddress += 4;
                 break;
 
