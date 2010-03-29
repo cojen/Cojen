@@ -1,5 +1,5 @@
 /*
- *  Copyright 2004 Brian S O'Neill
+ *  Copyright 2004-2010 Brian S O'Neill
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
