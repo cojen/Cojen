@@ -37,8 +37,8 @@ import org.cojen.classfile.MethodInfo;
  * CodeBuilder.
  *
  * @author Brian S O'Neill
- * @see cojen.classfile.Opcode
- * @see cojen.classfile.CodeBuilder
+ * @see org.cojen.classfile.Opcode
+ * @see org.cojen.classfile.CodeBuilder
  */
 public class CodeAttr extends Attribute {
 

@@ -28,7 +28,7 @@ import org.cojen.classfile.constant.ConstantUTFInfo;
  * in section 4.7.2 of <i>The Java Virtual Machine Specification</i>.
  * 
  * @author Brian S O'Neill
- * @see cojen.classfile.ClassFile
+ * @see org.cojen.classfile.ClassFile
  */
 public class SourceFileAttr extends Attribute {
 
