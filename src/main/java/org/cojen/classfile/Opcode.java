@@ -211,7 +211,7 @@ public class Opcode {
     public final static byte INVOKESPECIAL = (byte)183;
     public final static byte INVOKESTATIC = (byte)184;
     public final static byte INVOKEINTERFACE = (byte)185;
-    public final static byte UNUSED = (byte)186;
+    public final static byte INVOKEDYNAMIC = (byte)186;
     public final static byte NEW = (byte)187;
     public final static byte NEWARRAY = (byte)188;
     public final static byte ANEWARRAY = (byte)189;
@@ -524,7 +524,7 @@ public class Opcode {
             "invokespecial",
             "invokestatic",
             "invokeinterface",
-            "unused",
+            "invokedynamic",
             "new",
             "newarray",
             "anewarray",
