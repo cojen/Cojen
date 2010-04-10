@@ -425,7 +425,7 @@ public class ConstantPool {
         case ConstantInfo.TAG_METHOD:
         case ConstantInfo.TAG_INTERFACE_METHOD:
         case ConstantInfo.TAG_NAME_AND_TYPE:
-            int index2 = data >> 16;
+            int index2 = data >>> 16;
             
             ConstantInfo ci2 = constants.get(index2);
             
