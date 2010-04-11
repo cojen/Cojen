@@ -31,10 +31,9 @@ import org.cojen.classfile.Location;
 import org.cojen.classfile.MethodInfo;
 
 /**
- * This class corresponds to the Code_attribute structure as defined in
- * section 4.7.4 of <i>The Java Virtual Machine Specification</i>.
- * To make it easier to create bytecode for the CodeAttr, use the 
- * CodeBuilder.
+ * This class corresponds to the Code_attribute structure as defined in <i>The
+ * Java Virtual Machine Specification</i>. To make it easier to create bytecode
+ * for the CodeAttr, use the CodeBuilder.
  *
  * @author Brian S O'Neill
  * @see org.cojen.classfile.Opcode

@@ -22,8 +22,8 @@ import org.cojen.classfile.ConstantInfo;
 import org.cojen.classfile.ConstantPool;
 
 /**
- * This class corresponds to the CONSTANT_InterfaceMethodRef_info structure as 
- * defined in section 4.4.2 of <i>The Java Virtual Machine Specification</i>.
+ * This class corresponds to the CONSTANT_InterfaceMethodRef_info structure as
+ * defined in <i>The Java Virtual Machine Specification</i>.
  * 
  * @author Brian S O'Neill
  */

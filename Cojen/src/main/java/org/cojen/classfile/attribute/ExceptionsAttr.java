@@ -27,7 +27,7 @@ import org.cojen.classfile.constant.ConstantClassInfo;
 
 /**
  * This class corresponds to the Exceptions_attribute structure as defined in
- * section 4.7.5 of <i>The Java Virtual Machine Specification</i>.
+ * <i>The Java Virtual Machine Specification</i>.
  * 
  * @author Brian S O'Neill
  */

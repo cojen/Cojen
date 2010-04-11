@@ -22,8 +22,8 @@ import java.io.IOException;
 import org.cojen.classfile.constant.ConstantClassInfo;
 
 /**
- * This class corresponds to the exception_table structure as defined in
- * section 4.7.4 of <i>The Java Virtual Machine Specification</i>.
+ * This class corresponds to the exception_table structure as defined in <i>The
+ * Java Virtual Machine Specification</i>.
  *
  * @author Brian S O'Neill
  */

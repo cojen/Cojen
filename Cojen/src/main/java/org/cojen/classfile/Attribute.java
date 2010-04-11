@@ -39,8 +39,8 @@ import org.cojen.classfile.attribute.UnknownAttr;
 import org.cojen.classfile.constant.ConstantUTFInfo;
 
 /**
- * This class corresponds to the attribute_info structure defined in section
- * 4.7 of <i>The Java Virtual Machine Specification</i>.
+ * This class corresponds to the attribute_info structure defined in <i>The
+ * Java Virtual Machine Specification</i>.
  *
  * @author Brian S O'Neill
  * @see ClassFile

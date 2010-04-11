@@ -24,7 +24,7 @@ import org.cojen.classfile.Descriptor;
 
 /**
  * This class corresponds to the CONSTANT_NameAndType_info structure as defined
- * in section 4.4.6 of <i>The Java Virtual Machine Specification</i>.
+ * in <i>The Java Virtual Machine Specification</i>.
  * 
  * @author Brian S O'Neill
  */

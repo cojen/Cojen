@@ -24,7 +24,7 @@ import org.cojen.classfile.TypeDesc;
 
 /**
  * This class corresponds to the CONSTANT_Class_info structure as defined in
- * section 4.4.1 of <i>The Java Virtual Machine Specification</i>.
+ * <i>The Java Virtual Machine Specification</i>.
  * 
  * @author Brian S O'Neill
  */

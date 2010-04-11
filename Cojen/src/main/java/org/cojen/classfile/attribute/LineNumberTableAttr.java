@@ -30,8 +30,8 @@ import org.cojen.classfile.FixedLocation;
 import org.cojen.classfile.Location;
 
 /**
- * This class corresponds to the LineNumberTable_attribute structure as
- * defined  in section 4.7.6 of <i>The Java Virtual Machine Specification</i>.
+ * This class corresponds to the LineNumberTable_attribute structure as defined
+ * in <i>The Java Virtual Machine Specification</i>.
  * 
  * @author Brian S O'Neill
  */

@@ -36,8 +36,8 @@ import org.cojen.classfile.TypeDesc;
 import org.cojen.classfile.constant.ConstantUTFInfo;
 
 /**
- * This class corresponds to the LocalVariableTable_attribute structure as 
- * defined in section 4.7.7 of <i>The Java Virtual Machine Specification</i>.
+ * This class corresponds to the LocalVariableTable_attribute structure as
+ * defined in <i>The Java Virtual Machine Specification</i>.
  * 
  * @author Brian S O'Neill
  */
