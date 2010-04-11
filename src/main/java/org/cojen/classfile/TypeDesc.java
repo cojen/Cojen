@@ -31,9 +31,9 @@ import org.cojen.util.WeakCanonicalSet;
 import org.cojen.util.WeakIdentityMap;
 
 /**
- * This class is used to build field and return type descriptor strings as 
- * defined in <i>The Java Virtual Machine Specification</i>, section 4.3.2.
- * TypeDesc instances are canonicalized and therefore "==" comparable.
+ * This class is used to build field and return type descriptor strings as
+ * defined in <i>The Java Virtual Machine Specification</i>.  TypeDesc
+ * instances are canonicalized and therefore "==" comparable.
  *
  * @author Brian S O'Neill
  */
@@ -275,8 +275,7 @@ public abstract class TypeDesc extends Descriptor implements Serializable {
     }
 
     /**
-     * Acquire a TypeDesc from a type descriptor. This syntax is described in
-     * section 4.3.2, Field Descriptors.
+     * Acquire a TypeDesc from a type descriptor.
      */
     public static TypeDesc forDescriptor(final String desc) throws IllegalArgumentException {
         TypeDesc type = (TypeDesc)cDescriptorsToInstances.get(desc);

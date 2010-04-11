@@ -46,9 +46,8 @@ import org.cojen.classfile.constant.ConstantClassInfo;
  * A class used to create Java class files. Call the writeTo method
  * to produce a class file.
  *
- * <p>See <i>The Java Virtual Machine Specification</i> (ISBN 0-201-63452-X)
- * for information on how class files are structured. Section 4.1 describes
- * the ClassFile structure.
+ * <p>See <i>The Java Virtual Machine Specification</i> for information on how
+ * class files are structured.
  * 
  * @author Brian S O'Neill
  */
