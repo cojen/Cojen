@@ -17,9 +17,8 @@
 package org.cojen.classfile;
 
 /**
- * A collection of opcode constants for creating class file byte code. These
- * opcodes are defined in chapter 6 of 
- * <i>The Java Virual Machine Specification</i>.
+ * A collection of opcode constants for creating class file byte code, as
+ * defined in <i>The Java Virual Machine Specification</i>.
  *
  * @author Brian S O'Neill
  * @see org.cojen.classfile.attribute.CodeAttr

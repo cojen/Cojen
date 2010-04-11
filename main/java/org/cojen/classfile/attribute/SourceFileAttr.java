@@ -24,8 +24,8 @@ import org.cojen.classfile.ConstantPool;
 import org.cojen.classfile.constant.ConstantUTFInfo;
 
 /**
- * This class corresponds to the SourceFile_attribute structure as defined 
- * in section 4.7.2 of <i>The Java Virtual Machine Specification</i>.
+ * This class corresponds to the SourceFile_attribute structure as defined in
+ * <i>The Java Virtual Machine Specification</i>.
  * 
  * @author Brian S O'Neill
  * @see org.cojen.classfile.ClassFile

@@ -28,8 +28,7 @@ import org.cojen.classfile.constant.ConstantClassInfo;
 import org.cojen.classfile.constant.ConstantUTFInfo;
 
 /**
- * This class corresponds to the InnerClasses_attribute structure introduced in
- * JDK1.1. It is not defined in the first edition of 
+ * This class corresponds to the InnerClasses_attribute structure as defined in
  * <i>The Java Virual Machine Specification</i>.
  * 
  * @author Brian S O'Neill

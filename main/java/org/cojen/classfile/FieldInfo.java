@@ -33,8 +33,8 @@ import org.cojen.classfile.attribute.SyntheticAttr;
 import org.cojen.classfile.constant.ConstantUTFInfo;
 
 /**
- * This class corresponds to the field_info structure as defined in
- * section 4.5 of <i>The Java Virtual Machine Specification</i>.
+ * This class corresponds to the field_info structure as defined in <i>The Java
+ * Virtual Machine Specification</i>.
  *
  * @author Brian S O'Neill
  * @see ClassFile

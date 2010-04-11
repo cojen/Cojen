@@ -23,7 +23,7 @@ import org.cojen.classfile.ConstantPool;
 
 /**
  * This class corresponds to the CONSTANT_Fieldref_info structure as defined in
- * section 4.4.2 of <i>The Java Virtual Machine Specification</i>.
+ * <i>The Java Virtual Machine Specification</i>.
  * 
  * @author Brian S O'Neill
  */

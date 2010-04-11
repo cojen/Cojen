@@ -23,7 +23,7 @@ import org.cojen.classfile.ConstantPool;
 
 /**
  * This class corresponds to the CONSTANT_Long_info structure as defined in
- * section 4.4.5 of <i>The Java Virtual Machine Specification</i>.
+ * <i>The Java Virtual Machine Specification</i>.
  * 
  * @author Brian S O'Neill
  */

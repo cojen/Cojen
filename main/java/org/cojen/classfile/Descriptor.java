@@ -17,8 +17,7 @@
 package org.cojen.classfile;
 
 /**
- * This class represents a descriptor. See section 4.3 of
- * <i>The Java Virtual Machine Specification</i>.
+ * Base class for type or method descriptors.
  *
  * @author Brian S O'Neill
  */

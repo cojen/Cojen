@@ -22,9 +22,8 @@ import org.cojen.classfile.Attribute;
 import org.cojen.classfile.ConstantPool;
 
 /**
- * This class corresponds to the Synthetic_attribute structure introduced in
- * JDK1.1. It is not defined in the first edition of 
- * <i>The Java Virual Machine Specification</i>.
+ * This class corresponds to the Synthetic_attribute as defined in <i>The Java
+ * Virual Machine Specification</i>.
  * 
  * @author Brian S O'Neill
  */

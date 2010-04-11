@@ -633,52 +633,74 @@ public interface CodeAssembler {
     // stack operation style instructions
 
     /**
-     * Generates code for the dup instruction.
+     * Generates code for the dup instruction, which duplicates the top word on
+     * the stack. For duplicating double and long types, use the dup2
+     * instruction.
      */
     void dup();
 
     /**
-     * Generates code for the dup_x1 instruction.
+     * Generates code for the dup_x1 instruction, which duplicates the top word
+     * on the stack and puts it two levels down. For duplicating double and
+     * long types, use the dup2_x1 instruction.
      */
     void dupX1();
 
     /**
-     * Generates code for the dup_x2 instruction.
+     * Generates code for the dup_x2 instruction, which duplicates the top word
+     * on the stack and puts it three levels down. For duplicating double and
+     * long types, use the dup2_x2 instruction.
      */
     void dupX2();
 
     /**
-     * Generates code for the dup2 instruction.
+     * Generates code for the dup2 instruction, which duplicates the top pair
+     * of words on the stack. For duplicating single-word types, like int and
+     * object references, use the dup instruction.
      */
     void dup2();
 
     /**
-     * Generates code for the dup2_x1 instruction.
+     * Generates code for the dup2_x1 instruction, which duplicates the top
+     * pair of words on the stack and puts it three levels down. For
+     * duplicating single-word types, like int and object references, use the
+     * dup_x1 instruction.
      */
     void dup2X1();
 
     /**
-     * Generates code for the dup2_x2 instruction.
+     * Generates code for the dup2_x2 instruction, which duplicates the top
+     * pair of words on the stack and puts it four levels down. For duplicating
+     * single-word types, like int and object references, use the dup_x2
+     * instruction.
      */
     void dup2X2();
 
     /**
-     * Generates code for the pop instruction.
+     * Generates code for the pop instruction, which simply discards the top
+     * word on the stack. For popping double and long types, use the pop2
+     * instruction.
      */
     void pop();
 
     /**
-     * Generates code for the pop2 instruction.
+     * Generates code for the pop2 instruction, which simply discards the top
+     * two words on the stack. For popping single-word types, like int and
+     * object references, use the pop instruction.
      */
     void pop2();
 
     /**
-     * Generates code for the swap instruction.
+     * Generates code for the swap instruction, which swaps to the top two
+     * words on the stack. For swapping double and long types, use the swap2
+     * pseudo instruction.
      */
     void swap();
 
     /**
-     * Generates code for a swap2 instruction.
+     * Generates code for a swap2 instruction, which swaps to the top two pair
+     * of words on the stack. For swapping single-word types, like int and
+     * object references, use the swap instruction.
      */
     void swap2();
 
@@ -810,21 +832,55 @@ public interface CodeAssembler {
     // math instructions
 
     /**
-     * Generates code for either a unary or binary math operation on one
-     * or two values pushed on the stack.
-     * <p>
-     * Pass in an opcode from the the Opcode class. The only valid math
-     * opcodes are:
+     * Generates code for either a unary or binary math operation on one or two
+     * values pushed on the stack. Pass in one of the following math opcodes:
      *
      * <pre>
-     * IADD, ISUB, IMUL, IDIV, IREM, INEG, IAND, IOR, IXOR, ISHL, ISHR, IUSHR
-     * LADD, LSUB, LMUL, LDIV, LREM, LNEG, LAND, LOR, LXOR, LSHL, LSHR, LUSHR
-     * FADD, FSUB, FMUL, FDIV, FREM, FNEG
-     * DADD, DSUB, DMUL, DDIV, DREM, DNEG
+     * IADD  - add top two int operands
+     * ISUB  - subtract top two int operands (topmost is subtrahend)
+     * IMUL  - multiply top two int operands
+     * IDIV  - divide top two int operands (topmost is divisor)
+     * IREM  - remainder of top two int operands (topmost is divisor)
+     * INEG  - negate top int operand
+     * IAND  - logical 'and' of top two int operands
+     * IOR   - logical 'or' of top two int operands
+     * IXOR  - logical 'exclusive or' of top two int operands
+     * ISHL  - shift left of int operand by topmost int shift amount
+     * ISHR  - signed shift right of int operand by topmost int shift amount
+     * IUSHR - unsigned shift right of int operand by topmost int shift amount
      *
-     * LCMP
-     * FCMPG, FCMPL
-     * DCMPG, DCMPL
+     * LADD  - add top two long operands
+     * LSUB  - subtract top two long operands (topmost is subtrahend)
+     * LMUL  - multiply top two long operands
+     * LDIV  - divide top two long operands (topmost is divisor)
+     * LREM  - remainder of top two long operands (topmost is divisor)
+     * LNEG  - negate top long operand
+     * LAND  - logical 'and' of top two long operands
+     * LOR   - logical 'or' of top two long operands
+     * LXOR  - logical 'exclusive or' of top two long operands
+     * LSHL  - shift left of long operand by topmost int shift amount
+     * LSHR  - signed shift right of long operand by topmost int shift amount
+     * LUSHR - unsigned shift right of long operand by topmost int shift amount
+     *
+     * FADD  - add top two float operands
+     * FSUB  - subtract top two float operands (topmost is subtrahend)
+     * FMUL  - multiply top two float operands
+     * FDIV  - divide top two float operands (topmost is divisor)
+     * FREM  - remainder of top two float operands (topmost is divisor)
+     * FNEG  - negate top float operand
+     *
+     * DADD  - add top two double operands
+     * DSUB  - subtract top two double operands (topmost is subtrahend)
+     * DMUL  - multiply top two double operands
+     * DDIV  - divide top two double operands (topmost is divisor)
+     * DREM  - remainder of top two double operands (topmost is divisor)
+     * DNEG  - negate top double operand
+     *
+     * LCMP  - compare top two long operands, yielding an int -1, 0 or 1
+     * FCMPG - compare top two float operands, yielding an int -1, 0 or 1 (NaN -> 1)
+     * FCMPL - compare top two float operands, yielding an int -1, 0 or 1 (NaN -> -1)
+     * DCMPG - compare top two double operands, yielding an int -1, 0 or 1 (NaN -> 1)
+     * DCMPL - compare top two double operands, yielding an int -1, 0 or 1 (NaN -> -1)
      * </pre>
      *
      * A not operation (~) is performed by doing a loadConstant with either

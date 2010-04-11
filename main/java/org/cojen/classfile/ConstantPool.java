@@ -39,8 +39,8 @@ import org.cojen.classfile.constant.ConstantStringInfo;
 import org.cojen.classfile.constant.ConstantUTFInfo;
 
 /**
- * This class corresponds to the constant_pool structure as defined in
- * section 4.4 of <i>The Java Virtual Machine Specification</i>.
+ * This class corresponds to the constant_pool structure as defined in <i>The
+ * Java Virtual Machine Specification</i>.
  * 
  * <p>ConstantPool entries are not written out in the order in which they were
  * added to it. Instead, their ordering is changed such that String, Integer
