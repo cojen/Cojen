@@ -46,7 +46,6 @@ public class StackMapTableAttr extends Attribute {
         super(cp, name);
 
         int size = din.readUnsignedShort();
-        List<StackMapFrame> frames = new ArrayList<StackMapFrame>(size);
 
         InitialFrame first = new InitialFrame();
         StackMapFrame last = first;

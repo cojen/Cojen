@@ -41,9 +41,7 @@ public class SyntheticAttr extends Attribute {
         throws IOException
     {
         super(cp, name);
-        if (length > 0) {
-            din.skipBytes(length);
-        }
+        skipBytes(din, length);
     }
 
     public int getLength() {
