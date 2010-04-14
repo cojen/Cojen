@@ -604,7 +604,7 @@ class InstructionList implements CodeBuffer {
 
                         if (subAdjust == null) {
                             int newDepth = stackResolve(stackDepth, target, subAdjustMap);
-                            subAdjust = new Integer(newDepth - stackDepth);
+                            subAdjust = newDepth - stackDepth;
                             subAdjustMap.put(target, subAdjust);
                         }
 

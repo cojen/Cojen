@@ -53,9 +53,7 @@ public class EnclosingMethodAttr extends Attribute {
         super(cp, name);
         mClass = (ConstantClassInfo)cp.getConstant(din.readUnsignedShort());
         mMethod = (ConstantNameAndTypeInfo)cp.getConstant(din.readUnsignedShort());
-        if ((length -= 4) > 0) {
-            din.skipBytes(length);
-        }
+        skipBytes(din, length - 4);
     }
 
     public ConstantClassInfo getEnclosingClass() {

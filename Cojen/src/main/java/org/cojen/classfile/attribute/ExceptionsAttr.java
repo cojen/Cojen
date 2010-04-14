@@ -58,9 +58,7 @@ public class ExceptionsAttr extends Attribute {
             addException(info);
         }
 
-        if (length > 0) {
-            din.skipBytes(length);
-        }
+        skipBytes(din, length);
     }
 
     public ConstantClassInfo[] getExceptions() {

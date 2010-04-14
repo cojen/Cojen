@@ -143,6 +143,20 @@ public abstract class Attribute {
         return attrFactory.createAttribute(cp, name, length, din);
     }
 
+    /**
+     * @return false if EOF reached
+     */
+    protected static boolean skipBytes(DataInput din, int amount) throws IOException {
+        while (amount > 0) {
+            int skipped = din.skipBytes(amount);
+            if (skipped <= 0) {
+                return false;
+            }
+            amount -= skipped;
+        }
+        return true;
+    }
+
     private static class Factory implements AttributeFactory {
         private final AttributeFactory mAttrFactory;
 

@@ -376,10 +376,7 @@ public class ConstantPool {
                 throw new IOException("Invalid constant pool tag: " + tag);
             }
 
-            if (constant instanceof ConstantInfo) {
-                ((ConstantInfo)constant).mIndex = index;
-            }
-
+            constant.mIndex = index;
             constants.set(index, constant);
             index += entryCount;
         }

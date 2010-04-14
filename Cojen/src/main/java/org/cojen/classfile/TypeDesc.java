@@ -663,7 +663,7 @@ public abstract class TypeDesc extends Descriptor implements Serializable {
 
         // Since cClassesToInstances may reference this instance, softly
         // reference back to class to allow it to be garbage collected.
-        private transient SoftReference<Class> mClassRef;
+        private transient volatile SoftReference<Class> mClassRef;
 
         ObjectType(String desc, String name) {
             super(desc);
