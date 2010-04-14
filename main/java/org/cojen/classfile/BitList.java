@@ -74,7 +74,7 @@ final class BitList implements Cloneable {
                 return (i << 5) + Integer.numberOfLeadingZeros(v);
             }
             if (++i >= data.length) {
-                return data.length << 32;
+                return data.length << 5;
             }
             v = ~data[i];
         }

@@ -46,9 +46,7 @@ public class SignatureAttr extends Attribute {
     {
         super(cp, name);
         int index = din.readUnsignedShort();
-        if ((length -= 2) > 0) {
-            din.skipBytes(length);
-        }
+        skipBytes(din, length - 2);
         mSignature = (ConstantUTFInfo) cp.getConstant(index);
     }
 

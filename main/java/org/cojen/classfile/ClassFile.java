@@ -396,7 +396,9 @@ public class ClassFile {
         mModifiers = Modifiers.PUBLIC;
 
         mThisClass = mCp.addConstantClass(className);
-        mSuperClass = mCp.addConstantClass(superClassName);
+        if (superClassName != null) {
+            mSuperClass = mCp.addConstantClass(superClassName);
+        }
 
         mClassName = className;
         mSuperClassName = superClassName;

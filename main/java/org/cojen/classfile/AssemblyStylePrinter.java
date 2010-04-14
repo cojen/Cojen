@@ -1145,8 +1145,8 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
         // Gather labels for any exception handlers.
         for (int i = mExceptionHandlers.length - 1; i >= 0; i--) {
             ExceptionHandler handler = mExceptionHandlers[i];
-            createLabel(new Integer(handler.getStartLocation().getLocation()));
-            createLabel(new Integer(handler.getEndLocation().getLocation()));
+            createLabel(handler.getStartLocation().getLocation());
+            createLabel(handler.getEndLocation().getLocation());
             int labelKey = handler.getCatchLocation().getLocation();
             createLabel(labelKey);
             List<ExceptionHandler> list = mCatchLocations.get(labelKey);
@@ -1186,12 +1186,12 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
             case Opcode.IF_ICMPGE:
             case Opcode.IF_ICMPGT:
             case Opcode.IF_ICMPLE:
-                createLabel(new Integer(mAddress + readShort()));
+                createLabel(mAddress + readShort());
                 break;
 
             case Opcode.GOTO_W:
             case Opcode.JSR_W:
-                createLabel(new Integer(mAddress + readInt()));
+                createLabel(mAddress + readInt());
                 break;
 
             case Opcode.TABLESWITCH:
@@ -1205,7 +1205,7 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
                 // Read the default location.
                 
 
-                createLabel(new Integer(opcodeAddress + readInt()));
+                createLabel(opcodeAddress + readInt());
                 
                 if (opcode == Opcode.TABLESWITCH) {
                     int lowValue = readInt();
@@ -1214,7 +1214,7 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
 
                     for (int i=0; i<caseCount; i++) {
                         // Read the branch location.
-                        createLabel(new Integer(opcodeAddress + readInt()));
+                        createLabel(opcodeAddress + readInt());
                     }
                 } else {
                     int caseCount = readInt();
@@ -1223,7 +1223,7 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
                         // Skip the case value.
                         mAddress += 4;
                         // Read the branch location.
-                        createLabel(new Integer(opcodeAddress + readInt()));
+                        createLabel(opcodeAddress + readInt());
                     }
                 }
                 break;
@@ -1423,7 +1423,7 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
     }
 
     private String getLabel(int address) {
-        Object label = mLabels.get(new Integer(address));
+        Object label = mLabels.get(address);
         if (label == null || (!(label instanceof String))) {
             return "L?_" + address;
         } else {
@@ -1623,7 +1623,7 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
      *   - non-final
      *   - transient
      */
-    private class MemberComparator implements Comparator<Object> {
+    private static class MemberComparator implements Comparator<Object> {
         public int compare(Object a, Object b) {
             Modifiers aFlags, bFlags;
 
