@@ -204,9 +204,6 @@ public class RuntimeClassFile extends ClassFile {
         }
 
         if (explicit) {
-            if (!loader.reserveName(className, true)) {
-                throw new IllegalArgumentException("Class already defined: " + className);
-            }
             return new LoaderAndName(loader, className);
         }
 
