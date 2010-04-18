@@ -169,6 +169,13 @@ public class RuntimeClassFile extends ClassFile {
         return mLoader.define(getClassName(), bytes);
     }
 
+    /**
+     * Returns the ClassLoader used by defined classes.
+     */
+    public ClassLoader getClassLoader() {
+        return mLoader;
+    }
+
     private static LoaderAndName loaderAndName(String className,
                                                ClassLoader parentLoader,
                                                ProtectionDomain domain,
