@@ -666,7 +666,6 @@ public class CodeDisassembler {
                     ConstantInterfaceMethodInfo method = (ConstantInterfaceMethodInfo)ci;
                     className = method.getParentClass().getType().getFullName();
                     nameAndType = method.getNameAndType();
-                    System.out.println(nameAndType);
                 } else {
                     if (!(ci instanceof ConstantMethodInfo)) {
                         error(opcode, "Invalid constant type for method invocation: " + ci);

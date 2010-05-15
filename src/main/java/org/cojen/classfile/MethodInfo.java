@@ -353,7 +353,7 @@ public class MethodInfo {
                 mAttributes.remove(mCode);
             }
             mCode = (CodeAttr)attr;
-            mCode.initialStackMapFrame(this);
+            mCode.setInitialStackMapFrame(this);
         } else if (attr instanceof ExceptionsAttr) {
             if (mExceptions != null) {
                 mAttributes.remove(mExceptions);

@@ -40,6 +40,11 @@ public class StackMapTableAttr extends Attribute {
     private int mSize;
     private int mLength;
 
+    public StackMapTableAttr(ConstantPool cp) {
+        super(cp, STACK_MAP_TABLE);
+        mInitialFrame = new InitialFrame();
+    }
+
     public StackMapTableAttr(ConstantPool cp, String name, int length, DataInput din)
         throws IOException
     {
@@ -100,7 +105,7 @@ public class StackMapTableAttr extends Attribute {
         return mInitialFrame;
     }
 
-    public void initialStackMapFrame(MethodInfo method) {
+    public void setInitialFrame(MethodInfo method) {
         mInitialFrame.set(getConstantPool(), method);
     }
 
@@ -131,7 +136,8 @@ public class StackMapTableAttr extends Attribute {
         }
 
         private final StackMapFrame mPrev;
-        private StackMapFrame mNext;
+
+        StackMapFrame mNext;
         int mOffset = -1;
 
         StackMapFrame(StackMapFrame prev) {
@@ -140,11 +146,15 @@ public class StackMapTableAttr extends Attribute {
             }
         }
 
-        public abstract int getLength();
+        /**
+         * Returns number of bytes required to encode frame in class file.
+         */
+        abstract int getLength();
 
-        public abstract int getOffsetDelta();
-
-        public int getOffset() {
+        /**
+         * Returns the instruction offset for which this frame applies to.
+         */
+        public final int getOffset() {
             if (mOffset < 0) {
                 if (mPrev == null || mPrev instanceof InitialFrame) {
                     mOffset = getOffsetDelta();
@@ -155,15 +165,24 @@ public class StackMapTableAttr extends Attribute {
             return mOffset;
         }
 
+        abstract int getOffsetDelta();
+
+        /**
+         * Returns verification info for all local variables at this frame.
+         */
         public abstract VerificationTypeInfo[] getLocalInfos();
 
+        /**
+         * Returns verification info for all stack variables at this
+         * frame. Element 0 is the bottom of the stack.
+         */
         public abstract VerificationTypeInfo[] getStackItemInfos();
 
-        public StackMapFrame getPrevious() {
+        public final StackMapFrame getPrevious() {
             return mPrev;
         }
 
-        public StackMapFrame getNext() {
+        public final StackMapFrame getNext() {
             return mNext;
         }
 
@@ -178,14 +197,17 @@ public class StackMapTableAttr extends Attribute {
             mOffset = 0;
         }
 
+        @Override
         public int getLength() {
             return 0;
         }
 
+        @Override
         public int getOffsetDelta() {
             return 0;
         }
 
+        @Override
         public VerificationTypeInfo[] getLocalInfos() {
             if (mLocalInfos == null) {
                 return VerificationTypeInfo.EMPTY_ARRAY;
@@ -193,10 +215,12 @@ public class StackMapTableAttr extends Attribute {
             return mLocalInfos.clone();
         }
 
+        @Override
         public VerificationTypeInfo[] getStackItemInfos() {
             return VerificationTypeInfo.EMPTY_ARRAY;
         }
 
+        @Override
         public void writeTo(DataOutput dout) {
         }
 
@@ -235,22 +259,27 @@ public class StackMapTableAttr extends Attribute {
             mOffsetDelta = offsetDelta;
         }
 
+        @Override
         public int getLength() {
             return 1;
         }
 
+        @Override
         public int getOffsetDelta() {
             return mOffsetDelta;
         }
 
+        @Override
         public VerificationTypeInfo[] getLocalInfos() {
             return getPrevious().getLocalInfos();
         }
 
+        @Override
         public VerificationTypeInfo[] getStackItemInfos() {
             return VerificationTypeInfo.EMPTY_ARRAY;
         }
 
+        @Override
         public void writeTo(DataOutput dout) throws IOException {
             dout.writeByte(mOffsetDelta);
         }
@@ -269,22 +298,27 @@ public class StackMapTableAttr extends Attribute {
             mStackItemInfo = VerificationTypeInfo.read(cp, din);
         }
 
+        @Override
         public int getLength() {
             return 1 + mStackItemInfo.getLength();
         }
 
+        @Override
         public int getOffsetDelta() {
             return mOffsetDelta;
         }
 
+        @Override
         public VerificationTypeInfo[] getLocalInfos() {
             return getPrevious().getLocalInfos();
         }
 
+        @Override
         public VerificationTypeInfo[] getStackItemInfos() {
             return new VerificationTypeInfo[]{mStackItemInfo};
         }
 
+        @Override
         public void writeTo(DataOutput dout) throws IOException {
             dout.writeByte(64 + mOffsetDelta);
             mStackItemInfo.writeTo(dout);
@@ -303,22 +337,27 @@ public class StackMapTableAttr extends Attribute {
             mStackItemInfo = VerificationTypeInfo.read(cp, din);
         }
 
+        @Override
         public int getLength() {
             return 3 + mStackItemInfo.getLength();
         }
 
+        @Override
         public int getOffsetDelta() {
             return mOffsetDelta;
         }
 
+        @Override
         public VerificationTypeInfo[] getLocalInfos() {
             return getPrevious().getLocalInfos();
         }
 
+        @Override
         public VerificationTypeInfo[] getStackItemInfos() {
             return new VerificationTypeInfo[]{mStackItemInfo};
         }
 
+        @Override
         public void writeTo(DataOutput dout) throws IOException {
             dout.writeByte(257);
             dout.writeShort(mOffsetDelta);
@@ -338,14 +377,17 @@ public class StackMapTableAttr extends Attribute {
             mChop = chop;
         }
 
+        @Override
         public int getLength() {
             return 3;
         }
 
+        @Override
         public int getOffsetDelta() {
             return mOffsetDelta;
         }
 
+        @Override
         public VerificationTypeInfo[] getLocalInfos() {
             if (mLocalInfos == null) {
                 VerificationTypeInfo[] prevInfos = getPrevious().getLocalInfos();
@@ -356,10 +398,12 @@ public class StackMapTableAttr extends Attribute {
             return mLocalInfos.clone();
         }
 
+        @Override
         public VerificationTypeInfo[] getStackItemInfos() {
             return VerificationTypeInfo.EMPTY_ARRAY;
         }
 
+        @Override
         public void writeTo(DataOutput dout) throws IOException {
             dout.writeByte(251 - mChop);
             dout.writeShort(mOffsetDelta);
@@ -374,22 +418,27 @@ public class StackMapTableAttr extends Attribute {
             mOffsetDelta = din.readUnsignedShort();
         }
 
+        @Override
         public int getLength() {
             return 3;
         }
 
+        @Override
         public int getOffsetDelta() {
             return mOffsetDelta;
         }
 
+        @Override
         public VerificationTypeInfo[] getLocalInfos() {
             return getPrevious().getLocalInfos();
         }
 
+        @Override
         public VerificationTypeInfo[] getStackItemInfos() {
             return VerificationTypeInfo.EMPTY_ARRAY;
         }
 
+        @Override
         public void writeTo(DataOutput dout) throws IOException {
             dout.writeByte(251);
             dout.writeShort(mOffsetDelta);
@@ -410,6 +459,7 @@ public class StackMapTableAttr extends Attribute {
             mAppendInfos = VerificationTypeInfo.read(cp, din, numLocals);
         }
 
+        @Override
         public int getLength() {
             int length = 3;
             for (VerificationTypeInfo info : mAppendInfos) {
@@ -418,10 +468,12 @@ public class StackMapTableAttr extends Attribute {
             return length;
         }
 
+        @Override
         public int getOffsetDelta() {
             return mOffsetDelta;
         }
 
+        @Override
         public VerificationTypeInfo[] getLocalInfos() {
             if (mLocalInfos == null) {
                 VerificationTypeInfo[] prevInfos = getPrevious().getLocalInfos();
@@ -434,10 +486,12 @@ public class StackMapTableAttr extends Attribute {
             return mLocalInfos.clone();
         }
 
+        @Override
         public VerificationTypeInfo[] getStackItemInfos() {
             return VerificationTypeInfo.EMPTY_ARRAY;
         }
 
+        @Override
         public void writeTo(DataOutput dout) throws IOException {
             dout.writeByte(251 + mAppendInfos.length);
             dout.writeShort(mOffsetDelta);
@@ -461,6 +515,7 @@ public class StackMapTableAttr extends Attribute {
             mStackItemInfos = VerificationTypeInfo.read(cp, din, numStackItems);
         }
 
+        @Override
         public int getLength() {
             int length = 7;
             for (VerificationTypeInfo info : mLocalInfos) {
@@ -472,18 +527,22 @@ public class StackMapTableAttr extends Attribute {
             return length;
         }
 
+        @Override
         public int getOffsetDelta() {
             return mOffsetDelta;
         }
 
+        @Override
         public VerificationTypeInfo[] getLocalInfos() {
             return mLocalInfos.clone();
         }
 
+        @Override
         public VerificationTypeInfo[] getStackItemInfos() {
             return mStackItemInfos.clone();
         }
 
+        @Override
         public void writeTo(DataOutput dout) throws IOException {
             dout.writeByte(255);
             dout.writeShort(mOffsetDelta);
@@ -562,10 +621,16 @@ public class StackMapTableAttr extends Attribute {
         VerificationTypeInfo() {
         }
 
-        public int getLength() {
+        /**
+         * Returns number of bytes required to encode info in class file.
+         */
+        int getLength() {
             return 1;
         }
 
+        /**
+         * Returns variable type, which is null if unknown or not applicable.
+         */
         public abstract TypeDesc getType();
 
         /**
@@ -603,6 +668,7 @@ public class StackMapTableAttr extends Attribute {
         private TopVariableInfo() {
         }
 
+        @Override
         public TypeDesc getType() {
             return null;
         }
@@ -612,6 +678,7 @@ public class StackMapTableAttr extends Attribute {
             return true;
         }
 
+        @Override
         public void writeTo(DataOutput dout) throws IOException {
             dout.writeByte(0);
         }
@@ -628,10 +695,12 @@ public class StackMapTableAttr extends Attribute {
         private IntegerVariableInfo() {
         }
 
+        @Override
         public TypeDesc getType() {
             return TypeDesc.INT;
         }
 
+        @Override
         public void writeTo(DataOutput dout) throws IOException {
             dout.writeByte(1);
         }
@@ -643,10 +712,12 @@ public class StackMapTableAttr extends Attribute {
         private FloatVariableInfo() {
         }
 
+        @Override
         public TypeDesc getType() {
             return TypeDesc.FLOAT;
         }
 
+        @Override
         public void writeTo(DataOutput dout) throws IOException {
             dout.writeByte(2);
         }
@@ -658,10 +729,12 @@ public class StackMapTableAttr extends Attribute {
         private LongVariableInfo() {
         }
 
+        @Override
         public TypeDesc getType() {
             return TypeDesc.LONG;
         }
 
+        @Override
         public void writeTo(DataOutput dout) throws IOException {
             dout.writeByte(4);
         }
@@ -673,10 +746,12 @@ public class StackMapTableAttr extends Attribute {
         private DoubleVariableInfo() {
         }
 
+        @Override
         public TypeDesc getType() {
             return TypeDesc.DOUBLE;
         }
 
+        @Override
         public void writeTo(DataOutput dout) throws IOException {
             dout.writeByte(3);
         }
@@ -688,10 +763,12 @@ public class StackMapTableAttr extends Attribute {
         private NullVariableInfo() {
         }
 
+        @Override
         public TypeDesc getType() {
             return null;
         }
 
+        @Override
         public void writeTo(DataOutput dout) throws IOException {
             dout.writeByte(5);
         }
@@ -708,6 +785,7 @@ public class StackMapTableAttr extends Attribute {
         private UninitThisVariableInfo() {
         }
 
+        @Override
         public TypeDesc getType() {
             return null;
         }
@@ -722,6 +800,7 @@ public class StackMapTableAttr extends Attribute {
             return true;
         }
 
+        @Override
         public void writeTo(DataOutput dout) throws IOException {
             dout.writeByte(6);
         }
@@ -748,10 +827,12 @@ public class StackMapTableAttr extends Attribute {
             return 3;
         }
 
+        @Override
         public TypeDesc getType() {
             return mClassInfo.getType();
         }
 
+        @Override
         public void writeTo(DataOutput dout) throws IOException {
             dout.writeByte(7);
             dout.writeShort(mClassInfo.getIndex());
@@ -770,6 +851,7 @@ public class StackMapTableAttr extends Attribute {
             return 3;
         }
 
+        @Override
         public TypeDesc getType() {
             return null;
         }
@@ -779,6 +861,7 @@ public class StackMapTableAttr extends Attribute {
             return true;
         }
 
+        @Override
         public void writeTo(DataOutput dout) throws IOException {
             dout.writeByte(8);
             dout.writeShort(mOffset);
