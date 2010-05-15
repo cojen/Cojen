@@ -208,12 +208,11 @@ public class CodeAttr extends Attribute {
         return mStackMapTable;
     }
 
-    public void initialStackMapFrame(MethodInfo method) {
+    public void setInitialStackMapFrame(MethodInfo method) {
         if (mStackMapTable == null) {
-            // FIXME: add one?
-        } else {
-            mStackMapTable.initialStackMapFrame(method);
+            mStackMapTable = new StackMapTableAttr(getConstantPool());
         }
+        mStackMapTable.setInitialFrame(method);
     }
 
     public void addAttribute(Attribute attr) {
