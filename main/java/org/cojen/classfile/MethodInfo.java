@@ -38,8 +38,9 @@ import org.cojen.classfile.constant.ConstantUTFInfo;
 
 /**
  * This class corresponds to the method_info data structure as defined in
- * <i>The Java Virtual Machine Specification</i>.  To make it easier to create
- * bytecode for a method's CodeAttr, the CodeBuilder class is provided.
+ * <i>The Java Virtual Machine Specification</i>. Call {@link #newCodeBuilder}
+ * to obtain a {@link CodeBuilder} instance for adding instructions to this
+ * method.
  * 
  * @author Brian S O'Neill
  * @see ClassFile
@@ -67,8 +68,8 @@ public class MethodInfo {
     MethodInfo(ClassFile parent,
                Modifiers modifiers,
                String name,
-               MethodDesc desc) {
-
+               MethodDesc desc)
+    {
         mParent = parent;
         mCp = parent.getConstantPool();
         mName = name;
@@ -86,8 +87,8 @@ public class MethodInfo {
     private MethodInfo(ClassFile parent,
                        int modifier,
                        ConstantUTFInfo nameConstant,
-                       ConstantUTFInfo descConstant) {
-
+                       ConstantUTFInfo descConstant)
+    {
         mParent = parent;
         mCp = parent.getConstantPool();
         mName = nameConstant.getValue();
@@ -97,7 +98,30 @@ public class MethodInfo {
         mNameConstant = nameConstant;
         mDescriptorConstant = descConstant;
     }
-    
+
+    /**
+     * Returns a new CodeBuilder instance for adding instructions to this
+     * method.
+     */
+    public CodeBuilder newCodeBuilder() {
+        return new CodeBuilder(this);
+    }
+
+    /**
+     * Returns a new CodeBuilder instance for adding instructions to this
+     * method.
+     *
+     * @param saveLineNumberInfo When set false, all calls to {@link
+     * CodeBuilder#mapLineNumber} are ignored. By default, this value is true.
+     * @param saveLocalVariableInfo When set true, all local variable usage
+     * information is saved in the ClassFile. By default, this value is false.
+     */
+    public CodeBuilder newCodeBuilder(boolean saveLineNumberInfo,
+                                      boolean saveLocalVariableInfo)
+    {
+        return new CodeBuilder(this, saveLineNumberInfo, saveLocalVariableInfo);
+    }
+
     /**
      * Returns the parent ClassFile for this MethodInfo.
      */
