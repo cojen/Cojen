@@ -21,9 +21,11 @@ import org.cojen.classfile.constant.ConstantClassInfo;
 import org.cojen.classfile.constant.ConstantFieldInfo;
 
 /**
- * This class is used as an aid in generating code for a method.
- * It controls the max stack, local variable allocation, labels and bytecode.
- * 
+ * CodeBuilder is used for adding instructions to a method, but hides many
+ * low-level details of the virtual machine instruction set. Instructions are
+ * not generated until the enclosing {@link ClassFile} is written or {@link
+ * RuntimeClassFile} is defined.
+ *
  * @author Brian S O'Neill
  */
 public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, CodeAssembler {
@@ -53,16 +55,15 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
      * Construct a CodeBuilder for the CodeAttr of the given MethodInfo. The
      * CodeBuffer for the CodeAttr is automatically set to this CodeBuilder.
      *
-     * @param saveLineNumberInfo When set false, all calls to mapLineNumber
-     * are ignored. By default, this value is true.
+     * @param saveLineNumberInfo When set false, all calls to {@link
+     * #mapLineNumber} are ignored. By default, this value is true.
      * @param saveLocalVariableInfo When set true, all local variable
      * usage information is saved in the ClassFile. By default, this value
      * is false.
-     * @see #mapLineNumber
      */
     public CodeBuilder(MethodInfo info, boolean saveLineNumberInfo,
-                       boolean saveLocalVariableInfo) {
-
+                       boolean saveLocalVariableInfo)
+    {
         String target = info.getClassFile().getTarget();
         if ("1.0".equals(target)) {
             mTarget = 0x00010000;
@@ -205,6 +206,10 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
         }
 
         return localVar;
+    }
+
+    public LocalVariable createLocalVariable(TypeDesc type) {
+        return createLocalVariable(null, type);
     }
 
     public Label createLabel() {

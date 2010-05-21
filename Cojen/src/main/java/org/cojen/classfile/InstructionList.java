@@ -29,6 +29,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.cojen.classfile.constant.ConstantClassInfo;
+import org.cojen.classfile.constant.ConstantMethodInfo;
 
 /**
  * The InstructionList class is used by the CodeBuilder to perform lower-level
@@ -1268,7 +1269,9 @@ class InstructionList implements CodeBuffer {
      * Defines an instruction which calls the constructor of a new object.
      */
     public class InvokeConstructorInstruction extends InvokeInstruction {
-        public InvokeConstructorInstruction(ConstantInfo ctor, TypeDesc type, TypeDesc[] params) {
+        public InvokeConstructorInstruction(ConstantMethodInfo ctor,
+                                            TypeDesc type, TypeDesc[] params)
+        {
             super(Opcode.INVOKESPECIAL, ctor, null, params);
         }
     }
