@@ -32,6 +32,10 @@ public abstract class AbstractCodeAssembler implements CodeAssembler {
     protected AbstractCodeAssembler() {
     }
 
+    public LocalVariable createLocalVariable(TypeDesc type) {
+        return createLocalVariable(null, type);
+    }
+
     public void ifComparisonBranch(Location location, String choice, TypeDesc type) {
         boolean trueBranch = false;
         int length = choice.length();
@@ -134,7 +138,7 @@ public abstract class AbstractCodeAssembler implements CodeAssembler {
         TypeDesc[] paramTypes = defineMethod.getMethodDescriptor().getParameterTypes();
         LocalVariable[] paramVars = new LocalVariable[paramTypes.length];
         for (int i=paramVars.length; --i>=0; ) {
-            LocalVariable paramVar = createLocalVariable(null, paramTypes[i]);
+            LocalVariable paramVar = createLocalVariable(paramTypes[i]);
             storeLocal(paramVar);
             paramVars[i] = paramVar;
         }

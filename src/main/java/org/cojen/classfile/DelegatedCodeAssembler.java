@@ -47,6 +47,10 @@ public class DelegatedCodeAssembler implements CodeAssembler {
         return mAssembler.createLocalVariable(name, type);
     }
 
+    public LocalVariable createLocalVariable(TypeDesc type) {
+        return mAssembler.createLocalVariable(type);
+    }
+
     public Label createLabel() {
         return mAssembler.createLabel();
     }

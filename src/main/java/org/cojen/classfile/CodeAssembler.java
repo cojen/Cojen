@@ -41,10 +41,10 @@ public interface CodeAssembler {
     int getParameterCount();
 
     /**
-     * Returns a specific parameter, whose index lies within 0 to
-     * getParameterCount() - 1. The names of the LocalVariables returned by
-     * this method are initially set to null. It is encouraged that a name be
-     * provided.
+     * Returns a method input parameter by a zero-based index. Parameter zero
+     * always refers to the first parameter in the method signature. If
+     * defining a non-static method, the "this" variable is accessed by calling
+     * {@link #loadThis}.
      */
     LocalVariable getParameter(int index) throws IndexOutOfBoundsException;
 
@@ -58,6 +58,13 @@ public interface CodeAssembler {
      * store. 
      */
     LocalVariable createLocalVariable(String name, TypeDesc type);
+
+    /**
+     * Creates an unnamed LocalVariable.
+     *
+     * @param type The type of data that the requested LocalVariable can store.
+     */
+    LocalVariable createLocalVariable(TypeDesc type);
 
     /**
      * Creates a label, whose location must be set. To create a label and

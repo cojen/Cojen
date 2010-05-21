@@ -28,10 +28,10 @@ import org.cojen.classfile.constant.ConstantClassInfo;
  * @author Brian S O'Neill
  */
 public class ExceptionHandler<L extends Location> implements LocationRange<L> {
-    private L mStart;
-    private L mEnd;
-    private L mCatch;
-    private ConstantClassInfo mCatchType;
+    private final L mStart;
+    private final L mEnd;
+    private final L mCatch;
+    private final ConstantClassInfo mCatchType;
     
     /**
      * @param startLocation
