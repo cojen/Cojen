@@ -16,6 +16,9 @@
 
 package org.cojen.util;
 
+import java.util.Collection;
+import java.util.Map;
+
 /**
  * 
  *
@@ -39,6 +42,12 @@ public interface Cache<K, V> {
     boolean replace(K key, V oldValue, V newValue);
 
     V replace(K key, V value);
+
+    void copyKeysInto(Collection<? super K> c);
+
+    void copyValuesInto(Collection<? super V> c);
+
+    void copyEntriesInto(Collection<? super Map.Entry<K, V>> c);
 
     void clear();
 }
