@@ -49,6 +49,7 @@ import java.util.Set;
  * The iterators may return less entries than the amount reported by size().
  *
  * @author Brian S O'Neill
+ * @see WeakIdentityCache
  */
 public class WeakIdentityMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Cloneable {
 

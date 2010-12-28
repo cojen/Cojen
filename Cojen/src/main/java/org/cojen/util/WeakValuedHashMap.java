@@ -34,6 +34,7 @@ import java.util.Map;
  * 
  * @author Brian S O'Neill
  * @since 2.1
+ * @see WeakValueCache
  */
 public class WeakValuedHashMap<K, V> extends ReferencedValueHashMap<K, V> {
 

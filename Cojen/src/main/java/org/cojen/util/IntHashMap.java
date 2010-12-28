@@ -573,10 +573,9 @@ public class IntHashMap<V> extends AbstractMap<Integer, V>
      * IntHashMap collision list entry.
      */
     private static class Entry<V> implements Map.Entry<Integer, V> {
-        int key;
+        final int key;
         V value;
         Entry<V> next;
-        private Integer objectKey;
         
         Entry(int key, V value, Entry<V> next) {
             this.key = key;
@@ -591,7 +590,7 @@ public class IntHashMap<V> extends AbstractMap<Integer, V>
         // Map.Entry Ops 
         
         public Integer getKey() {
-            return (objectKey != null) ? objectKey : (objectKey = Integer.valueOf(key));
+            return key;
         }
         
         public V getValue() {
