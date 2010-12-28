@@ -159,7 +159,10 @@ public abstract class TypeDesc extends Descriptor implements Serializable {
                 ((ObjectType) type).setClass(clazz);
             }
 
-            type = cClassesToInstances.putIfAbsent(clazz, type);
+            TypeDesc existing = cClassesToInstances.putIfAbsent(clazz, type);
+            if (existing != null) {
+                type = existing;
+            }
         }
 
         return type;
