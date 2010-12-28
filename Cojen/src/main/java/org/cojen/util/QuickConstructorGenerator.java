@@ -64,7 +64,7 @@ import org.cojen.classfile.TypeDesc;
 public class QuickConstructorGenerator {
     // Map<factory class, Map<object type, factory instance>>
     @SuppressWarnings("unchecked")
-    private static Map<Class<?>, Map<Class<?>, Object>> cCache = new WeakIdentityMap();
+    private static Cache<Class<?>, Cache<Class<?>, Object>> cCache = new WeakIdentityCache(17);
 
     /**
      * Returns a factory instance for one type of object. Each method in the
@@ -105,9 +105,9 @@ public class QuickConstructorGenerator {
     public static synchronized <F> F getInstance(final Class<?> objectType,
                                                  final Class<F> factory)
     {
-        Map<Class<?>, Object> innerCache = cCache.get(factory);
+        Cache<Class<?>, Object> innerCache = cCache.get(factory);
         if (innerCache == null) {
-            innerCache = new SoftValuedHashMap();
+            innerCache = new SoftValueCache(5);
             cCache.put(factory, innerCache);
         }
         F instance = (F) innerCache.get(objectType);
@@ -125,7 +125,7 @@ public class QuickConstructorGenerator {
             throw new IllegalArgumentException("Factory must be an interface");
         }
 
-        final Map<Class<?>, Object> fInnerCache = innerCache;
+        final Cache<Class<?>, Object> fInnerCache = innerCache;
         return AccessController.doPrivileged(new PrivilegedAction<F>() {
             public F run() {
                 return getInstance(fInnerCache, objectType, factory);
@@ -133,7 +133,7 @@ public class QuickConstructorGenerator {
         });
     }
 
-    private static synchronized <F> F getInstance(Map<Class<?>, Object> innerCache,
+    private static synchronized <F> F getInstance(Cache<Class<?>, Object> innerCache,
                                                   Class<?> objectType, Class<F> factory)
     {
         String prefix = objectType.getName();

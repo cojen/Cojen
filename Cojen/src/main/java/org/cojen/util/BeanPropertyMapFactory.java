@@ -45,8 +45,8 @@ import java.util.TreeSet;
  * @since 2.1
  */
 public abstract class BeanPropertyMapFactory<B> {
-    private static final Map<Class, SoftReference<BeanPropertyMapFactory>> cFactories =
-        new WeakIdentityMap<Class, SoftReference<BeanPropertyMapFactory>>();
+    private static final Cache<Class, SoftReference<BeanPropertyMapFactory>> cFactories =
+        new WeakIdentityCache<Class, SoftReference<BeanPropertyMapFactory>>(17);
 
     /**
      * Returns a new or cached BeanPropertyMapFactory for the given class.

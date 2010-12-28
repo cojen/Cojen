@@ -70,8 +70,8 @@ public abstract class BeanPropertyAccessor<B> {
     private static final int HAS_WRITE_METHOD = 6;
 
     private static final
-        Map<PropertySet, Map<Class, SoftReference<BeanPropertyAccessor>>> cAccessors =
-        new HashMap<PropertySet, Map<Class, SoftReference<BeanPropertyAccessor>>>();
+        Map<PropertySet, Cache<Class, SoftReference<BeanPropertyAccessor>>> cAccessors =
+        new HashMap<PropertySet, Cache<Class, SoftReference<BeanPropertyAccessor>>>();
 
     /**
      * Returns a new or cached BeanPropertyAccessor for the given class.
@@ -82,9 +82,9 @@ public abstract class BeanPropertyAccessor<B> {
 
     public static <B> BeanPropertyAccessor<B> forClass(Class<B> clazz, PropertySet set) {
         synchronized (cAccessors) {
-            Map<Class, SoftReference<BeanPropertyAccessor>> accessors = cAccessors.get(set);
+            Cache<Class, SoftReference<BeanPropertyAccessor>> accessors = cAccessors.get(set);
             if (accessors == null) {
-                accessors = new WeakIdentityMap<Class, SoftReference<BeanPropertyAccessor>>();
+                accessors = new WeakIdentityCache<Class, SoftReference<BeanPropertyAccessor>>(17);
                 cAccessors.put(set, accessors);
             }
 
