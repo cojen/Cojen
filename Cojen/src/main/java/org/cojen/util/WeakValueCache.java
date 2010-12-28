@@ -18,6 +18,10 @@ package org.cojen.util;
 
 import java.lang.ref.WeakReference;
 
+import java.util.Collection;
+import java.util.Map;
+import static java.util.AbstractMap.SimpleImmutableEntry;
+
 /**
  * Simple thread-safe cache which evicts entries via a shared background
  * thread. Cache permits null keys, but not null values.
@@ -119,6 +123,44 @@ public class WeakValueCache<K, V> extends RefCache<K, V> {
             }
         }
         mSize = 0;
+    }
+
+    @Override
+    public synchronized void copyKeysInto(Collection<? super K> c) {
+        Entry<K, V>[] entries = mEntries;
+        for (int i=entries.length; --i>=0 ;) {
+            for (Entry<K, V> e = entries[i]; e != null; e = e.mNext) {
+                if (e.get() != null) {
+                    c.add(e.mKey);
+                }
+            }
+        }
+    }
+
+    @Override
+    public synchronized void copyValuesInto(Collection<? super V> c) {
+        Entry<K, V>[] entries = mEntries;
+        for (int i=entries.length; --i>=0 ;) {
+            for (Entry<K, V> e = entries[i]; e != null; e = e.mNext) {
+                V value = e.get();
+                if (value != null) {
+                    c.add(value);
+                }
+            }
+        }
+    }
+
+    @Override
+    public synchronized void copyEntriesInto(Collection<? super Map.Entry<K, V>> c) {
+        Entry<K, V>[] entries = mEntries;
+        for (int i=entries.length; --i>=0 ;) {
+            for (Entry<K, V> e = entries[i]; e != null; e = e.mNext) {
+                V value = e.get();
+                if (value != null) {
+                    c.add(new SimpleImmutableEntry<K, V>(e.mKey, value));
+                }
+            }
+        }
     }
 
     @Override
