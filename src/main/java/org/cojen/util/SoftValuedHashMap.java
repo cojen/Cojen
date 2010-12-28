@@ -33,6 +33,7 @@ import java.util.Map;
  * The iterators may return less entries than the amount reported by size().
  * 
  * @author Brian S O'Neill
+ * @see SoftValueCache
  */
 public class SoftValuedHashMap<K, V> extends ReferencedValueHashMap<K, V> {
 
