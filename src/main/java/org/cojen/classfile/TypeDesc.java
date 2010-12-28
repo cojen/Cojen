@@ -26,9 +26,10 @@ import java.lang.ref.SoftReference;
 import java.lang.reflect.Array;
 import java.util.Collections;
 import java.util.Map;
-import org.cojen.util.SoftValuedHashMap;
+import org.cojen.util.Cache;
+import org.cojen.util.SoftValueCache;
 import org.cojen.util.WeakCanonicalSet;
-import org.cojen.util.WeakIdentityMap;
+import org.cojen.util.WeakIdentityCache;
 
 /**
  * This class is used to build field and return type descriptor strings as
@@ -82,21 +83,20 @@ public abstract class TypeDesc extends Descriptor implements Serializable {
     final static WeakCanonicalSet<Descriptor> cInstances;
 
     // Cache that maps Classes to TypeDescs.
-    private final static Map<Class, TypeDesc> cClassesToInstances;
+    private final static Cache<Class, TypeDesc> cClassesToInstances;
 
     // Cache that maps String names to TypeDescs.
-    private final static Map<String, TypeDesc> cNamesToInstances;
+    private final static Cache<String, TypeDesc> cNamesToInstances;
 
     // Cache that maps String descriptors to TypeDescs.
-    private final static Map<String, TypeDesc> cDescriptorsToInstances;
+    private final static Cache<String, TypeDesc> cDescriptorsToInstances;
 
     static {
         cInstances = new WeakCanonicalSet<Descriptor>();
 
-        cClassesToInstances = Collections.synchronizedMap(new WeakIdentityMap<Class, TypeDesc>());
-        cNamesToInstances = Collections.synchronizedMap(new SoftValuedHashMap<String, TypeDesc>());
-        cDescriptorsToInstances = Collections.synchronizedMap
-            (new SoftValuedHashMap<String, TypeDesc>());
+        cClassesToInstances = new WeakIdentityCache<Class, TypeDesc>(17);
+        cNamesToInstances = new SoftValueCache<String, TypeDesc>(17);
+        cDescriptorsToInstances = new SoftValueCache<String, TypeDesc>(17);
 
         VOID = intern(new PrimitiveType("V", VOID_CODE));
         BOOLEAN = intern(new PrimitiveType("Z", BOOLEAN_CODE));
@@ -159,13 +159,7 @@ public abstract class TypeDesc extends Descriptor implements Serializable {
                 ((ObjectType) type).setClass(clazz);
             }
 
-            synchronized (cClassesToInstances) {
-                if (cClassesToInstances.containsKey(clazz)) {
-                    type = (TypeDesc)cClassesToInstances.get(clazz);
-                } else {
-                    cClassesToInstances.put(clazz, type);
-                }
-            }
+            type = cClassesToInstances.putIfAbsent(clazz, type);
         }
 
         return type;

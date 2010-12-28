@@ -48,7 +48,7 @@ public abstract class PatternMatcher<V> {
     private static final int[] NO_POSITIONS = new int[0];
 
     // Maps pattern sets to auto-generated classes.
-    private static Map cPatternMatcherClasses = new SoftValuedHashMap();
+    private static Cache cPatternMatcherClasses = new SoftValueCache(17);
 
     public static synchronized <V> PatternMatcher<V> forPatterns(Map<String, V> patternMap) {
         final Maker maker = new Maker(patternMap);

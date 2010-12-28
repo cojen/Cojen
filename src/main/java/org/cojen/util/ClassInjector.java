@@ -62,7 +62,7 @@ public class ClassInjector {
     private static final Random cRandom = new Random();
 
     // Weakly maps ClassLoaders to softly referenced internal ClassLoaders.
-    private static Map cLoaders = new WeakIdentityMap();
+    private static Cache cLoaders = new WeakIdentityCache(5);
 
     /**
      * Create a ClassInjector for defining one class. The parent ClassLoader

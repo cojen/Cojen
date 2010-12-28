@@ -93,10 +93,10 @@ import org.cojen.classfile.TypeDesc;
  */
 public class BeanComparator<T> implements Comparator<T>, Serializable {
     // Maps Rules to auto-generated Comparators.
-    private static Map cGeneratedComparatorCache;
+    private static Cache cGeneratedComparatorCache;
 
     static {
-        cGeneratedComparatorCache = new SoftValuedHashMap();
+        cGeneratedComparatorCache = new SoftValueCache(17);
     }
 
     /**

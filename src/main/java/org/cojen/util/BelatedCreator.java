@@ -72,12 +72,12 @@ import org.cojen.classfile.TypeDesc;
 public abstract class BelatedCreator<T, E extends Exception> {
     private static final String REF_FIELD_NAME = "ref";
 
-    private static final Map<Class<?>, Class<?>> cWrapperCache;
+    private static final Cache<Class<?>, Class<?>> cWrapperCache;
 
     private static final ExecutorService cThreadPool;
 
     static {
-        cWrapperCache = new SoftValuedHashMap();
+        cWrapperCache = new SoftValueCache(17);
         cThreadPool = Executors.newCachedThreadPool(new TFactory());
     }
 

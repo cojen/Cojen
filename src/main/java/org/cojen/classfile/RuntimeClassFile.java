@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.WeakHashMap;
 
 import java.security.Permission;
 import java.security.PermissionCollection;
@@ -37,8 +36,10 @@ import java.security.ProtectionDomain;
 
 import java.security.cert.Certificate;
 
+import org.cojen.util.Cache;
 import org.cojen.util.KeyFactory;
-import org.cojen.util.WeakValuedHashMap;
+import org.cojen.util.WeakKeyCache;
+import org.cojen.util.WeakValueCache;
 
 /**
  * Allows classes to be defined and loaded at runtime. A random number is
@@ -65,7 +66,7 @@ public class RuntimeClassFile extends ClassFile {
 
     private static final Random cRandom = new Random();
 
-    private static Map<Object, Loader> cLoaders = new WeakValuedHashMap<Object, Loader>();
+    private static Cache<Object, Loader> cLoaders = new WeakValueCache<Object, Loader>(11);
 
     private final Loader mLoader;
 
@@ -289,7 +290,7 @@ public class RuntimeClassFile extends ClassFile {
     }
 
     private static final class Loader extends ClassLoader {
-        private final Map<String, Boolean> mReservedNames = new WeakHashMap<String, Boolean>();
+        private final Cache<String, Boolean> mReservedNames = new WeakKeyCache<String, Boolean>(17);
         private final ProtectionDomain mDomain;
 
         Loader(ClassLoader parent, ProtectionDomain domain) {
