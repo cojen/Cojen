@@ -192,7 +192,7 @@ public class WeakCanonicalSet<T> extends AbstractSet<T> {
             for (Entry<T> old = oldEntries[i]; old != null; ) {
                 Entry<T> e = old;
                 old = old.mNext;
-                // Only copy entry if its value hasn't been cleared.
+                // Only copy entry if it hasn't been cleared.
                 if (e.get() != null) {
                     size++;
                     int index = (e.mHash & 0x7fffffff) % newCapacity;
@@ -216,7 +216,7 @@ public class WeakCanonicalSet<T> extends AbstractSet<T> {
             super(canonical, CacheEvictor.queue());
             mSet = set;
             mHash = hash;
-            mNext = mNext;
+            mNext = next;
         }
 
         @Override
