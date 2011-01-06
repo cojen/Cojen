@@ -1,122 +1,143 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>org.cojen</groupId>
-  <artifactId>cojen</artifactId>
-  <packaging>jar</packaging>
-  <name>Cojen</name>
-  <version>2.2</version>
-  <description>
-    Dynamic Java bytecode generation and disassembly tools.
-  </description>
-  <url>http://cojen.sourceforge.net/</url>
-  <inceptionYear>2004</inceptionYear>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.cojen</groupId>
+	<artifactId>cojen</artifactId>
+	<packaging>jar</packaging>
+	<name>Cojen</name>
+	<version>2.3</version>
+	<description>
+		Dynamic Java bytecode generation and disassembly tools.
+	</description>
+	<url>http://cojen.sourceforge.net/</url>
+	<inceptionYear>2004</inceptionYear>
 
-  <organization>
-    <name>Brian S O'Neill</name>
-    <url>http://sourceforge.net/projects/cojen/</url>
-  </organization>
+	<organization>
+		<name>Brian S O'Neill</name>
+		<url>http://sourceforge.net/projects/cojen/</url>
+	</organization>
 
-  <licenses>
-    <license>
-      <name>Apache License Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-    </license>
-  </licenses>
+	<licenses>
+		<license>
+			<name>Apache License Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+		</license>
+	</licenses>
 
-  <scm>
-    <connection>scm:svn:https://cojen.svn.sourceforge.net/svnroot/cojen/trunk/Cojen</connection>
-    <developerConnection>scm:svn:https://cojen.svn.sourceforge.net/svnroot/cojen/trunk/Cojen</developerConnection>
-    <url>http://cojen.svn.sourceforge.net/viewvc/cojen/trunk/Cojen/</url>
-  </scm>
+	<scm>
+		<connection>scm:svn:https://cojen.svn.sourceforge.net/svnroot/cojen/trunk/Cojen</connection>
+		<developerConnection>scm:svn:https://cojen.svn.sourceforge.net/svnroot/cojen/trunk/Cojen</developerConnection>
+		<url>http://cojen.svn.sourceforge.net/viewvc/cojen/trunk/Cojen/</url>
+	</scm>
 
-  <issueManagement>
-    <url>http://sourceforge.net/tracker/?atid=638258&amp;group_id=104490&amp;func=browse</url>
-  </issueManagement>
+	<issueManagement>
+		<url>http://sourceforge.net/tracker/?atid=638258&amp;group_id=104490&amp;func=browse</url>
+	</issueManagement>
 
-  <mailingLists>
-    <mailingList>
-      <name>Cojen Interest list</name>
-      <subscribe>http://sourceforge.net/mail/?group_id=104490</subscribe>
-      <unsubscribe>http://sourceforge.net/mail/?group_id=104490</unsubscribe>
-      <!-- archive>http://sourceforge.net/mailarchive/forum.php?forum_id=8530</archive  -->
-    </mailingList>
-  </mailingLists>
+	<mailingLists>
+		<mailingList>
+			<name>Cojen Interest list</name>
+			<subscribe>http://sourceforge.net/mail/?group_id=104490</subscribe>
+			<unsubscribe>http://sourceforge.net/mail/?group_id=104490</unsubscribe>
+			<!-- archive>http://sourceforge.net/mailarchive/forum.php?forum_id=8530</archive	-->
+		</mailingList>
+	</mailingLists>
 
-  <developers>
-    <developer>
-      <name>Brian S O'Neill</name>
-      <id>broneill</id>
-      <email>broneill@users.sourceforge.net</email>
-      <organization></organization>
-      <roles>
-        <role>Project Lead</role>
-      </roles>
-    </developer>
-  </developers>
+	<developers>
+		<developer>
+			<name>Brian S O'Neill</name>
+			<id>broneill</id>
+			<email>broneill@users.sourceforge.net</email>
+			<organization></organization>
+			<roles>
+				<role>Project Lead</role>
+			</roles>
+		</developer>
+		<developer>
+			<name>Robert Fischer</name>
+			<id>robertfischer</id>
+			<email>robertfischer@users.sourceforge.net</email>
+			<organization></organization>
+			<roles>
+				<role>Developer</role>
+			</roles>
+		</developer>
+	</developers>
 
-  <contributors>
-    <contributor>
-      <name>Emilio Lopez Gabeiras</name>
-    </contributor>
-  </contributors>
+	<contributors>
+		<contributor>
+			<name>Emilio Lopez Gabeiras</name>
+		</contributor>
+	</contributors>
 
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.8.2</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>1.5</source>
-          <target>1.5</target>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<forkMode>once</forkMode>
+					<argLine>-javaagent:${project.basedir}/agent/jsr292-backport-1.5a.jar</argLine>
+					<source>1.5</source>
+					<target>1.5</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 
-  <reporting>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-          <configuration>
-            <aggregate>true</aggregate>
-            <links>
-              <link>http://java.sun.com/j2se/1.5.0/docs/api</link>
-            </links>
-          </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jxr-plugin</artifactId>
-        <configuration>
-          <aggregate>true</aggregate>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-project-info-reports-plugin</artifactId>
-        <reportSets>
-          <reportSet>
-            <reports>
-              <report>project-team</report>
-	      <report>mailing-list</report>
-              <report>issue-tracking</report>
-              <report>scm</report>
-              <report>license</report>
-	    </reports>
-          </reportSet>
-        </reportSets>
-      </plugin>
-    </plugins>
-  </reporting>
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>findbugs-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>cobertura-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+					<configuration>
+						<aggregate>true</aggregate>
+						<links>
+							<link>http://java.sun.com/j2se/1.5.0/docs/api</link>
+						</links>
+					</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jxr-plugin</artifactId>
+				<configuration>
+					<aggregate>true</aggregate>
+				</configuration>
+			</plugin>
+<!--
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-project-info-reports-plugin</artifactId>
+				<reportSets>
+					<reportSet>
+						<reports>
+							<report>project-team</report>
+							<report>mailing-list</report>
+							<report>issue-tracking</report>
+							<report>scm</report>
+							<report>license</report>
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
+-->
+		</plugins>
+	</reporting>
 </project>

@@ -34,6 +34,8 @@
     <menu name="Project Documentation">
       <item name="Project Info" href="project-info.html"/>
       <item name="Source Xref" href="xref/index.html"/>
+			<item name="FindBugs Report" href="findbugs.html" />
+			<item name="Cobertura Report" href="cobertura.html" />
     </menu>
   </body>
 </project>
