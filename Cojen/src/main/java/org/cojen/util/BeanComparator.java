@@ -496,10 +496,7 @@ public class BeanComparator<T> implements Comparator<T>, Serializable {
             (getClass().getName(), null, mBeanClass.getClassLoader());
         cf.markSynthetic();
         cf.setSourceFile(BeanComparator.class.getName());
-        try {
-            cf.setTarget(System.getProperty("java.specification.version"));
-        } catch (Exception e) {
-        }
+        cf.setTarget("1.5");
 
         cf.addInterface(Comparator.class);
         cf.addInterface(Serializable.class);

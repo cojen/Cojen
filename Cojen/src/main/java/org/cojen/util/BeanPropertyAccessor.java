@@ -128,10 +128,7 @@ public abstract class BeanPropertyAccessor<B> {
              beanType.getClassLoader());
         cf.markSynthetic();
         cf.setSourceFile(BeanPropertyAccessor.class.getName());
-        try {
-            cf.setTarget(System.getProperty("java.specification.version"));
-        } catch (Exception e) {
-        }
+        cf.setTarget("1.5");
 
         MethodInfo ctor = cf.addConstructor(Modifiers.PUBLIC, null);
         ctor.markSynthetic();
