@@ -13,8 +13,8 @@
   <inceptionYear>2004</inceptionYear>
 
   <organization>
-    <name>Brian S O'Neill</name>
-    <url>http://sourceforge.net/projects/cojen/</url>
+    <name>Cojen</name>
+    <url>https://github.com/cojen</url>
   </organization>
 
   <licenses>
@@ -24,99 +24,41 @@
     </license>
   </licenses>
 
-  <scm>
-    <connection>scm:svn:https://cojen.svn.sourceforge.net/svnroot/cojen/trunk/Cojen</connection>
-    <developerConnection>scm:svn:https://cojen.svn.sourceforge.net/svnroot/cojen/trunk/Cojen</developerConnection>
-    <url>http://cojen.svn.sourceforge.net/viewvc/cojen/trunk/Cojen/</url>
-  </scm>
-
-  <issueManagement>
-    <url>http://sourceforge.net/tracker/?atid=638258&amp;group_id=104490&amp;func=browse</url>
-  </issueManagement>
-
-  <mailingLists>
-    <mailingList>
-      <name>Cojen Interest list</name>
-      <subscribe>http://sourceforge.net/mail/?group_id=104490</subscribe>
-      <unsubscribe>http://sourceforge.net/mail/?group_id=104490</unsubscribe>
-      <!-- archive>http://sourceforge.net/mailarchive/forum.php?forum_id=8530</archive  -->
-    </mailingList>
-  </mailingLists>
-
-  <developers>
-    <developer>
-      <name>Brian S O'Neill</name>
-      <id>broneill</id>
-      <email>broneill@users.sourceforge.net</email>
-      <organization></organization>
-      <roles>
-        <role>Project Lead</role>
-      </roles>
-    </developer>
-  </developers>
-
-  <contributors>
-    <contributor>
-      <name>Emilio Lopez Gabeiras</name>
-    </contributor>
-  </contributors>
-
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>3.8.1</version>
+      <version>4.9</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
 
   <build>
     <plugins>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.0</version>
         <configuration>
           <source>1.5</source>
           <target>1.5</target>
         </configuration>
       </plugin>
-    </plugins>
-  </build>
 
-  <reporting>
-    <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.9</version>
           <configuration>
-            <aggregate>true</aggregate>
+            <javadocVersion>1.7</javadocVersion>
+            <detectJavaApiLink>false</detectJavaApiLink>
             <links>
-              <link>http://java.sun.com/j2se/1.5.0/docs/api</link>
+              <link>http://docs.oracle.com/javase/7/docs/api</link>
             </links>
           </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jxr-plugin</artifactId>
-        <configuration>
-          <aggregate>true</aggregate>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-project-info-reports-plugin</artifactId>
-        <reportSets>
-          <reportSet>
-            <reports>
-              <report>project-team</report>
-	      <report>mailing-list</report>
-              <report>issue-tracking</report>
-              <report>scm</report>
-              <report>license</report>
-	    </reports>
-          </reportSet>
-        </reportSets>
-      </plugin>
+
     </plugins>
-  </reporting>
+  </build>
 </project>
