@@ -3,4 +3,4 @@ Cojen
 
 Java bytecode generation and disassembly tools
 
-* [Javadocs](http://cojen.github.com/Cojen/javadoc/org/cojen/package-summary.html)
+* [Javadocs](http://cojen.github.com/Cojen/javadoc/overview-summary.html)
