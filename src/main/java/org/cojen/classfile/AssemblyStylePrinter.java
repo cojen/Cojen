@@ -1,5 +1,5 @@
 /*
- *  Copyright 2004-2010 Brian S O'Neill
+ *  Copyright 2004-2013 Brian S O'Neill
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -596,6 +595,9 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
             frame = null;
         } else {
             frame = code.getStackMapTable().getInitialFrame();
+            if (frame.getNext() == null) {
+                frame = null;
+            }
         }
 
         int currentLine = -1;
@@ -1352,7 +1354,6 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
             case Opcode.DLOAD: case Opcode.DSTORE:
             case Opcode.ALOAD: case Opcode.ASTORE:
             case Opcode.RET:
-            case Opcode.IINC:
             case Opcode.BIPUSH:
             case Opcode.NEWARRAY:
                 mAddress += 1;
@@ -1374,6 +1375,7 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
             case Opcode.INVOKESPECIAL:
             case Opcode.INVOKESTATIC:
             case Opcode.SIPUSH:
+            case Opcode.IINC:
                 mAddress += 2;
                 break;
 
@@ -1403,7 +1405,7 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
         } // end for loop
 
         Integer[] keys = new Integer[mLabels.size()];
-        mLabels.keySet().toArray(keys);
+        keys = mLabels.keySet().toArray(keys);
         Arrays.sort(keys);
         for (int i=0; i<keys.length; i++) {
             mLabels.put(keys[i], "L" + (i + 1) + '_' + keys[i]);
@@ -1477,6 +1479,11 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
         if (mAddress < frame.getOffset()) {
             return frame;
         }
+
+        print(indent);
+        print("// frame type: ");
+        print(frame.getClass().getSimpleName());
+        println();
 
         print(indent);
         print("// stack:  ");
