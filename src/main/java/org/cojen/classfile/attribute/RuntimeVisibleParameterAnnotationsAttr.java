@@ -42,4 +42,14 @@ public class RuntimeVisibleParameterAnnotationsAttr extends ParameterAnnotations
     {
         super(cp, name, length, din);
     }
+
+    RuntimeVisibleParameterAnnotationsAttr(ConstantPool cp, String name,
+                                           RuntimeVisibleParameterAnnotationsAttr source)
+    {
+        super(cp, name, source);
+    }
+
+    public RuntimeVisibleParameterAnnotationsAttr copyTo(ConstantPool cp) {
+        return new RuntimeVisibleParameterAnnotationsAttr(cp, getName(), this);
+    }
 }

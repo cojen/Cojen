@@ -32,12 +32,12 @@ import org.cojen.classfile.ConstantPool;
 public class ConstantValueAttr extends Attribute {
 
     private final ConstantInfo mConstant;
-    
+
     public ConstantValueAttr(ConstantPool cp, ConstantInfo constant) {
         super(cp, CONSTANT_VALUE);
         mConstant = constant;
     }
-    
+
     public ConstantValueAttr(ConstantPool cp, String name, ConstantInfo constant) {
         super(cp, name);
         mConstant = constant;
@@ -55,11 +55,15 @@ public class ConstantValueAttr extends Attribute {
     public ConstantInfo getConstant() {
         return mConstant;
     }
-    
+
+    public ConstantValueAttr copyTo(ConstantPool cp) {
+        return new ConstantValueAttr(cp, getName(), mConstant.copyTo(cp));
+    }
+
     public int getLength() {
         return 2;
     }
-    
+
     public void writeDataTo(DataOutput dout) throws IOException {
         dout.writeShort(mConstant.getIndex());
     }

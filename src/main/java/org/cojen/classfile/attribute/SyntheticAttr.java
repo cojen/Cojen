@@ -44,6 +44,10 @@ public class SyntheticAttr extends Attribute {
         skipBytes(din, length);
     }
 
+    public SyntheticAttr copyTo(ConstantPool cp) {
+        return new SyntheticAttr(cp, getName());
+    }
+
     public int getLength() {
         return 0;
     }

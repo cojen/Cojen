@@ -18,6 +18,7 @@ package org.cojen.classfile;
 
 import java.util.AbstractCollection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.Stack;
 
 import org.cojen.classfile.constant.ConstantClassInfo;
 import org.cojen.classfile.constant.ConstantMethodInfo;
@@ -41,26 +43,37 @@ import org.cojen.classfile.constant.ConstantMethodInfo;
 class InstructionList implements CodeBuffer {
     private static final boolean DEBUG = false;
 
+    private final ConstantPool mCp;
     private final boolean mSaveLocalVariableInfo;
+    private final boolean mGenerateVerificationInfo;
 
     Instruction mFirst;
     Instruction mLast;
 
-    boolean mResolved = false;
+    // Negative indicates analysis required; non-negative indicates instruction count.
+    int mAnalyzed = -1;
 
     private List<ExceptionHandler<LabelInstruction>> mExceptionHandlers =
         new ArrayList<ExceptionHandler<LabelInstruction>>(4);
     private List<LocalVariable> mLocalVariables = new ArrayList<LocalVariable>();
+    private int mParameterCount;
     private int mNextFixedVariableNumber;
 
     private int mMaxStack;
     private int mMaxLocals;
 
     private byte[] mByteCodes;
-    private int mBufferLength;
 
-    protected InstructionList(boolean saveLocalVariableInfo) {
+    // FIXME: chuck
+    private Map<Location, VerificationInfo> mVerificationInfoMap;
+    private BitList[] mVarUsage;
+
+    protected InstructionList(ConstantPool cp, 
+                              boolean saveLocalVariableInfo, boolean generateVerificationInfo)
+    {
+        mCp = cp;
         mSaveLocalVariableInfo = saveLocalVariableInfo;
+        mGenerateVerificationInfo = generateVerificationInfo;
     }
 
     /**
@@ -104,32 +117,124 @@ class InstructionList implements CodeBuffer {
     }
 
     public int getMaxStackDepth() {
-        resolve();
+        analyze();
         return mMaxStack;
     }
 
     public int getMaxLocals() {
-        resolve();
+        analyze();
         return mMaxLocals;
     }
 
     public byte[] getByteCodes() {
-        resolve();
-        return mByteCodes;
+        analyze();
+
+        if (mByteCodes != null) {
+            return mByteCodes;
+        }
+
+        // Build up the byte code and set real instruction locations.
+        // Multiple passes may be required because instructions may adjust
+        // their size as locations are set. Changing size affects the locations
+        // of other instructions, so that is why additional passes are
+        // required.
+
+        int instrCount = mAnalyzed;
+        byte[] byteCodes = new byte[instrCount * 2]; // estimate
+        int byteCount;
+
+        while (true) {
+            boolean passAgain = false;
+            byteCount = 0;
+            
+            for (Instruction instr = mFirst; instr != null; instr = instr.mNext) {
+                if (!instr.isResolved()) {
+                    passAgain = true;
+                }
+                
+                if (instr instanceof Label) {
+                    if (instr.mLocation != byteCount) {
+                        if (instr.mLocation >= 0) {
+                            // If the location of this label is not where it
+                            // should be, (most likely because an instruction
+                            // needed to expand in size) then do another pass.
+                            passAgain = true;
+                        }
+                        instr.mLocation = byteCount;
+                    }
+                } else {
+                    instr.mLocation = byteCount;
+                    
+                    byte[] instrBytes = instr.getBytes();
+                    if (instrBytes != null) {
+                        int instrLength = instrBytes.length;
+                        if (!passAgain) {
+                            if (byteCount + instrLength > byteCodes.length) {
+                                byte[] newByteCodes = new byte
+                                    [Math.max(byteCodes.length * 2, byteCount + instrLength)];
+                                System.arraycopy(byteCodes, 0, newByteCodes, 0, byteCount);
+                                byteCodes = newByteCodes;
+                            }
+                            System.arraycopy(instrBytes, 0, byteCodes, byteCount, instrLength);
+                        }
+                        byteCount += instrLength;
+                    }
+                }
+            }
+
+            if (!passAgain) {
+                break;
+            }
+
+            if (byteCount > byteCodes.length) {
+                byteCodes = new byte[byteCount];
+            }
+        }
+        
+        if (byteCount != byteCodes.length) {
+            byte[] newByteCodes = new byte[byteCount];
+            System.arraycopy(byteCodes, 0, newByteCodes, 0, byteCount);
+            byteCodes = newByteCodes;
+        }
+
+        mByteCodes = byteCodes;
+
+        // Set analyzed again because during byte code generation, it gets
+        // reset while changes are being made to the list of instructions.
+        mAnalyzed = instrCount;
+
+        return byteCodes;
     }
 
     public ExceptionHandler[] getExceptionHandlers() {
-        resolve();
+        analyze();
 
         ExceptionHandler[] handlers = new ExceptionHandler[mExceptionHandlers.size()];
         return mExceptionHandlers.toArray(handlers);
+    }
+
+    public VerificationInfo[] getVerificationInfos() {
+        analyze();
+
+        if (mVerificationInfoMap == null || mVerificationInfoMap.isEmpty()) {
+            return null;
+        }
+
+        // Need correct instruction locations resolved.
+        getByteCodes();
+
+        // FIXME: don't sort each time
+        VerificationInfo[] infos = new VerificationInfo[mVerificationInfoMap.size()];
+        infos = mVerificationInfoMap.values().toArray(infos);
+        Arrays.sort(infos);
+        return infos;
     }
 
     public void addExceptionHandler(ExceptionHandler<LabelInstruction> handler) {
         mExceptionHandlers.add(handler);
     }
 
-    public LocalVariable createLocalVariable(String name, TypeDesc type) {
+    public LocalVariable createLocalVariable(String name, TypeDesc type, int num) {
         LocalVariable var = new LocalVariableImpl(mLocalVariables.size(), name, type, -1);
         mLocalVariables.add(var);
         return var;
@@ -142,20 +247,21 @@ class InstructionList implements CodeBuffer {
         LocalVariable var = new LocalVariableImpl
             (mLocalVariables.size(), name, type, mNextFixedVariableNumber);
         mLocalVariables.add(var);
+        mParameterCount++;
         mNextFixedVariableNumber += type.isDoubleWord() ? 2 : 1;
         return var;
     }
 
-    private void resolve() {
-        if (mResolved) {
+    private void analyze() {
+        if (mAnalyzed >= 0) {
             return;
         }
 
         if (!DEBUG) {
-            resolve0();
+            analyze0();
         } else {
             try {
-                resolve0();
+                analyze0();
             } finally {
                 System.out.println("-- Instructions --");
 
@@ -166,9 +272,10 @@ class InstructionList implements CodeBuffer {
         }
     }
 
-    private void resolve0() {
+    private void analyze0() {
         mMaxStack = 0;
         mMaxLocals = 0;
+        mByteCodes = null;
 
         // Sweep through the instructions, preparing for flow analysis.
         int instrCount = 0;
@@ -180,10 +287,9 @@ class InstructionList implements CodeBuffer {
         // Make sure exception handlers are registered with all guarded
         // instructions.
         for (ExceptionHandler<LabelInstruction> handler : mExceptionHandlers) {
-            LabelInstruction start = handler.getStartLocation();
-            start.markBranchTarget();
-            Instruction instr = start;
-            Instruction end = handler.getEndLocation();
+            handler.getCatchLocation().markBranchTarget();
+            Instruction instr = handler.getStartLocation();
+            LabelInstruction end = handler.getEndLocation();
             for ( ; instr != null && instr != end; instr = instr.mNext) {
                 instr.addExceptionHandler(handler);
             }
@@ -309,98 +415,72 @@ class InstructionList implements CodeBuffer {
             }
             
             mMaxLocals = Math.max(mMaxLocals, registerUsers.size());
+
+            if (mGenerateVerificationInfo) {
+                // Build final variable usage now that variable numbers are shared.
+                mVarUsage = new BitList[mMaxLocals];
+                for (int v=0; v<size; v++) {
+                    BitList list = live[v];
+                    if (list != null) {
+                        LocalVariable var = mLocalVariables.get(v);
+                        int varNum = var.getNumber();
+                        BitList existing = mVarUsage[varNum];
+                        if (existing == null) {
+                            mVarUsage[varNum] = list;
+                        } else {
+                            existing.or(list);
+                        }
+                    }
+                }
+            }
         } // end liveness analysis
 
-        // Perform stack flow analysis to determine the max stack size.
+        // Perform flow analysis to determine the max stack size and to
+        // determine verification info.
         {
-            // Start the flow analysis at the first instruction.
+            Stack<VerificationInfo.Type> stack;
+            VerificationInfo.Type[] locals;
+
+            if (!mGenerateVerificationInfo) {
+                stack = null;
+                locals = null;
+            } else {
+                // Although Locations are Comparable, TreeMap cannot be used
+                // because Locations are mutable.
+                mVerificationInfoMap = new HashMap<Location, VerificationInfo>();
+
+                stack = new Stack<VerificationInfo.Type>();
+                locals = new VerificationInfo.Type[mMaxLocals];
+                int slot = 0;
+                for (int i=0; i<mParameterCount; i++) {
+                    TypeDesc paramType = mLocalVariables.get(i).getType();
+                    locals[slot++] = toVerificationType(paramType);
+                    if (paramType.isDoubleWord()) {
+                        locals[slot++] = VerificationInfo.topType();
+                    }
+                }
+                for (; slot<locals.length; slot++) {
+                    locals[slot] = VerificationInfo.topType();
+                }
+            }
+
             Map<LabelInstruction, Integer> subAdjustMap =
-                new HashMap<LabelInstruction, Integer>(11);
-            stackResolve(0, mFirst, subAdjustMap);
+                new HashMap<LabelInstruction, Integer>(1);
 
-            // Continue flow analysis into exception handler entry points.
-            for (ExceptionHandler<LabelInstruction> handler : mExceptionHandlers) {
-                Instruction enter = handler.getCatchLocation();
-                // Initial stack depth is one because caught exception is on the stack.
-                stackResolve(1, enter, subAdjustMap);
-            }
-        }
-            
-        // Okay, build up the byte code and set real instruction locations.
-        // Multiple passes may be required because instructions may adjust
-        // their size as locations are set. Changing size affects the
-        // locations of other instructions, so that is why additional passes
-        // are required.
-            
-        boolean passAgain;
-        do {
-            passAgain = false;
-            
-            mByteCodes = new byte[instrCount * 2]; // estimate
-            mBufferLength = 0;
-            
-            for (Instruction instr = mFirst; instr != null; instr = instr.mNext) {
-                if (!instr.isResolved()) {
-                    passAgain = true;
-                }
-                
-                if (instr instanceof Label) {
-                    if (instr.mLocation != mBufferLength) {
-                        if (instr.mLocation >= 0) {
-                            // If the location of this label is not where it
-                            // should be, (most likely because an instruction
-                            // needed to expand in size) then do another pass.
-                            passAgain = true;
-                        }
-                        instr.mLocation = mBufferLength;
-                    }
-                } else {
-                    instr.mLocation = mBufferLength;
-                    
-                    byte[] bytes = instr.getBytes();
-                    if (bytes != null) {
-                        if (passAgain) {
-                            // If there is going to be another pass, don't 
-                            // bother collecting bytes into the array. Just 
-                            // expand the the length variable.
-                            mBufferLength += bytes.length;
-                        } else {
-                            addBytes(bytes);
-                        }
-                    }
+            // Start the flow analysis at the first instruction.
+            stackAnalyze(0, stack, locals, mFirst, subAdjustMap);
+
+            if (!mGenerateVerificationInfo) {
+                // Continue flow analysis into exception handler entry points.
+                for (ExceptionHandler<LabelInstruction> handler : mExceptionHandlers) {
+                    Instruction enter = handler.getCatchLocation();
+                    // Initial stack depth is one because caught exception is on the stack.
+                    stackAnalyze(1, null, null, enter, subAdjustMap);
                 }
             }
-        } while (passAgain); // do {} while ();
-        
-        if (mBufferLength != mByteCodes.length) {
-            byte[] newBytes = new byte[mBufferLength];
-            System.arraycopy(mByteCodes, 0, newBytes, 0, mBufferLength);
-            mByteCodes = newBytes;
         }
 
-        // Set resolved at end because during resolution, this field gets
-        // set false again while changes are being made to the list
-        // of instructions.
-        mResolved = true;
-    }
-
-    private void addBytes(byte[] code) {
-        growBuffer(code.length);
-        System.arraycopy(code, 0, mByteCodes, mBufferLength, code.length);
-        mBufferLength += code.length;
-    }
-
-    private void growBuffer(int amount) {
-        if ((mBufferLength + amount) > mByteCodes.length) {
-            int newCapacity = mByteCodes.length * 2;
-            if ((mBufferLength + amount) > newCapacity) {
-                newCapacity = mBufferLength + amount;
-            }
-
-            byte[] newBuffer = new byte[newCapacity];
-            System.arraycopy(mByteCodes, 0, newBuffer, 0, mBufferLength);
-            mByteCodes = newBuffer;
-        }
+        mAnalyzed = instrCount;
     }
 
     private void livenessAnalysis(BitList[] liveIn, BitList[] liveOut) {
@@ -553,10 +633,40 @@ class InstructionList implements CodeBuffer {
      * key is first instruction of subroutine (jsr target)
      * @return updated stack depth, which may increment or decrement
      */
-    private int stackResolve(int stackDepth, 
-                             Instruction instr, 
-                             Map<LabelInstruction, Integer> subAdjustMap) {
+    private int stackAnalyze(int stackDepth,
+                             Stack<VerificationInfo.Type> stack,
+                             VerificationInfo.Type[] locals,
+                             Instruction instr,
+                             Map<LabelInstruction, Integer> subAdjustMap)
+    {
+        boolean keepGoing = false;
         while (instr != null) {
+            instr = instr.skipPseudo();
+
+            if (stack != null) {
+                // FIXME: If anything changes, keep flowing.
+                // FIXME: hack testing
+                Stack<VerificationInfo.Type> sCopy = new Stack<VerificationInfo.Type>();
+                sCopy.addAll(stack);
+                VerificationInfo.Type[] lCopy = locals.clone();
+
+                instr.adjustTypes(stack, locals);
+                //System.out.println(instr);
+
+                if (instr.mStackDepth >= 0) {
+                    if (!sCopy.equals(stack)) {
+                        //System.out.println("stack change");
+                        //System.out.println(sCopy);
+                        //System.out.println(stack);
+                    }
+                    if (!Arrays.equals(lCopy, locals)) {
+                        //System.out.println("locals change");
+                        //System.out.println(Arrays.toString(lCopy));
+                        //System.out.println(Arrays.toString(locals));
+                    }
+                }
+            }
+
             // Set the stack depth, marking this instruction as being visited.
             // If already visited, break out of this flow.
             if (instr.mStackDepth < 0) {
@@ -570,11 +680,13 @@ class InstructionList implements CodeBuffer {
                          " != " + stackDepth);
                 }
                 */
-                break;
+                if (keepGoing) {
+                    //System.out.println("should keep going");
+                    keepGoing = false;
+                } else {
+                    break;
+                }
             }
-
-            // Determine the next instruction to flow down to.
-            Instruction next = instr.isFlowThrough() ? instr.mNext : null;
 
             stackDepth += instr.getStackAdjustment();
             if (stackDepth > mMaxStack) {
@@ -584,12 +696,13 @@ class InstructionList implements CodeBuffer {
                 stackDepth = 0;
             }
 
+            // Determine the next instruction to flow down to.
+            Instruction next = instr.isFlowThrough() ? instr.mNext : null;
             LabelInstruction[] targets = instr.getBranchTargets();
 
             if (targets != null) {
                 for (int i=0; i<targets.length; i++) {
                     LabelInstruction target = targets[i];
-                    target.markBranchTarget();
 
                     if (i == 0 && next == null) {
                         // Simply flow to the first target if instruction
@@ -598,19 +711,93 @@ class InstructionList implements CodeBuffer {
                         continue;
                     }
 
+                    // Clone the stack and locals for target location.
+                    Stack<VerificationInfo.Type> targetStack = stack;
+                    VerificationInfo.Type[] targetLocals = locals;
+                    if (targetStack != null) {
+                        targetStack = new Stack<VerificationInfo.Type>();
+                        targetStack.addAll(stack);
+                        targetLocals = targetLocals.clone();
+                    }
+
                     if (!instr.isSubroutineCall()) {
-                        stackResolve(stackDepth, target, subAdjustMap);
+                        stackAnalyze(stackDepth, targetStack, targetLocals, target, subAdjustMap);
                     } else {
                         Integer subAdjust = subAdjustMap.get(target);
 
                         if (subAdjust == null) {
-                            int newDepth = stackResolve(stackDepth, target, subAdjustMap);
+                            if (targetStack != null) {
+                                // This is gibberish -- subroutines aren't
+                                // allowed with the 1.6 target. Let the
+                                // verifier deal with it.
+                                targetStack.push(toVerificationType(TypeDesc.OBJECT));
+                            }
+                            int newDepth = stackAnalyze
+                                (stackDepth, targetStack, targetLocals, target, subAdjustMap);
                             subAdjust = newDepth - stackDepth;
                             subAdjustMap.put(target, subAdjust);
                         }
 
                         stackDepth += subAdjust.intValue();
                     }
+
+                    if (targetStack != null) {
+                        if (!targetStack.equals(stack)) {
+                            //System.out.println("Stack changed");
+                            //System.out.println(stack);
+                            //System.out.println(targetStack);
+                            keepGoing = true;
+                        }
+                        if (!Arrays.equals(targetLocals, locals)) {
+                            //System.out.println("Locals changed");
+                            //System.out.println(Arrays.toString(locals));
+                            //System.out.println(Arrays.toString(targetLocals));
+                            keepGoing = true;
+                        }
+                    }
+                }
+            }
+
+            analyzeHandlers: if (stack != null) {
+                Collection<ExceptionHandler<LabelInstruction>> handlers =
+                    instr.getExceptionHandlers();
+
+                if (handlers == null) {
+                    break analyzeHandlers;
+                }
+
+                for (ExceptionHandler<LabelInstruction> handler : handlers) {
+                    // FIXME: This can be really slow since each instruction in
+                    // the try-catch block branches to all handlers. This is
+                    // done only to ensure that local variable types are
+                    // merged. Optimize this somehow by seeing that catch
+                    // locatation has been visited.
+
+                    Stack<VerificationInfo.Type> catchStack;
+                    {
+                        catchStack = new Stack<VerificationInfo.Type>();
+                        TypeDesc catchType;
+                        ConstantClassInfo catchInfo = handler.getCatchType();
+                        if (catchInfo == null) {
+                            catchType = TypeDesc.forClass(Throwable.class);
+                        } else {
+                            catchType = catchInfo.getType();
+                        }
+                        catchStack.push(toVerificationType(catchType));
+                    }
+
+                    VerificationInfo.Type[] catchLocals = locals.clone();
+
+                    // FIXME
+                    /*
+                    System.out.println("*** " + instr);
+                    System.out.println(catchStack);
+                    System.out.println(Arrays.toString(catchLocals));
+                    */
+
+                    LabelInstruction catchLocation = handler.getCatchLocation();
+
+                    stackAnalyze(1, catchStack, catchLocals, catchLocation, subAdjustMap);
                 }
             }
 
@@ -620,11 +807,172 @@ class InstructionList implements CodeBuffer {
         return stackDepth;
     }
 
+    // FIXME: remove
+    private void addVerificationInfo(Instruction instr,
+                                     Stack<VerificationInfo.Type> stack,
+                                     VerificationInfo.Type[] locals)
+    {
+        // Associate with a real instruction in order to support merging of types.
+        while (instr instanceof LabelInstruction) {
+            Instruction next = instr.mNext;
+            if (next == null) {
+                // A branch target should never flow past the end of the
+                // method, but ignore this and let verifier complain.
+                break;
+            }
+            instr = next;
+        }
+
+        //System.out.println(instr + ", " + Arrays.toString(locals));
+        // FIXME: Optimize merge case.
+
+        // FIXME: Merged types must be stored with instruction, then converted
+        // later.  This is required as stack analysis visits branch targets.
+        // Without this, store to local cannot read correct stack value. The
+        // skip past label must be performed before addVerificationInfo is
+        // called, before adjustTypes is called. No need to associate with real
+        // instruction, just last label in group.
+
+        {
+            BitList[] varUsage = mVarUsage;
+            int location = instr.getLocation();
+            for (int i=0; i<varUsage.length; i++) {
+                BitList list = varUsage[i];
+                if (list == null || !list.get(location)) {
+                    locals[i] = VerificationInfo.topType();
+                }
+            }
+        }
+
+        List<VerificationInfo.Type> stackCopy;
+        List<VerificationInfo.Type> localsCopy;
+
+        if (stack.isEmpty()) {
+            stackCopy = Collections.emptyList();
+        } else {
+            VerificationInfo.Type[] stackArray = new VerificationInfo.Type[stack.size()];
+            stackCopy = Arrays.asList(stack.toArray(stackArray));
+        }
+
+        if (locals == null || locals.length == 0) {
+            localsCopy = Collections.emptyList();
+        } else {
+            int length = locals.length;
+            if (!locals[length - 1].isTop()) {
+                localsCopy = Arrays.asList(locals.clone());
+            } else {
+                // Prune off the top variables.
+                int i = length - 1;
+                while (--i >= 0) {
+                    if (!locals[i].isTop()) {
+                        break;
+                    }
+                }
+                if (i < 0) {
+                    localsCopy = Collections.emptyList();
+                } else {
+                    VerificationInfo.Type[] newArray = new VerificationInfo.Type[i + 1];
+                    System.arraycopy(locals, 0, newArray, 0, i + 1);
+                    localsCopy = Arrays.asList(newArray);
+                }
+            }
+        }
+
+        VerificationInfo existing = mVerificationInfoMap.get(instr);
+        if (existing != null) {
+            stackCopy = mergeTypes(existing.getOperandStackTypes(), stackCopy);
+            localsCopy = mergeTypes(existing.getLocalVariableTypes(), localsCopy);
+        }
+
+        mVerificationInfoMap.put(instr, new VerificationInfo(instr, stackCopy, localsCopy));
+    }
+
+    // FIXME: remove
+    private List<VerificationInfo.Type> mergeTypes(List<VerificationInfo.Type> a,
+                                                   List<VerificationInfo.Type> b)
+    {
+        List<VerificationInfo.Type> merged = null;
+
+        int size = Math.min(a.size(), b.size());
+        for (int i=0; i<size; i++) {
+            VerificationInfo.Type atype = a.get(i);
+            VerificationInfo.Type btype = b.get(i);
+            if (atype.equals(btype)) {
+                continue;
+            }
+
+            if (merged == null) {
+                if (a.size() < b.size()) {
+                    merged = new ArrayList<VerificationInfo.Type>(a);
+                } else {
+                    merged = new ArrayList<VerificationInfo.Type>(b);
+                }
+            }
+
+            merged.set(i, merge(atype, btype));
+        }
+
+        if (merged == null) {
+            // Choose the smaller because all pruned types would be top, and
+            // top always wins the merge.
+            return a.size() < b.size() ? a : b;
+        }
+
+        // Prune off the top variables.
+        for (int i = merged.size(); --i >= 0; ) {
+            if (!merged.get(i).isTop()) {
+                break;
+            }
+            merged.remove(i);
+        }
+
+        return merged;
+    }
+
+    /**
+     * Pass in two types which are already known to be unequal.
+     */
+    VerificationInfo.Type merge(VerificationInfo.Type a, VerificationInfo.Type b) {
+        //System.out.println(a + " vs. " + b);
+        if (a.isTop() || b.isTop()) {
+            return a;
+        }
+        if (a.isReference() && b.isReference()) {
+            if (a.isNull()) {
+                //System.out.println("ret " + b);
+                return b;
+            } else if (b.isNull()) {
+                //System.out.println("ret " + a);
+                return a;
+            } else {
+                // Find a common type, even though it might not be the
+                // best. Simply choosing Object seems to be fine with the
+                // verifier. Javac tries harder, finding a common superclass,
+                // but this isn't always the best choice. It's actually quite
+                // fragile, since the common superclass might not exist at
+                // runtime.
+                return toVerificationType(TypeDesc.OBJECT);
+            }
+        }
+        return VerificationInfo.topType();
+    }
+
+    VerificationInfo.Type toVerificationType(TypeDesc type) {
+        if (mGenerateVerificationInfo) {
+            if (type != null && !type.isPrimitive()) {
+                mCp.addConstantClass(type);
+            }
+            return VerificationInfo.toType(type);
+        } else {
+            return null;
+        }
+    }
+
     private static class LocalVariableImpl implements LocalVariable {
         private final int mIndex;
 
         private String mName;
-        private TypeDesc mType;
+        private final TypeDesc mType;
 
         private int mNumber;
         private boolean mFixed;
@@ -705,7 +1053,7 @@ class InstructionList implements CodeBuffer {
      * Java byte code instruction.
      */
     public abstract class Instruction implements Location {
-        private int mStackAdjust;
+        private final int mStackAdjust;
 
         Instruction mPrev;
         Instruction mNext;
@@ -714,7 +1062,7 @@ class InstructionList implements CodeBuffer {
         // Is -1 if not reached. Flow analysis sets this value.
         int mStackDepth = -1;
 
-        // Indicates the address of this instruction is, or -1 if not known.
+        // Indicates the address of this instruction, or -1 if not known.
         int mLocation = -1;
 
         private Set<ExceptionHandler<LabelInstruction>> mExceptionHandlers;
@@ -734,7 +1082,6 @@ class InstructionList implements CodeBuffer {
          */
         protected Instruction(int stackAdjust, boolean addInstruction) {
             mStackAdjust = stackAdjust;
-
             if (addInstruction) {
                 add();
             }
@@ -745,7 +1092,7 @@ class InstructionList implements CodeBuffer {
          * Instruction is already in the list, then it is moved to the end.
          */
         protected void add() {
-            InstructionList.this.mResolved = false;
+            InstructionList.this.mAnalyzed = -1;
 
             if (mPrev != null) {
                 mPrev.mNext = mNext;
@@ -772,7 +1119,7 @@ class InstructionList implements CodeBuffer {
          * Insert an Instruction immediately following this one.
          */
         public void insert(Instruction instr) {
-            InstructionList.this.mResolved = false;
+            InstructionList.this.mAnalyzed = -1;
 
             instr.mPrev = this;
             instr.mNext = mNext;
@@ -788,7 +1135,7 @@ class InstructionList implements CodeBuffer {
          * Removes this Instruction from its parent InstructionList.
          */
         public void remove() {
-            InstructionList.this.mResolved = false;
+            InstructionList.this.mAnalyzed = -1;
 
             if (mPrev != null) {
                 mPrev.mNext = mNext;
@@ -819,7 +1166,7 @@ class InstructionList implements CodeBuffer {
                 return;
             }
 
-            InstructionList.this.mResolved = false;
+            InstructionList.this.mAnalyzed = -1;
 
             replacement.mPrev = mPrev;
             replacement.mNext = mNext;
@@ -856,6 +1203,27 @@ class InstructionList implements CodeBuffer {
         public int getStackDepth() {
             return mStackDepth;
         }
+
+        /**
+         * Skips pseudo instructions.
+         *
+         * @return next real instruction
+         */
+        public Instruction skipPseudo() {
+            return this;
+        }
+
+        /**
+         * @param stack mutable representation of known types on stack; double
+         * word types occupy two slots
+         * @param locals mutable representation of known types for local
+         * variables; double word types occupy two slots
+         * @return true if any changes to types on stack or in locals; stack size change
+         * not considered a type change
+         */
+        // FIXME: return type doc wrong
+        public abstract void adjustTypes(Stack<VerificationInfo.Type> stack,
+                                         VerificationInfo.Type[] locals);
 
         /**
          * Returns the address of this instruction or -1 if not known.
@@ -942,7 +1310,7 @@ class InstructionList implements CodeBuffer {
 
         /**
          * Returns a string containing the type of this instruction, the stack
-         * adjustment and the list of byte codes. Unvisted instructions are
+         * adjustment and the list of byte codes. Unvisited instructions are
          * marked with an asterisk.
          */
         public String toString() {
@@ -1027,6 +1395,8 @@ class InstructionList implements CodeBuffer {
      */
     public class LabelInstruction extends Instruction implements Label {
         private boolean mIsTarget;
+        private Stack<VerificationInfo.Type> mStack;
+        private VerificationInfo.Type[] mLocals;
 
         public LabelInstruction() {
             super(0, false);
@@ -1038,6 +1408,7 @@ class InstructionList implements CodeBuffer {
          *
          * @return This Label.
          */
+        @Override
         public Label setLocation() {
             add();
             return this;
@@ -1046,6 +1417,7 @@ class InstructionList implements CodeBuffer {
         /**
          * @return -1 when not resolved yet
          */ 
+        @Override
         public int getLocation() throws IllegalStateException {
             int loc; 
             if ((loc = mLocation) < 0) {
@@ -1065,21 +1437,121 @@ class InstructionList implements CodeBuffer {
             mIsTarget = true;
         }
 
+        /* FIXME: remove
+        LabelInstruction lastLabelInGroup() {
+            LabelInstruction last = this;
+            while (true) {
+                Instruction next = last.mNext;
+                if (next instanceof LabelInstruction) {
+                    last = (LabelInstruction) next;
+                } else {
+                    return last;
+                }
+            }
+        }
+        */
+
         /**
          * Always returns null.
          */
+        @Override
         public byte[] getBytes() {
             return null;
         }
 
+        @Override
         public boolean isResolved() {
             return getLocation() >= 0;
         }
 
         @Override
-        void reset(int instrCount) {
-            super.reset(instrCount);
-            mIsTarget = false;
+        public Instruction skipPseudo() {
+            LabelInstruction instr = this;
+            while (true) {
+                Instruction next = instr.mNext;
+                if (next instanceof LabelInstruction) {
+                    instr = (LabelInstruction) next;
+                } else {
+                    break;
+                }
+            }
+            return instr;
+        }
+
+        /**
+         * Stores a copy of the stack and locals, but also modifies them to
+         * match what was previously stored here.
+         */
+        @Override
+        public void adjustTypes(Stack<VerificationInfo.Type> stack,
+                                VerificationInfo.Type[] locals)
+        {
+            if (!isBranchTarget()) {
+                //return false;
+                // FIXME
+                return;
+            }
+
+            boolean changes = false;
+            if (mStack == null) {
+                mStack = new Stack<VerificationInfo.Type>();
+                mStack.addAll(stack);
+
+                // Merge usage, but only needs to be done first time.
+                BitList[] varUsage = mVarUsage;
+                int location = getLocation();
+                for (int i=0; i<varUsage.length; i++) {
+                    BitList list = varUsage[i];
+                    if (list == null || !list.get(location)) {
+                        if (!locals[i].isTop()) {
+                            locals[i] = VerificationInfo.topType();
+                            changes = true;
+                        }
+                    }
+                }
+
+                mLocals = locals.clone();
+            } else {
+                Stack<VerificationInfo.Type> ourStack = mStack;
+                // Stack size should match, but let verifier detect this.
+                int size = Math.min(ourStack.size(), stack.size());
+
+                for (int i=0; i<size; i++) {
+                    VerificationInfo.Type type = stack.get(i);
+                    VerificationInfo.Type ourType = ourStack.get(i);
+                    if (!type.equals(ourType)) {
+                        type = merge(type, ourType);
+                        stack.set(i, type);
+                        ourStack.set(i, type);
+                        changes = true;
+                    }
+                }
+                
+                VerificationInfo.Type[] ourLocals = mLocals;
+                // Locals should always match length, but choose larger to
+                // expose any potential bug.
+                size = Math.max(ourLocals.length, locals.length);
+
+                for (int i=0; i<size; i++) {
+                    VerificationInfo.Type type = locals[i];
+                    VerificationInfo.Type ourType = ourLocals[i];
+                    if (!type.equals(ourType)) {
+                        type = merge(type, ourType);
+                        locals[i]= type;
+                        ourLocals[i] = type;
+                        changes = true;
+                    }
+                }
+            }
+
+            // FIXME return changes;
+            return;
+        }
+
+        // FIXME: testing
+        @Override
+        public String toString() {
+            return super.toString() + ", " + mStack + ", " + Arrays.toString(mLocals);
         }
     }
 
@@ -1087,19 +1559,32 @@ class InstructionList implements CodeBuffer {
      * Defines a code instruction and has storage for byte codes.
      */
     public abstract class CodeInstruction extends Instruction {
+        final VerificationInfo.Type mPushed;
         protected byte[] mBytes;
 
-        protected CodeInstruction(int stackAdjust) {
+        protected CodeInstruction(int stackAdjust, VerificationInfo.Type pushed) {
             super(stackAdjust);
+            mPushed = fillNewLocation(pushed);
         }
 
-        protected CodeInstruction(int stackAdjust, boolean addInstruction) {
+        protected CodeInstruction(int stackAdjust, VerificationInfo.Type pushed,
+                                  boolean addInstruction)
+        {
             super(stackAdjust, addInstruction);
+            mPushed = fillNewLocation(pushed);
         }
 
-        protected CodeInstruction(int stackAdjust, byte[] bytes) {
+        protected CodeInstruction(int stackAdjust, VerificationInfo.Type pushed, byte[] bytes) {
             super(stackAdjust);
+            mPushed = fillNewLocation(pushed);
             mBytes = bytes;
+        }
+
+        private VerificationInfo.Type fillNewLocation(VerificationInfo.Type type) {
+            if (type != null && type.isUninitialized() && !type.isThis()) {
+                type = VerificationInfo.uninitializedType(this);
+            }
+            return type;
         }
 
         @Override
@@ -1131,16 +1616,63 @@ class InstructionList implements CodeBuffer {
         public boolean isResolved() {
             return true;
         }
+
+        @Override
+        public void adjustTypes(Stack<VerificationInfo.Type> stack,
+                                VerificationInfo.Type[] locals)
+        {
+            int adjustment = getStackAdjustment();
+            if (adjustment != 0) {
+                stack.setSize(stack.size() + adjustment);
+            }
+            boolean changes = false;
+            VerificationInfo.Type pushed = mPushed;
+            if (pushed != null) {
+                if (pushed.isDoubleWord()) {
+                    stack.set(stack.size() - 2, pushed);
+                    stack.set(stack.size() - 1, VerificationInfo.topType());
+                } else {
+                    stack.set(stack.size() - 1, pushed);
+                }
+            }
+        }
     }
 
     public class SimpleInstruction extends CodeInstruction {
         /**
          * @param pushed type of argument pushed to operand stack after
-         * instruction executes; pass TypeDesc.VOID if nothing
+         * instruction executes; pass null if nothing
          */
         public SimpleInstruction(int stackAdjust, TypeDesc pushed, byte[] bytes) {
-            super(stackAdjust, bytes);
-            // FIXME: pushed
+            this(stackAdjust, toVerificationType(pushed), bytes);
+        }
+
+        /**
+         * @param pushed type of argument pushed to operand stack after
+         * instruction executes; pass null if nothing
+         */
+        public SimpleInstruction(int stackAdjust, VerificationInfo.Type pushed, byte[] bytes) {
+            super(stackAdjust, pushed, bytes);
+        }
+
+        @Override
+        public void adjustTypes(Stack<VerificationInfo.Type> stack,
+                                VerificationInfo.Type[] locals)
+        {
+            if (mBytes[0] == Opcode.AALOAD && mPushed.isReference()) {
+                // Push a type which is more accurate than specified by user.
+                stack.pop(); // pop array index
+                TypeDesc arrayType = stack.pop().getType();
+                TypeDesc actualType;
+                if (arrayType.isArray()) {
+                    stack.push(toVerificationType(arrayType.getComponentType()));
+                } else {
+                    // Fallback to user type.
+                    stack.push(mPushed);
+                }
+            } else {
+                super.adjustTypes(stack, locals);
+            }
         }
     }
 
@@ -1154,7 +1686,16 @@ class InstructionList implements CodeBuffer {
         public ConstantOperandInstruction(int stackAdjust,
                                           TypeDesc pushed,
                                           byte[] bytes,
-                                          ConstantInfo info) {
+                                          ConstantInfo info)
+        {
+            this(stackAdjust, toVerificationType(pushed), bytes, info);
+        }
+
+        public ConstantOperandInstruction(int stackAdjust,
+                                          VerificationInfo.Type pushed,
+                                          byte[] bytes,
+                                          ConstantInfo info)
+        {
             super(stackAdjust, pushed, bytes);
             if (bytes.length < 3) {
                 throw new IllegalArgumentException("Byte for instruction is too small");
@@ -1187,7 +1728,11 @@ class InstructionList implements CodeBuffer {
      */
     public class NewObjectInstruction extends ConstantOperandInstruction {
         public NewObjectInstruction(ConstantClassInfo newType) {
-            super(1, TypeDesc.OBJECT, new byte[] {Opcode.NEW, 0, 0}, newType);
+            super(1,
+                  // Need to pass null as new location because "this" cannot be
+                  // referenced yet. Superclass fills in location instead.
+                  VerificationInfo.uninitializedType(null),
+                  new byte[] {Opcode.NEW, 0, 0}, newType);
         }
 
         @Override
@@ -1200,10 +1745,10 @@ class InstructionList implements CodeBuffer {
      * Defines an instruction which invokes a method.
      */
     public class InvokeInstruction extends ConstantOperandInstruction {
-        public InvokeInstruction(byte opcode,
-                                 ConstantInfo method, TypeDesc ret, TypeDesc[] params) {
+        public InvokeInstruction(byte opcode,ConstantInfo method, TypeDesc ret, TypeDesc[] params)
+        {
             super(calcInvokeAdjust(opcode, ret, params),
-                  ret,
+                  toVerificationType(ret),
                   createInvokeBytes(opcode, params),
                   method);
         }
@@ -1269,10 +1814,30 @@ class InstructionList implements CodeBuffer {
      * Defines an instruction which calls the constructor of a new object.
      */
     public class InvokeConstructorInstruction extends InvokeInstruction {
+        private final TypeDesc mConstuctedType;
+
         public InvokeConstructorInstruction(ConstantMethodInfo ctor,
                                             TypeDesc type, TypeDesc[] params)
         {
             super(Opcode.INVOKESPECIAL, ctor, null, params);
+            mConstuctedType = type;
+        }
+
+        @Override
+        public void adjustTypes(Stack<VerificationInfo.Type> stack,
+                                VerificationInfo.Type[] locals)
+        {
+            VerificationInfo.Type type = stack.get(stack.size() + getStackAdjustment());
+            if (type.isUninitialized()) {
+                VerificationInfo.Type newType = VerificationInfo.toType(mConstuctedType);
+                for (int i=stack.size(); --i>=0; ) {
+                    VerificationInfo.Type stype = stack.get(i);
+                    if (stype == type) {
+                        stack.set(i, newType);
+                    }
+                }
+            }
+            super.adjustTypes(stack, locals);
         }
     }
 
@@ -1290,7 +1855,19 @@ class InstructionList implements CodeBuffer {
          */
         public LoadConstantInstruction(int stackAdjust,
                                        TypeDesc pushed,
-                                       ConstantInfo info) {
+                                       ConstantInfo info)
+        {
+            this(stackAdjust, pushed, info, false);
+        }
+
+        /**
+         * @param pushed type of argument pushed to operand stack after
+         * instruction executes
+         */
+        public LoadConstantInstruction(int stackAdjust,
+                                       VerificationInfo.Type pushed,
+                                       ConstantInfo info)
+        {
             this(stackAdjust, pushed, info, false);
         }
 
@@ -1301,9 +1878,21 @@ class InstructionList implements CodeBuffer {
         public LoadConstantInstruction(int stackAdjust,
                                        TypeDesc pushed,
                                        ConstantInfo info,
-                                       boolean wideOnly) {
-            super(stackAdjust);
-            // FIXME: pushed
+                                       boolean wideOnly)
+        {
+            this(stackAdjust, toVerificationType(pushed), info, wideOnly);
+        }
+
+        /**
+         * @param pushed type of argument pushed to operand stack after
+         * instruction executes
+         */
+        public LoadConstantInstruction(int stackAdjust,
+                                       VerificationInfo.Type pushed,
+                                       ConstantInfo info,
+                                       boolean wideOnly)
+        {
+            super(stackAdjust, pushed);
             mInfo = info;
             mWideOnly = wideOnly;
         }
@@ -1363,9 +1952,10 @@ class InstructionList implements CodeBuffer {
 
         private BranchInstruction(int stackAdjust, boolean addInstruction,
                                   byte opcode, LabelInstruction target) {
-            super(stackAdjust, addInstruction);
+            super(stackAdjust, null, addInstruction);
 
             mTarget = target;
+            target.markBranchTarget();
 
             switch (opcode) {
             case Opcode.JSR_W:
@@ -1486,8 +2076,10 @@ class InstructionList implements CodeBuffer {
     public abstract class LocalOperandInstruction extends CodeInstruction {
         protected final LocalVariableImpl mLocal;
 
-        public LocalOperandInstruction(int stackAdjust, LocalVariable local) {
-            super(stackAdjust);
+        public LocalOperandInstruction(int stackAdjust, VerificationInfo.Type pushed,
+                                       LocalVariable local)
+        {
+            super(stackAdjust, pushed);
             mLocal = (LocalVariableImpl)local;
         }
 
@@ -1519,8 +2111,12 @@ class InstructionList implements CodeBuffer {
      * Defines an instruction that loads a local variable onto the stack.
      */
     public class LoadLocalInstruction extends LocalOperandInstruction {
-        public LoadLocalInstruction(int stackAdjust, LocalVariable local) {
-            super(stackAdjust, local);
+        public LoadLocalInstruction(LocalVariable local) {
+            this(local, toVerificationType(local.getType()));
+        }
+
+        public LoadLocalInstruction(LocalVariable local, VerificationInfo.Type type) {
+            super(local.getType().isDoubleWord() ? 2 : 1, type, local);
         }
 
         @Override
@@ -1675,6 +2271,18 @@ class InstructionList implements CodeBuffer {
             return mBytes;
         }
 
+        @Override
+        public void adjustTypes(Stack<VerificationInfo.Type> stack,
+                                VerificationInfo.Type[] locals)
+        {
+            if (mPushed.isReference()) {
+                // Push a type which is more accurate than specified by user.
+                stack.push(locals[getVariableNumber()]);
+            } else {
+                super.adjustTypes(stack, locals);
+            }
+        }
+
         public boolean isLoad() {
             return true;
         }
@@ -1691,8 +2299,8 @@ class InstructionList implements CodeBuffer {
     public class StoreLocalInstruction extends LocalOperandInstruction {
         private boolean mDiscardResult;
 
-        public StoreLocalInstruction(int stackAdjust, LocalVariable local) {
-            super(stackAdjust, local);
+        public StoreLocalInstruction(LocalVariable local) {
+            super(local.getType().isDoubleWord() ? -2 : -1, null, local);
         }
 
         @Override
@@ -1704,7 +2312,7 @@ class InstructionList implements CodeBuffer {
         public byte[] getBytes() {
             if (mDiscardResult) {
                 // Liveness analysis discovered that the results of this store
-                // are not needed so just pop if off the stack.
+                // are not needed so just pop it off the stack.
                 return new byte[] { mLocal.isDoubleWord() ? Opcode.POP2 : Opcode.POP };
             }
 
@@ -1859,6 +2467,21 @@ class InstructionList implements CodeBuffer {
             return true;
         }
 
+        @Override
+        public void adjustTypes(Stack<VerificationInfo.Type> stack,
+                                VerificationInfo.Type[] locals)
+        {
+            if (!mDiscardResult && !stack.isEmpty()) {
+                int varNum = getVariableNumber();
+                if ((locals[varNum] = stack.peek()).isDoubleWord()) {
+                    locals[varNum + 1] = VerificationInfo.topType();
+                }
+                //System.out.println("xxx " + stack);
+                //System.out.println("*** " + this + ", " + Arrays.toString(locals));
+            }
+            super.adjustTypes(stack, locals);
+        }
+
         public boolean isLoad() {
             return false;
         }
@@ -1886,7 +2509,7 @@ class InstructionList implements CodeBuffer {
         // local variables used by ret are fixed and are not optimized.
 
         public RetInstruction(LocalVariable local) {
-            super(0, local);
+            super(0, null, local);
             ((LocalVariableImpl)local).setFixedNumber(mNextFixedVariableNumber++);
         }
 
@@ -1931,7 +2554,7 @@ class InstructionList implements CodeBuffer {
         private final short mAmount;
 
         public ShortIncrementInstruction(LocalVariable local, short amount) {
-            super(0, local);
+            super(0, null, local);
             mAmount = amount;
         }
 
@@ -1994,7 +2617,7 @@ class InstructionList implements CodeBuffer {
         {
             // A SwitchInstruction always adjusts the stack by -1 because it 
             // pops the switch key off the stack.
-            super(-1);
+            super(-1, null);
 
             if (casesParam.length != locationsParam.length) {
                 throw new IllegalArgumentException
@@ -2015,6 +2638,7 @@ class InstructionList implements CodeBuffer {
                         ("Switch location is not a label instruction");
                 }
                 locations[i] = location;
+                location.markBranchTarget();
             }
             mLocations = locations;
 
@@ -2023,6 +2647,8 @@ class InstructionList implements CodeBuffer {
             } catch (ClassCastException e) {
                 throw new IllegalArgumentException("Default location is not a label instruction");
             }
+
+            mDefaultLocation.markBranchTarget();
 
             // First sort the cases and locations.
             sort(0, mCases.length - 1);
@@ -2196,12 +2822,90 @@ class InstructionList implements CodeBuffer {
      */
     public class StackOperationInstruction extends CodeInstruction {
         public StackOperationInstruction(byte opcode) {
-            super(calcStackOperationAdjust(opcode), new byte[] {opcode});
+            super(calcStackOperationAdjust(opcode), null, new byte[] {opcode});
         }
 
         @Override
         public boolean isFlowThrough() {
             return true;
+        }
+
+        @Override
+        public void adjustTypes(Stack<VerificationInfo.Type> stack,
+                                VerificationInfo.Type[] locals)
+        {
+            int adjustment = getStackAdjustment();
+            if (adjustment < 0) {
+                // POP or POP2
+                stack.setSize(stack.size() + adjustment);
+                return;
+            }
+
+            VerificationInfo.Type type1, type2, type3, type4;
+
+            switch (mBytes[0]) {
+            case Opcode.DUP:
+                stack.push(stack.peek());
+                break;
+
+            case Opcode.DUP_X1:
+                type1 = stack.pop();
+                type2 = stack.pop();
+                stack.push(type1);
+                stack.push(type2);
+                stack.push(type1);
+                break;
+
+            case Opcode.DUP_X2:
+                type1 = stack.pop();
+                type2 = stack.pop();
+                type3 = stack.pop();
+                stack.push(type1);
+                stack.push(type3);
+                stack.push(type2);
+                stack.push(type1);
+                break;
+
+            case Opcode.DUP2:
+                type1 = stack.pop();
+                type2 = stack.pop();
+                stack.push(type2);
+                stack.push(type1);
+                stack.push(type2);
+                stack.push(type1);
+                break;
+
+            case Opcode.DUP2_X1:
+                type1 = stack.pop();
+                type2 = stack.pop();
+                type3 = stack.pop();
+                stack.push(type2);
+                stack.push(type1);
+                stack.push(type3);
+                stack.push(type2);
+                stack.push(type1);
+                break;
+
+            case Opcode.DUP2_X2:
+                type1 = stack.pop();
+                type2 = stack.pop();
+                type3 = stack.pop();
+                type4 = stack.pop();
+                stack.push(type2);
+                stack.push(type1);
+                stack.push(type4);
+                stack.push(type3);
+                stack.push(type2);
+                stack.push(type1);
+                break;
+
+            case Opcode.SWAP:
+                type1 = stack.pop();
+                type2 = stack.pop();
+                stack.push(type1);
+                stack.push(type2);
+                break;
+            }
         }
     }
 

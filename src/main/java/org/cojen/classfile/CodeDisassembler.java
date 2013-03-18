@@ -17,7 +17,6 @@
 package org.cojen.classfile;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -53,9 +52,6 @@ public class CodeDisassembler {
 
     // List of all the LocalVariable objects in use.
     private Vector<Object> mLocals;
-
-    // True if the method being decompiled still has a "this" reference.
-    private boolean mHasThis;
 
     private Location mReturnLocation;
 
@@ -106,9 +102,8 @@ public class CodeDisassembler {
                                          LocalVariable[] params, Location returnLocation) {
         mAssembler = assembler;
         mLocals = new Vector<Object>();
-        if (mHasThis = !mMethod.getModifiers().isStatic()) {
-            // Reserve a slot for "this" parameter.
-            mLocals.add(null);
+        if (!mMethod.getModifiers().isStatic()) {
+            mLocals.add(mAssembler.getThis());
         }
 
         gatherLabels();
@@ -897,11 +892,7 @@ public class CodeDisassembler {
                 case Opcode.ALOAD_1:
                 case Opcode.ALOAD_2:
                 case Opcode.ALOAD_3:
-                    if (index == 0 && mHasThis) {
-                        assembler.loadThis();
-                    } else {
-                        assembler.loadLocal(getLocalVariable(index, type));
-                    }
+                    assembler.loadLocal(getLocalVariable(index, type));
                     break;
                 case Opcode.ISTORE:
                 case Opcode.LSTORE:
@@ -928,18 +919,13 @@ public class CodeDisassembler {
                 case Opcode.ASTORE_1:
                 case Opcode.ASTORE_2:
                 case Opcode.ASTORE_3:
-                    if (index == 0 && mHasThis) {
-                        // The "this" reference just got blown away.
-                        mHasThis = false;
-                    }
                     assembler.storeLocal(getLocalVariable(index, type));
                     break;
                 }
                 break;
 
             case Opcode.RET:
-                LocalVariable local = getLocalVariable
-                    (readUnsignedByte(), TypeDesc.OBJECT);
+                LocalVariable local = getLocalVariable(readUnsignedByte(), TypeDesc.OBJECT);
                 assembler.ret(local);
                 break;
 
@@ -1190,35 +1176,25 @@ public class CodeDisassembler {
                     case Opcode.FLOAD:
                     case Opcode.DLOAD:
                     case Opcode.ALOAD:
-                        if (index == 0 && mHasThis) {
-                            assembler.loadThis();
-                        } else {
-                            assembler.loadLocal(getLocalVariable(index, type));
-                        }
+                        assembler.loadLocal(getLocalVariable(index, type));
                         break;
                     case Opcode.ISTORE:
                     case Opcode.LSTORE:
                     case Opcode.FSTORE:
                     case Opcode.DSTORE:
                     case Opcode.ASTORE:
-                        if (index == 0 && mHasThis) {
-                            // The "this" reference just got blown away.
-                            mHasThis = false;
-                        }
                         assembler.storeLocal(getLocalVariable(index, type));
                         break;
                     }
                     break;
 
                 case Opcode.RET:
-                    local = getLocalVariable
-                        (readUnsignedShort(), TypeDesc.OBJECT);
+                    local = getLocalVariable(readUnsignedShort(), TypeDesc.OBJECT);
                     assembler.ret(local);
                     break;
                     
                 case Opcode.IINC:
-                    local = getLocalVariable
-                        (readUnsignedShort(), TypeDesc.INT);
+                    local = getLocalVariable(readUnsignedShort(), TypeDesc.INT);
                     assembler.integerIncrement(local, readShort());
                     break;
                 }
@@ -1537,7 +1513,7 @@ public class CodeDisassembler {
 
         if (index >= mLocals.size()) {
             mLocals.setSize(index + 1);
-            local = mAssembler.createLocalVariable(null, type);
+            local = mAssembler.createLocalVariable(null, type, index);
             mLocals.set(index, local);
             return local;
         }
@@ -1545,7 +1521,7 @@ public class CodeDisassembler {
         Object obj = mLocals.get(index);
 
         if (obj == null) {
-            local = mAssembler.createLocalVariable(null, type);
+            local = mAssembler.createLocalVariable(null, type, index);
             mLocals.set(index, local);
             return local;
         }
@@ -1558,7 +1534,7 @@ public class CodeDisassembler {
             // Variable takes on multiple types, so convert entry to a list.
             List<LocalVariable> locals = new ArrayList<LocalVariable>(4);
             locals.add(local);
-            local = mAssembler.createLocalVariable(null, type);
+            local = mAssembler.createLocalVariable(null, type, index);
             locals.add(local);
             mLocals.set(index, locals);
             return local;
@@ -1572,7 +1548,7 @@ public class CodeDisassembler {
             }
         }
         
-        local = mAssembler.createLocalVariable(null, type);
+        local = mAssembler.createLocalVariable(null, type, index);
         locals.add(local);
         return local;
     }

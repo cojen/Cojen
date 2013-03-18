@@ -41,4 +41,14 @@ public class RuntimeInvisibleAnnotationsAttr extends AnnotationsAttr {
     {
         super(cp, name, length, din);
     }
+
+    RuntimeInvisibleAnnotationsAttr(ConstantPool cp, String name,
+                                    RuntimeInvisibleAnnotationsAttr source)
+    {
+        super(cp, name, source);
+    }
+
+    public RuntimeInvisibleAnnotationsAttr copyTo(ConstantPool cp) {
+        return new RuntimeInvisibleAnnotationsAttr(cp, getName(), this);
+    }
 }

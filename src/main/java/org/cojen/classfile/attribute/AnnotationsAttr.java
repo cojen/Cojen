@@ -32,8 +32,8 @@ import org.cojen.classfile.ConstantPool;
  */
 public abstract class AnnotationsAttr extends Attribute {
 
-    private List<Annotation> mAnnotations;
-    
+    private final List<Annotation> mAnnotations;
+
     public AnnotationsAttr(ConstantPool cp, String name) {
         super(cp, name);
         mAnnotations = new ArrayList<Annotation>(2);
@@ -50,6 +50,16 @@ public abstract class AnnotationsAttr extends Attribute {
         for (int i=0; i<size; i++) {
             addAnnotation(new Annotation(cp, din));
         }
+    }
+
+    AnnotationsAttr(ConstantPool cp, String name, AnnotationsAttr source) {
+        super(cp, name);
+        List<Annotation> sourceAnnotations = source.mAnnotations;
+        List<Annotation> annotations = new ArrayList<Annotation>(sourceAnnotations.size());
+        for (Annotation ann : sourceAnnotations) {
+            annotations.add(ann.copyTo(cp));
+        }
+        mAnnotations = annotations;
     }
 
     public Annotation[] getAnnotations() {

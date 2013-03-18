@@ -43,6 +43,10 @@ public class DeprecatedAttr extends Attribute {
         skipBytes(din, length);
     }
 
+    public DeprecatedAttr copyTo(ConstantPool cp) {
+        return new DeprecatedAttr(cp, getName());
+    }
+
     public int getLength() {
         return 0;
     }

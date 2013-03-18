@@ -43,6 +43,10 @@ public class UnknownAttr extends Attribute {
         din.readFully(mData);
     }
 
+    public UnknownAttr copyTo(ConstantPool cp) {
+        return new UnknownAttr(cp, getName(), mData);
+    }
+
     public int getLength() {
         return mData.length;
     }

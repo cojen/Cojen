@@ -34,7 +34,7 @@ import org.cojen.classfile.constant.ConstantClassInfo;
 public class ExceptionsAttr extends Attribute {
 
     private List<ConstantClassInfo> mExceptions = new ArrayList<ConstantClassInfo>(2);
-    
+
     public ExceptionsAttr(ConstantPool cp) {
         super(cp, EXCEPTIONS);
     }
@@ -42,7 +42,7 @@ public class ExceptionsAttr extends Attribute {
     public ExceptionsAttr(ConstantPool cp, String name) {
         super(cp, name);
     }
-    
+
     public ExceptionsAttr(ConstantPool cp, String name, int length, DataInput din)
         throws IOException
     {
@@ -68,11 +68,19 @@ public class ExceptionsAttr extends Attribute {
     public void addException(ConstantClassInfo type) {
         mExceptions.add(type);
     }
-    
+
+    public ExceptionsAttr copyTo(ConstantPool cp) {
+        ExceptionsAttr attr = new ExceptionsAttr(cp, getName());
+        for (ConstantClassInfo info : getExceptions()) {
+            attr.addException(info.copyTo(cp));
+        }
+        return attr;
+    }
+
     public int getLength() {
         return 2 + 2 * mExceptions.size();
     }
-    
+
     public void writeDataTo(DataOutput dout) throws IOException {
         int size = mExceptions.size();
         dout.writeShort(size);

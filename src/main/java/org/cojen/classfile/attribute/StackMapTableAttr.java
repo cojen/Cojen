@@ -21,12 +21,16 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.cojen.classfile.Attribute;
 import org.cojen.classfile.ConstantPool;
+import org.cojen.classfile.FixedLocation;
+import org.cojen.classfile.Location;
 import org.cojen.classfile.MethodInfo;
 import org.cojen.classfile.TypeDesc;
+import org.cojen.classfile.VerificationInfo;
 
 import org.cojen.classfile.constant.ConstantClassInfo;
 
@@ -41,7 +45,11 @@ public class StackMapTableAttr extends Attribute {
     private int mLength;
 
     public StackMapTableAttr(ConstantPool cp) {
-        super(cp, STACK_MAP_TABLE);
+        this(cp, STACK_MAP_TABLE);
+    }
+
+    public StackMapTableAttr(ConstantPool cp, String name) {
+        super(cp, name);
         mInitialFrame = new InitialFrame();
     }
 
@@ -66,38 +74,39 @@ public class StackMapTableAttr extends Attribute {
         mLength = length;
     }
 
-    public int getLength() {
-        if (mLength < 0) {
-            if (mInitialFrame.getNext() == null) {
-                mLength = 0;
-            } else {
-                int length = 2;
-                StackMapFrame frame = mInitialFrame;
-                while (frame != null) {
-                    length += frame.getLength();
-                    frame = frame.getNext();
-                }
-                mLength = length;
-            }
-        }
-        return mLength;
+    private StackMapTableAttr(ConstantPool cp, String name, InitialFrame initialFrame, int size) {
+        super(cp, name);
+        mInitialFrame = initialFrame;
+        mSize = size;
     }
 
-    @Override
-    public void writeTo(DataOutput dout) throws IOException {
-        if (mSize == 0) {
-            return;
+    public boolean isEmpty() {
+        return mSize == 0;
+    }
+
+    public StackMapTableAttr copyTo(ConstantPool cp) {
+        return new StackMapTableAttr(cp, getName(), mInitialFrame.copyTo(null, cp), mSize);
+    }
+
+    public int getLength() {
+        if (mLength < 0) {
+            int length = 2;
+            StackMapFrame frame = mInitialFrame;
+            while (frame != null) {
+                length += frame.getLength();
+                frame = frame.getNext();
+            }
+            mLength = length;
         }
-        super.writeTo(dout);
+        return mLength;
     }
 
     @Override
     public void writeDataTo(DataOutput dout) throws IOException {
         dout.writeShort(mSize);
         StackMapFrame frame = mInitialFrame;
-        while (frame != null) {
+        while ((frame = frame.getNext()) != null) {
             frame.writeTo(dout);
-            frame = frame.getNext();
         }
     }
 
@@ -107,6 +116,39 @@ public class StackMapTableAttr extends Attribute {
 
     public void setInitialFrame(MethodInfo method) {
         mInitialFrame.set(getConstantPool(), method);
+    }
+
+    /**
+     * Builds all stack frames from the given verification info, excluding the
+     * initial frame.
+     */
+    public void buildFrames(VerificationInfo[] infos) {
+        mLength = -1;
+
+        if (infos == null || infos.length == 0) {
+            mInitialFrame.mNext = null;
+            mSize = 0;
+            return;
+        }
+
+        int size = infos.length;
+        ConstantPool cp = getConstantPool();
+        StackMapFrame prev = mInitialFrame;
+        FullFrame prevFull = null;
+        int prevLocation = -1;
+
+        for (VerificationInfo info : infos) {
+            if (info.getLocation().getLocation() == prevLocation) {
+                size--;
+                continue;
+            }
+            FullFrame full = new FullFrame(prev, cp, info);
+            prev = full.optimize(prevFull);
+            prevFull = full;
+            prevLocation = info.getLocation().getLocation();
+        }
+
+        mSize = size;
     }
 
     public static abstract class StackMapFrame {
@@ -146,6 +188,13 @@ public class StackMapTableAttr extends Attribute {
             }
         }
 
+        StackMapFrame(StackMapFrame prev, Location location) {
+            if ((mPrev = prev) != null) {
+                prev.mNext = this;
+            }
+            mOffset = location.getLocation();
+        }
+
         /**
          * Returns number of bytes required to encode frame in class file.
          */
@@ -167,10 +216,18 @@ public class StackMapTableAttr extends Attribute {
 
         abstract int getOffsetDelta();
 
+        int computeOffsetDelta() {
+            if (mPrev == null || mPrev instanceof InitialFrame) {
+                return mOffset;
+            } else {
+                return mOffset - mPrev.getOffset() - 1;
+            }
+        }
+
         /**
          * Returns verification info for all local variables at this frame.
          */
-        public abstract VerificationTypeInfo[] getLocalInfos();
+        public abstract VerificationTypeInfo[] getLocalVariableInfos();
 
         /**
          * Returns verification info for all stack variables at this
@@ -185,6 +242,8 @@ public class StackMapTableAttr extends Attribute {
         public final StackMapFrame getNext() {
             return mNext;
         }
+
+        abstract StackMapFrame copyTo(StackMapFrame prev, ConstantPool cp);
 
         public abstract void writeTo(DataOutput dout) throws IOException;
     }
@@ -203,12 +262,12 @@ public class StackMapTableAttr extends Attribute {
         }
 
         @Override
-        public int getOffsetDelta() {
+        int getOffsetDelta() {
             return 0;
         }
 
         @Override
-        public VerificationTypeInfo[] getLocalInfos() {
+        public VerificationTypeInfo[] getLocalVariableInfos() {
             if (mLocalInfos == null) {
                 return VerificationTypeInfo.EMPTY_ARRAY;
             }
@@ -218,6 +277,17 @@ public class StackMapTableAttr extends Attribute {
         @Override
         public VerificationTypeInfo[] getStackItemInfos() {
             return VerificationTypeInfo.EMPTY_ARRAY;
+        }
+
+        @Override
+        InitialFrame copyTo(StackMapFrame prev, ConstantPool cp) {
+            InitialFrame frame = new InitialFrame();
+            VerificationTypeInfo[] infos = getLocalVariableInfos();
+            for (int i=0; i<infos.length; i++) {
+                infos[i] = infos[i].copyTo(cp);
+            }
+            frame.mLocalInfos = infos;
+            return frame;
         }
 
         @Override
@@ -265,18 +335,23 @@ public class StackMapTableAttr extends Attribute {
         }
 
         @Override
-        public int getOffsetDelta() {
+        int getOffsetDelta() {
             return mOffsetDelta;
         }
 
         @Override
-        public VerificationTypeInfo[] getLocalInfos() {
-            return getPrevious().getLocalInfos();
+        public VerificationTypeInfo[] getLocalVariableInfos() {
+            return getPrevious().getLocalVariableInfos();
         }
 
         @Override
         public VerificationTypeInfo[] getStackItemInfos() {
             return VerificationTypeInfo.EMPTY_ARRAY;
+        }
+
+        @Override
+        SameFrame copyTo(StackMapFrame prev, ConstantPool cp) {
+            return new SameFrame(prev, mOffsetDelta);
         }
 
         @Override
@@ -298,24 +373,37 @@ public class StackMapTableAttr extends Attribute {
             mStackItemInfo = VerificationTypeInfo.read(cp, din);
         }
 
+        SameLocalsOneStackItemFrame(StackMapFrame prev,
+                                    int offsetDelta, VerificationTypeInfo stackItem)
+        {
+            super(prev);
+            mOffsetDelta = offsetDelta;
+            mStackItemInfo = stackItem;
+        }
+
         @Override
         public int getLength() {
             return 1 + mStackItemInfo.getLength();
         }
 
         @Override
-        public int getOffsetDelta() {
+        int getOffsetDelta() {
             return mOffsetDelta;
         }
 
         @Override
-        public VerificationTypeInfo[] getLocalInfos() {
-            return getPrevious().getLocalInfos();
+        public VerificationTypeInfo[] getLocalVariableInfos() {
+            return getPrevious().getLocalVariableInfos();
         }
 
         @Override
         public VerificationTypeInfo[] getStackItemInfos() {
             return new VerificationTypeInfo[]{mStackItemInfo};
+        }
+
+        @Override
+        SameLocalsOneStackItemFrame copyTo(StackMapFrame prev, ConstantPool cp) {
+            return new SameLocalsOneStackItemFrame(prev, mOffsetDelta, mStackItemInfo.copyTo(cp));
         }
 
         @Override
@@ -337,19 +425,27 @@ public class StackMapTableAttr extends Attribute {
             mStackItemInfo = VerificationTypeInfo.read(cp, din);
         }
 
+        SameLocalsOneStackItemFrameExtended(StackMapFrame prev,
+                                            int offsetDelta, VerificationTypeInfo stackItem)
+        {
+            super(prev);
+            mOffsetDelta = offsetDelta;
+            mStackItemInfo = stackItem;
+        }
+
         @Override
         public int getLength() {
             return 3 + mStackItemInfo.getLength();
         }
 
         @Override
-        public int getOffsetDelta() {
+        int getOffsetDelta() {
             return mOffsetDelta;
         }
 
         @Override
-        public VerificationTypeInfo[] getLocalInfos() {
-            return getPrevious().getLocalInfos();
+        public VerificationTypeInfo[] getLocalVariableInfos() {
+            return getPrevious().getLocalVariableInfos();
         }
 
         @Override
@@ -358,8 +454,14 @@ public class StackMapTableAttr extends Attribute {
         }
 
         @Override
+        SameLocalsOneStackItemFrameExtended copyTo(StackMapFrame prev, ConstantPool cp) {
+            return new SameLocalsOneStackItemFrameExtended
+                (prev, mOffsetDelta, mStackItemInfo.copyTo(cp));
+        }
+
+        @Override
         public void writeTo(DataOutput dout) throws IOException {
-            dout.writeByte(257);
+            dout.writeByte(247);
             dout.writeShort(mOffsetDelta);
             mStackItemInfo.writeTo(dout);
         }
@@ -377,20 +479,26 @@ public class StackMapTableAttr extends Attribute {
             mChop = chop;
         }
 
+        ChopFrame(StackMapFrame prev, int offsetDelta, int chop) {
+            super(prev);
+            mOffsetDelta = offsetDelta;
+            mChop = chop;
+        }
+
         @Override
         public int getLength() {
             return 3;
         }
 
         @Override
-        public int getOffsetDelta() {
+        int getOffsetDelta() {
             return mOffsetDelta;
         }
 
         @Override
-        public VerificationTypeInfo[] getLocalInfos() {
+        public VerificationTypeInfo[] getLocalVariableInfos() {
             if (mLocalInfos == null) {
-                VerificationTypeInfo[] prevInfos = getPrevious().getLocalInfos();
+                VerificationTypeInfo[] prevInfos = getPrevious().getLocalVariableInfos();
                 VerificationTypeInfo[] infos = new VerificationTypeInfo[prevInfos.length - mChop];
                 System.arraycopy(prevInfos, 0, infos, 0, infos.length);
                 mLocalInfos = infos;
@@ -401,6 +509,11 @@ public class StackMapTableAttr extends Attribute {
         @Override
         public VerificationTypeInfo[] getStackItemInfos() {
             return VerificationTypeInfo.EMPTY_ARRAY;
+        }
+
+        @Override
+        ChopFrame copyTo(StackMapFrame prev, ConstantPool cp) {
+            return new ChopFrame(prev, mOffsetDelta, mChop);
         }
 
         @Override
@@ -418,24 +531,34 @@ public class StackMapTableAttr extends Attribute {
             mOffsetDelta = din.readUnsignedShort();
         }
 
+        SameFrameExtended(StackMapFrame prev, int offsetDelta) {
+            super(prev);
+            mOffsetDelta = offsetDelta;
+        }
+
         @Override
         public int getLength() {
             return 3;
         }
 
         @Override
-        public int getOffsetDelta() {
+        int getOffsetDelta() {
             return mOffsetDelta;
         }
 
         @Override
-        public VerificationTypeInfo[] getLocalInfos() {
-            return getPrevious().getLocalInfos();
+        public VerificationTypeInfo[] getLocalVariableInfos() {
+            return getPrevious().getLocalVariableInfos();
         }
 
         @Override
         public VerificationTypeInfo[] getStackItemInfos() {
             return VerificationTypeInfo.EMPTY_ARRAY;
+        }
+
+        @Override
+        SameFrameExtended copyTo(StackMapFrame prev, ConstantPool cp) {
+            return new SameFrameExtended(prev, mOffsetDelta);
         }
 
         @Override
@@ -459,6 +582,12 @@ public class StackMapTableAttr extends Attribute {
             mAppendInfos = VerificationTypeInfo.read(cp, din, numLocals);
         }
 
+        AppendFrame(StackMapFrame prev, int offsetDelta, VerificationTypeInfo[] append) {
+            super(prev);
+            mOffsetDelta = offsetDelta;
+            mAppendInfos = append;
+        }
+
         @Override
         public int getLength() {
             int length = 3;
@@ -469,14 +598,14 @@ public class StackMapTableAttr extends Attribute {
         }
 
         @Override
-        public int getOffsetDelta() {
+        int getOffsetDelta() {
             return mOffsetDelta;
         }
 
         @Override
-        public VerificationTypeInfo[] getLocalInfos() {
+        public VerificationTypeInfo[] getLocalVariableInfos() {
             if (mLocalInfos == null) {
-                VerificationTypeInfo[] prevInfos = getPrevious().getLocalInfos();
+                VerificationTypeInfo[] prevInfos = getPrevious().getLocalVariableInfos();
                 VerificationTypeInfo[] infos =
                     new VerificationTypeInfo[prevInfos.length + mAppendInfos.length];
                 System.arraycopy(prevInfos, 0, infos, 0, prevInfos.length);
@@ -489,6 +618,15 @@ public class StackMapTableAttr extends Attribute {
         @Override
         public VerificationTypeInfo[] getStackItemInfos() {
             return VerificationTypeInfo.EMPTY_ARRAY;
+        }
+
+        @Override
+        AppendFrame copyTo(StackMapFrame prev, ConstantPool cp) {
+            VerificationTypeInfo[] infos = mAppendInfos.clone();
+            for (int i=0; i<infos.length; i++) {
+                infos[i] = infos[i].copyTo(cp);
+            }
+            return new AppendFrame(prev, mOffsetDelta, infos);
         }
 
         @Override
@@ -515,6 +653,104 @@ public class StackMapTableAttr extends Attribute {
             mStackItemInfos = VerificationTypeInfo.read(cp, din, numStackItems);
         }
 
+        FullFrame(StackMapFrame prev, ConstantPool cp, VerificationInfo info) {
+            super(prev, info.getLocation());
+            mOffsetDelta = computeOffsetDelta();
+            mLocalInfos = VerificationTypeInfo.forTypes(cp, info.getLocalVariableTypes());
+            mStackItemInfos = VerificationTypeInfo.forTypes(cp, info.getOperandStackTypes());
+        }
+
+        private FullFrame(StackMapFrame prev,
+                          int offsetDelta,
+                          VerificationTypeInfo[] localInfos,
+                          VerificationTypeInfo[] stackItemInfos)
+        {
+            super(prev);
+            mOffsetDelta = offsetDelta;
+            mLocalInfos = localInfos;
+            mStackItemInfos = stackItemInfos;
+        }
+
+        /**
+         * Returns a smaller, optimized frame based on the previous one.
+         */
+        StackMapFrame optimize(FullFrame prevFull) {
+            VerificationTypeInfo[] prevLocals = null;
+
+            if (mStackItemInfos.length == 0 || mStackItemInfos.length == 1) {
+                prevLocals = getPreviousLocals(prevFull, prevLocals);
+
+                if (Arrays.equals(prevLocals, mLocalInfos)) {
+                    StackMapFrame prev = getPrevious();
+                    if (mStackItemInfos.length == 0) {
+                        if (mOffsetDelta <= 63) {
+                            return new SameFrame(prev, mOffsetDelta);
+                        } else {
+                            return new SameFrameExtended(prev, mOffsetDelta);
+                        }
+                    } else {
+                        VerificationTypeInfo stackItem = mStackItemInfos[0];
+                        if (mOffsetDelta <= 63) {
+                            return new SameLocalsOneStackItemFrame(prev, mOffsetDelta, stackItem);
+                        } else {
+                            return new SameLocalsOneStackItemFrameExtended
+                                (prev, mOffsetDelta, stackItem);
+                        }
+                    }
+                }
+            }
+
+            if (mStackItemInfos.length == 0) {
+                prevLocals = getPreviousLocals(prevFull, prevLocals);
+
+                int lengthDiff = mLocalInfos.length - prevLocals.length;
+                switch (lengthDiff) {
+                case -3:
+                case -2:
+                case -1:
+                    if (sliceEquals(mLocalInfos, prevLocals, mLocalInfos.length)) {
+                        return new ChopFrame(getPrevious(), mOffsetDelta, -lengthDiff);
+                    }
+                    break;
+
+                case 1:
+                case 2:
+                case 3:
+                    if (sliceEquals(mLocalInfos, prevLocals, prevLocals.length)) {
+                        VerificationTypeInfo[] append = new VerificationTypeInfo[lengthDiff];
+                        System.arraycopy(mLocalInfos, mLocalInfos.length - lengthDiff,
+                                         append, 0, lengthDiff);
+                        return new AppendFrame(getPrevious(), mOffsetDelta, append);
+                    }
+                    break;
+                }
+            }
+
+            return this;
+        }
+
+        private VerificationTypeInfo[] getPreviousLocals(FullFrame prevFull,
+                                                         VerificationTypeInfo[] prevLocals)
+        {
+            if (prevLocals == null) {
+                if (prevFull == null) {
+                    prevLocals = getPrevious().getLocalVariableInfos();
+                } else {
+                    prevLocals = prevFull.mLocalInfos;
+                }
+            }
+            return prevLocals;
+        }
+
+        private static boolean sliceEquals(Object[] a, Object[] b, int length) {
+            for (int i=0; i<length; i++) {
+                if (!a[i].equals(b[i])) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         @Override
         public int getLength() {
             int length = 7;
@@ -528,18 +764,31 @@ public class StackMapTableAttr extends Attribute {
         }
 
         @Override
-        public int getOffsetDelta() {
+        int getOffsetDelta() {
             return mOffsetDelta;
         }
 
         @Override
-        public VerificationTypeInfo[] getLocalInfos() {
+        public VerificationTypeInfo[] getLocalVariableInfos() {
             return mLocalInfos.clone();
         }
 
         @Override
         public VerificationTypeInfo[] getStackItemInfos() {
             return mStackItemInfos.clone();
+        }
+
+        @Override
+        FullFrame copyTo(StackMapFrame prev, ConstantPool cp) {
+            VerificationTypeInfo[] localInfos = mLocalInfos.clone();
+            for (int i=0; i<localInfos.length; i++) {
+                localInfos[i] = localInfos[i].copyTo(cp);
+            }
+            VerificationTypeInfo[] stackItemInfos = mStackItemInfos.clone();
+            for (int i=0; i<stackItemInfos.length; i++) {
+                stackItemInfos[i] = stackItemInfos[i].copyTo(cp);
+            }
+            return new FullFrame(prev, mOffsetDelta, localInfos, stackItemInfos);
         }
 
         @Override
@@ -582,9 +831,19 @@ public class StackMapTableAttr extends Attribute {
             case 7:
                 return new ObjectVariableInfo(cp, din);
             case 8:
-                return new UninitVariableInfo(cp, din);
+                return new UninitVariableInfo(din);
             }
             return null;
+        }
+
+        private static VerificationTypeInfo[] read(ConstantPool cp, DataInput din, int num)
+            throws IOException
+        {
+            VerificationTypeInfo[] infos = new VerificationTypeInfo[num];
+            for (int i=0; i<num; i++) {
+                infos[i] = read(cp, din);
+            }
+            return infos;
         }
 
         static VerificationTypeInfo forType(ConstantPool cp, TypeDesc type) {
@@ -608,14 +867,53 @@ public class StackMapTableAttr extends Attribute {
             }
         }
 
-        private static VerificationTypeInfo[] read(ConstantPool cp, DataInput din, int num)
-            throws IOException
-        {
-            VerificationTypeInfo[] infos = new VerificationTypeInfo[num];
-            for (int i=0; i<num; i++) {
-                infos[i] = read(cp, din);
+        static VerificationTypeInfo forType(ConstantPool cp, VerificationInfo.Type type) {
+            if (type.isTop()) {
+                return TopVariableInfo.THE;
+            } else if (type.isNull()) {
+                return NullVariableInfo.THE;
+            } else if (type.isUninitialized()) {
+                if (type.isThis()) {
+                    return UninitThisVariableInfo.THE;
+                } else {
+                    Location newLocation = type.getNewLocation();
+                    if (newLocation == null || newLocation.getLocation() < 0) {
+                        throw new IllegalStateException("New location not set: " + type);
+                    }
+                    return new UninitVariableInfo(newLocation);
+                }
+            } else {
+                return forType(cp, type.getType());
             }
-            return infos;
+        }
+
+        static VerificationTypeInfo[] forTypes(ConstantPool cp,
+                                               List<VerificationInfo.Type> types)
+        {
+            VerificationTypeInfo[] array = new VerificationTypeInfo[types.size()];
+            int shrink = 0;
+            for (int i=0; i<array.length; i++) {
+                TypeDesc type = (array[i] = forType(cp, types.get(i))).getType();
+                if (type != null && type.isDoubleWord() && i + 1 < array.length) {
+                    // Skip implied "top" type.
+                    i++;
+                    shrink++;
+                }
+            }
+
+            if (shrink > 0) {
+                VerificationTypeInfo[] newArray = new VerificationTypeInfo[array.length - shrink];
+                int i = 0;
+                for (int j=0; j<array.length; j++) {
+                    VerificationTypeInfo info = array[j];
+                    if (info != null) {
+                        newArray[i++] = info;
+                    }
+                }
+                array = newArray;
+            }
+
+            return array;
         }
 
         VerificationTypeInfo() {
@@ -654,6 +952,16 @@ public class StackMapTableAttr extends Attribute {
             return false;
         }
 
+        /**
+         * If type is uninitialized and not "this", return the location of the
+         * new instruction that created it. Otherwise, return null.
+         */
+        public Location getNewLocation() {
+            return null;
+        }
+
+        abstract VerificationTypeInfo copyTo(ConstantPool cp);
+
         public abstract void writeTo(DataOutput dout) throws IOException;
 
         @Override
@@ -679,6 +987,11 @@ public class StackMapTableAttr extends Attribute {
         }
 
         @Override
+        TopVariableInfo copyTo(ConstantPool cp) {
+            return this;
+        }
+
+        @Override
         public void writeTo(DataOutput dout) throws IOException {
             dout.writeByte(0);
         }
@@ -701,6 +1014,11 @@ public class StackMapTableAttr extends Attribute {
         }
 
         @Override
+        IntegerVariableInfo copyTo(ConstantPool cp) {
+            return this;
+        }
+
+        @Override
         public void writeTo(DataOutput dout) throws IOException {
             dout.writeByte(1);
         }
@@ -715,6 +1033,11 @@ public class StackMapTableAttr extends Attribute {
         @Override
         public TypeDesc getType() {
             return TypeDesc.FLOAT;
+        }
+
+        @Override
+        FloatVariableInfo copyTo(ConstantPool cp) {
+            return this;
         }
 
         @Override
@@ -735,6 +1058,11 @@ public class StackMapTableAttr extends Attribute {
         }
 
         @Override
+        LongVariableInfo copyTo(ConstantPool cp) {
+            return this;
+        }
+
+        @Override
         public void writeTo(DataOutput dout) throws IOException {
             dout.writeByte(4);
         }
@@ -752,6 +1080,11 @@ public class StackMapTableAttr extends Attribute {
         }
 
         @Override
+        DoubleVariableInfo copyTo(ConstantPool cp) {
+            return this;
+        }
+
+        @Override
         public void writeTo(DataOutput dout) throws IOException {
             dout.writeByte(3);
         }
@@ -766,6 +1099,11 @@ public class StackMapTableAttr extends Attribute {
         @Override
         public TypeDesc getType() {
             return null;
+        }
+
+        @Override
+        NullVariableInfo copyTo(ConstantPool cp) {
+            return this;
         }
 
         @Override
@@ -801,6 +1139,11 @@ public class StackMapTableAttr extends Attribute {
         }
 
         @Override
+        UninitThisVariableInfo copyTo(ConstantPool cp) {
+            return this;
+        }
+
+        @Override
         public void writeTo(DataOutput dout) throws IOException {
             dout.writeByte(6);
         }
@@ -822,6 +1165,10 @@ public class StackMapTableAttr extends Attribute {
             mClassInfo = cp.addConstantClass(desc);
         }
 
+        private ObjectVariableInfo(ConstantClassInfo classInfo) {
+            mClassInfo = classInfo;
+        }
+
         @Override
         public int getLength() {
             return 3;
@@ -833,17 +1180,37 @@ public class StackMapTableAttr extends Attribute {
         }
 
         @Override
+        ObjectVariableInfo copyTo(ConstantPool cp) {
+            return new ObjectVariableInfo(mClassInfo.copyTo(cp));
+        }
+
+        @Override
         public void writeTo(DataOutput dout) throws IOException {
             dout.writeByte(7);
             dout.writeShort(mClassInfo.getIndex());
         }
+
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj instanceof ObjectVariableInfo) {
+                ObjectVariableInfo other = (ObjectVariableInfo) obj;
+                return mClassInfo.equals(other.mClassInfo);
+            }
+            return false;
+        }
     }
 
     private static class UninitVariableInfo extends VerificationTypeInfo {
-        private final int mOffset;
+        private final Location mNewLocation;
 
-        UninitVariableInfo(ConstantPool cp, DataInput din) throws IOException {
-            mOffset = din.readUnsignedShort();
+        UninitVariableInfo(DataInput din) throws IOException {
+            mNewLocation = new FixedLocation(din.readUnsignedShort());
+        }
+
+        UninitVariableInfo(Location newLocation) {
+            mNewLocation = newLocation;
         }
 
         @Override
@@ -862,14 +1229,35 @@ public class StackMapTableAttr extends Attribute {
         }
 
         @Override
+        public Location getNewLocation() {
+            return mNewLocation;
+        }
+
+        @Override
+        UninitVariableInfo copyTo(ConstantPool cp) {
+            return new UninitVariableInfo(new FixedLocation(mNewLocation.getLocation()));
+        }
+
+        @Override
         public void writeTo(DataOutput dout) throws IOException {
             dout.writeByte(8);
-            dout.writeShort(mOffset);
+            dout.writeShort(mNewLocation.getLocation());
         }
 
         @Override
         public String toString() {
-            return "<uninitialized>";
+            return "<uninitialized>@" + mNewLocation.getLocation();
+        }
+
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj instanceof UninitVariableInfo) {
+                UninitVariableInfo other = (UninitVariableInfo) obj;
+                return mNewLocation.getLocation() == other.mNewLocation.getLocation();
+            }
+            return false;
         }
     }
 }

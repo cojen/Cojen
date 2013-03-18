@@ -57,6 +57,10 @@ public class SignatureAttr extends Attribute {
         return mSignature;
     }
     
+    public SignatureAttr copyTo(ConstantPool cp) {
+        return new SignatureAttr(cp, getName(), cp.addConstantUTF(getSignature().getValue()));
+    }
+
     /**
      * Returns the length of the signature attribute, which is 2 bytes.
      */

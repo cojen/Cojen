@@ -29,6 +29,7 @@ import org.cojen.classfile.ExceptionHandler;
 import org.cojen.classfile.LocalVariable;
 import org.cojen.classfile.Location;
 import org.cojen.classfile.MethodInfo;
+import org.cojen.classfile.VerificationInfo;
 
 /**
  * This class corresponds to the Code_attribute structure as defined in <i>The
@@ -43,7 +44,7 @@ public class CodeAttr extends Attribute {
 
     private CodeBuffer mCodeBuffer;
     private List<Attribute> mAttributes = new ArrayList<Attribute>(2);
-    
+
     private LineNumberTableAttr mLineNumberTable;
     private LocalVariableTableAttr mLocalVariableTable;
 
@@ -96,6 +97,13 @@ public class CodeAttr extends Attribute {
             
             public ExceptionHandler[] getExceptionHandlers() {
                 return handlers.clone();
+            }
+
+            public VerificationInfo[] getVerificationInfos() {
+                // Return null to prevent unnecessary rebuild of
+                // StackMapTableAttr if method is re-written without
+                // modifications.
+                return null;
             }
         };
 
@@ -216,6 +224,10 @@ public class CodeAttr extends Attribute {
     }
 
     public void addAttribute(Attribute attr) {
+        if (attr.getConstantPool() != getConstantPool()) {
+            attr = attr.copyTo(getConstantPool());
+        }
+
         if (attr instanceof LineNumberTableAttr) {
             if (mLineNumberTable != null) {
                 mAttributes.remove(mLineNumberTable);
@@ -231,6 +243,9 @@ public class CodeAttr extends Attribute {
                 mAttributes.remove(mStackMapTable);
             }
             mStackMapTable = (StackMapTableAttr)attr;
+            if (mStackMapTable.isEmpty()) {
+                return;
+            }
         }
 
         mAttributes.add(attr);
@@ -238,6 +253,40 @@ public class CodeAttr extends Attribute {
     
     public Attribute[] getAttributes() {
         return mAttributes.toArray(new Attribute[mAttributes.size()]);
+    }
+
+    public CodeAttr copyTo(ConstantPool cp) {
+        CodeAttr attr = new CodeAttr(cp, getName());
+
+        // FIXME: need to rewrite
+        attr.mCodeBuffer = mCodeBuffer;
+
+        for (Attribute sub : mAttributes) {
+            attr.addAttribute(sub.copyTo(cp));
+        }
+
+        return attr;
+    }
+
+    @Override
+    public void prepare() {
+        if (mCodeBuffer != null) {
+            // Force it to perform analysis.
+            mCodeBuffer.getMaxStackDepth();
+            mCodeBuffer.getMaxLocals();
+        }
+
+        if (mStackMapTable != null) {
+            // Prepare by removing potentially empty StackMapTableAttr. Add it
+            // back during getLength call, which get actual verification info
+            // because constant pool is reolved.
+            mAttributes.remove(mStackMapTable);
+        }
+
+        int size = mAttributes.size();
+        for (int i=0; i<size; i++) {
+            mAttributes.get(i).prepare();
+        }
     }
 
     /**
@@ -252,8 +301,16 @@ public class CodeAttr extends Attribute {
             if (handlers != null) {
                 length += 8 * handlers.length;
             }
+
+            VerificationInfo[] infos = mCodeBuffer.getVerificationInfos();
+            if (infos != null && mStackMapTable != null) {
+                mStackMapTable.buildFrames(infos);
+                if (!mStackMapTable.isEmpty()) {
+                    mAttributes.add(mStackMapTable);
+                }
+            }
         }
-        
+
         int size = mAttributes.size();
         for (int i=0; i<size; i++) {
             length += mAttributes.get(i).getLength();

@@ -39,6 +39,10 @@ public class ConstantUTFInfo extends ConstantInfo {
         return mStr;
     }
 
+    public ConstantUTFInfo copyTo(ConstantPool cp) {
+        return cp.addConstantUTF(mStr);
+    }
+
     public int hashCode() {
         return mStr.hashCode();
     }

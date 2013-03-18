@@ -49,6 +49,20 @@ public interface CodeAssembler {
     LocalVariable getParameter(int index) throws IndexOutOfBoundsException;
 
     /**
+     * Returns the local variable represesting the "this" reference.
+     *
+     * @throws IllegalStateException if building a static method
+     */
+    LocalVariable getThis();
+
+    /**
+     * Creates an unnamed LocalVariable.
+     *
+     * @param type The type of data that the requested LocalVariable can store.
+     */
+    LocalVariable createLocalVariable(TypeDesc type);
+
+    /**
      * Creates a LocalVariable reference from a name and type. Although name
      * is optional, it is encouraged that a name be provided. Names do not 
      * need to be unique.
@@ -60,11 +74,14 @@ public interface CodeAssembler {
     LocalVariable createLocalVariable(String name, TypeDesc type);
 
     /**
-     * Creates an unnamed LocalVariable.
+     * Creates a LocalVariable reference from a name and type.
      *
-     * @param type The type of data that the requested LocalVariable can store.
+     * @param name Optional name for the LocalVariable.
+     * @param type The type of data that the requested LocalVariable can 
+     * store. 
+     * @param num hint for which register number to use
      */
-    LocalVariable createLocalVariable(TypeDesc type);
+    LocalVariable createLocalVariable(String name, TypeDesc type, int num);
 
     /**
      * Creates a label, whose location must be set. To create a label and
@@ -180,11 +197,11 @@ public interface CodeAssembler {
     void loadLocal(LocalVariable local);
 
     /**
-     * Loads a reference to "this" onto the stack. Static methods have no 
-     * "this" reference, and an exception is thrown when attempting to
-     * generate "this" in a static method.
+     * Loads a reference to "this" onto the stack.
+     *
+     * @throws IllegalStateException if building a static method
      */
-    void loadThis();
+    void loadThis() throws IllegalStateException;
 
     // store-from-stack-to-local style instructions
 
@@ -820,12 +837,13 @@ public interface CodeAssembler {
                       Location[] locations, Location defaultLocation);
 
     /**
-     * Generates code that performs a subroutine branch to the specified 
-     * location. The instruction generated is either jsr or jsr_w. It is most
-     * often used for implementing a finally block.
+     * Generates code that performs a subroutine branch to the specified
+     * location. The instruction generated is either jsr or jsr_w. This is no
+     * longer recommended for implementing a finally block.
      *
      * @param location The location to branch to
      */
+    @Deprecated
     void jsr(Location location);
 
     /**
@@ -834,6 +852,7 @@ public interface CodeAssembler {
      * @param local The local variable reference that contains the return
      * address. The local variable must be of an object type.
      */
+    @Deprecated
     void ret(LocalVariable local);
 
     // math instructions

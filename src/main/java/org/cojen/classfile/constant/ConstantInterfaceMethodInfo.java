@@ -46,6 +46,12 @@ public class ConstantInterfaceMethodInfo extends ConstantInfo {
         return mNameAndType;
     }
     
+    public ConstantInterfaceMethodInfo copyTo(ConstantPool cp) {
+        return (ConstantInterfaceMethodInfo)cp
+            .addConstant(new ConstantInterfaceMethodInfo
+                         (mParentClass.copyTo(cp), mNameAndType.copyTo(cp)));
+    }
+
     public int hashCode() {
         return mNameAndType.hashCode();
     }

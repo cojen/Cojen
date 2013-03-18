@@ -39,6 +39,10 @@ public class ConstantFloatInfo extends ConstantInfo {
         return mValue;
     }
 
+    public ConstantFloatInfo copyTo(ConstantPool cp) {
+        return cp.addConstantFloat(mValue);
+    }
+
     public int hashCode() {
         return Float.floatToIntBits(mValue);
     }

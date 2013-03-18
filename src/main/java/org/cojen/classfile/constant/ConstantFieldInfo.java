@@ -47,6 +47,11 @@ public class ConstantFieldInfo extends ConstantInfo {
         return mNameAndType;
     }
 
+    public ConstantFieldInfo copyTo(ConstantPool cp) {
+        return (ConstantFieldInfo)cp
+            .addConstant(new ConstantFieldInfo(mParentClass.copyTo(cp), mNameAndType.copyTo(cp)));
+    }
+
     public int hashCode() {
         return mNameAndType.hashCode();
     }

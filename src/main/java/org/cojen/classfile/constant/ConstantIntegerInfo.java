@@ -39,6 +39,10 @@ public class ConstantIntegerInfo extends ConstantInfo {
         return mValue;
     }
 
+    public ConstantIntegerInfo copyTo(ConstantPool cp) {
+        return cp.addConstantInteger(mValue);
+    }
+
     public int hashCode() {
         return mValue;
     }

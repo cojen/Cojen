@@ -85,6 +85,13 @@ public class LineNumberTableAttr extends Attribute {
         mClean = false;
     }
     
+    public LineNumberTableAttr copyTo(ConstantPool cp) {
+        LineNumberTableAttr attr = new LineNumberTableAttr(cp, getName());
+        attr.mEntries.addAll(mEntries);
+        attr.mClean = mClean;
+        return attr;
+    }
+
     public int getLength() {
         clean();
         return 2 + 4 * mEntries.size();

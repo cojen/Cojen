@@ -103,8 +103,12 @@ public class CodeAssemblerPrinter extends AbstractCodeAssembler implements CodeA
         return mParams[index];
     }
 
-    public LocalVariable createLocalVariable(String name, 
-                                             TypeDesc type) {
+    public LocalVariable getThis() {
+        // FIXME
+        return null;
+    }
+
+    public LocalVariable createLocalVariable(String name, TypeDesc type) {
         String varName = "var_" + (++mLocalCounter);
         if (name != null) {
             name = '"' + name + '"';

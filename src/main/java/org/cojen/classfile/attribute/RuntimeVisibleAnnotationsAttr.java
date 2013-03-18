@@ -41,4 +41,14 @@ public class RuntimeVisibleAnnotationsAttr extends AnnotationsAttr {
     {
         super(cp, name, length, din);
     }
+
+    RuntimeVisibleAnnotationsAttr(ConstantPool cp, String name,
+                                  RuntimeVisibleAnnotationsAttr source)
+    {
+        super(cp, name, source);
+    }
+
+    public RuntimeVisibleAnnotationsAttr copyTo(ConstantPool cp) {
+        return new RuntimeVisibleAnnotationsAttr(cp, getName(), this);
+    }
 }

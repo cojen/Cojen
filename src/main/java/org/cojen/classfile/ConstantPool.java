@@ -17,7 +17,7 @@
 package org.cojen.classfile;
 
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +54,9 @@ import org.cojen.classfile.constant.ConstantUTFInfo;
  */
 public class ConstantPool {
     // A set of ConstantInfo objects.
-    private Map<ConstantInfo, ConstantInfo> mConstants = new HashMap<ConstantInfo, ConstantInfo>();
+    private final Map<ConstantInfo, ConstantInfo> mConstants =
+        new LinkedHashMap<ConstantInfo, ConstantInfo>();
+
     // Indexed list of constants.
     private Vector<ConstantInfo> mIndexedConstants;
     private int mEntries;
@@ -372,6 +374,10 @@ public class ConstantPool {
                     (tag, (din.readShort() << 16) | (din.readUnsignedShort()));
                 break;
 
+            case ConstantInfo.TAG_METHOD_HANDLE:
+            case ConstantInfo.TAG_METHOD_TYPE:
+            case ConstantInfo.TAG_METHOD_INVOKE_DYNAMIC:
+
             default:
                 throw new IOException("Invalid constant pool tag: " + tag);
             }
@@ -459,13 +465,17 @@ public class ConstantPool {
     }
 
     private static class TempEntry extends ConstantInfo {
-        public int mTag;
-        public int mData;
+        public final int mTag;
+        public final int mData;
 
         public TempEntry(int tag, int data) {
             super(-1);
             mTag = tag;
             mData = data;
+        }
+
+        public TempEntry copyTo(ConstantPool cp) {
+            return new TempEntry(mTag, mData);
         }
     }
 }

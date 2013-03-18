@@ -40,18 +40,18 @@ import org.cojen.classfile.constant.ConstantUTFInfo;
  * @see ClassFile
  */
 public class FieldInfo {
-    private ClassFile mParent;
-    private ConstantPool mCp;
+    private final ClassFile mParent;
+    private final ConstantPool mCp;
 
-    private String mName;
-    private TypeDesc mType;
+    private final String mName;
+    private final TypeDesc mType;
 
     private Modifiers mModifiers;
 
-    private ConstantUTFInfo mNameConstant;
-    private ConstantUTFInfo mDescriptorConstant;
+    private final ConstantUTFInfo mNameConstant;
+    private final ConstantUTFInfo mDescriptorConstant;
     
-    private List<Attribute> mAttributes = new ArrayList<Attribute>(2);
+    private final List<Attribute> mAttributes = new ArrayList<Attribute>(2);
 
     private ConstantValueAttr mConstant;
     
@@ -69,7 +69,7 @@ public class FieldInfo {
         mNameConstant = mCp.addConstantUTF(name);
         mDescriptorConstant = mCp.addConstantUTF(type.getDescriptor());
     }
-    
+
     private FieldInfo(ClassFile parent,
                       int modifier,
                       ConstantUTFInfo nameConstant,
@@ -105,7 +105,7 @@ public class FieldInfo {
     public TypeDesc getType() {
         return mType;
     }
-    
+
     /**
      * Returns this field's modifiers.
      */
@@ -123,7 +123,7 @@ public class FieldInfo {
     public ConstantUTFInfo getNameConstant() {
         return mNameConstant;
     }
-    
+
     /**
      * Returns a constant from the constant pool with this field's type 
      * descriptor string.
@@ -283,7 +283,14 @@ public class FieldInfo {
     public void setConstantValue(String value) {
         addAttribute(new ConstantValueAttr(mCp, mCp.addConstantString(value)));
     }
-    
+
+    public void removeConstantValue() {
+        if (mConstant != null) {
+            mAttributes.remove(mConstant);
+        }
+        mConstant = null;
+    }
+
     /**
      * Mark this field as being synthetic by adding a special attribute.
      */
@@ -299,6 +306,10 @@ public class FieldInfo {
     }
 
     public void addAttribute(Attribute attr) {
+        if (attr.getConstantPool() != mCp) {
+            attr = attr.copyTo(mCp);
+        }
+
         if (attr instanceof ConstantValueAttr) {
             if (mConstant != null) {
                 mAttributes.remove(mConstant);
@@ -312,7 +323,7 @@ public class FieldInfo {
     public Attribute[] getAttributes() {
         return mAttributes.toArray(new Attribute[mAttributes.size()]);
     }
-    
+
     /**
      * Returns the length (in bytes) of this object in the class file.
      */
@@ -326,7 +337,37 @@ public class FieldInfo {
         
         return length;
     }
-    
+
+    /**
+     * Copies everything but the modifiers, name and type from the given field.
+     */
+    public void copyFrom(FieldInfo field) {
+        for (Attribute attr : field.mAttributes) {
+            addAttribute(attr);
+        }
+    }
+
+    /**
+     * Fully copies this field into another ClassFile.
+     *
+     * @return new field
+     */
+    public FieldInfo copyTo(ClassFile cf) {
+        FieldInfo fi = cf.addField(this);
+        fi.copyFrom(this);
+        return fi;
+    }
+
+    /**
+     * Perform final preparations before constant pool is written out.
+     */
+    public void prepare() {
+        int size = mAttributes.size();
+        for (int i=0; i<size; i++) {
+            mAttributes.get(i).prepare();
+        }
+    }
+
     public void writeTo(DataOutput dout) throws IOException {
         dout.writeShort(mModifiers.getBitmask());
         dout.writeShort(mNameConstant.getIndex());
@@ -335,8 +376,7 @@ public class FieldInfo {
         int size = mAttributes.size();
         dout.writeShort(size);
         for (int i=0; i<size; i++) {
-            Attribute attr = mAttributes.get(i);
-            attr.writeTo(dout);
+            mAttributes.get(i).writeTo(dout);
         }
     }
 

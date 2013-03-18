@@ -42,4 +42,14 @@ public class RuntimeInvisibleParameterAnnotationsAttr extends ParameterAnnotatio
     {
         super(cp, name, length, din);
     }
+
+    RuntimeInvisibleParameterAnnotationsAttr(ConstantPool cp, String name,
+                                             RuntimeInvisibleParameterAnnotationsAttr source)
+    {
+        super(cp, name, source);
+    }
+
+    public RuntimeInvisibleParameterAnnotationsAttr copyTo(ConstantPool cp) {
+        return new RuntimeInvisibleParameterAnnotationsAttr(cp, getName(), this);
+    }
 }

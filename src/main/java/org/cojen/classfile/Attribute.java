@@ -92,11 +92,11 @@ public abstract class Attribute {
     public String getName() {
         return mName;
     }
-    
+
     public ConstantUTFInfo getNameConstant() {
         return mNameConstant;
     }
-    
+
     /**
      * Some attributes have sub-attributes. Default implementation returns an
      * empty array.
@@ -106,10 +106,23 @@ public abstract class Attribute {
     }
 
     /**
+     * Returns a new instance of this Attribute, except stored in a different
+     * ConstantPool.
+     */
+    public abstract Attribute copyTo(ConstantPool cp);
+
+    /**
+     * Perform final preparations before constant pool is written out. Default
+     * implementation does nothing.
+     */
+    public void prepare() {
+    }
+
+    /**
      * Returns the length (in bytes) of this attribute in the class file.
      */
     public abstract int getLength();
-    
+
     /**
      * This method writes the 16 bit name constant index followed by the
      * 32 bit attribute length, followed by the attribute specific data.

@@ -42,22 +42,22 @@ public class Annotation {
 
     /** Member value is represented by a ConstantIntegerInfo */
     public static final char MEMBER_TAG_BOOLEAN = 'Z';
-    
+
     /** Member value is represented by a ConstantIntegerInfo */
     public static final char MEMBER_TAG_BYTE = 'B';
-    
+
     /** Member value is represented by a ConstantIntegerInfo */
     public static final char MEMBER_TAG_SHORT = 'S';
-    
+
     /** Member value is represented by a ConstantIntegerInfo */
     public static final char MEMBER_TAG_CHAR = 'C';
-    
+
     /** Member value is represented by a ConstantIntegerInfo */
     public static final char MEMBER_TAG_INT = 'I';
-    
+
     /** Member value is represented by a ConstantLongInfo */
     public static final char MEMBER_TAG_LONG = 'J';
-        
+
     /** Member value is represented by a ConstantFloatInfo */
     public static final char MEMBER_TAG_FLOAT = 'F';
 
@@ -82,25 +82,34 @@ public class Annotation {
     private final ConstantPool mCp;
     private ConstantUTFInfo mType;
     private final Map<String, MemberValue> mMemberValues;
-    
+
     public Annotation(ConstantPool cp) {
         mCp = cp;
         mMemberValues = new LinkedHashMap<String, MemberValue>(2);
     }
-    
+
     public Annotation(ConstantPool cp, DataInput din) throws IOException {
         mCp = cp;
         mType = (ConstantUTFInfo)cp.getConstant(din.readUnsignedShort());
 
         int memberCount = din.readUnsignedShort();
         mMemberValues = new LinkedHashMap<String, MemberValue>(memberCount);
-        
+
         for (int i=0; i<memberCount; i++) {
             String name = ((ConstantUTFInfo)cp.getConstant(din.readUnsignedShort())).getValue();
             mMemberValues.put(name, new MemberValue(cp, din));
         }
     }
-    
+
+    private Annotation(ConstantPool cp, Annotation source) {
+        mCp = cp;
+        mType = source.mType == null ? null : source.mType.copyTo(cp);
+        mMemberValues = new LinkedHashMap<String, MemberValue>(source.mMemberValues.size());
+        for (Map.Entry<String, MemberValue> entry : source.mMemberValues.entrySet()) {
+            mMemberValues.put(entry.getKey(), entry.getValue().copyTo(cp));
+        }
+    }
+
     public ConstantUTFInfo getTypeConstant() {
         return mType;
     }
@@ -108,11 +117,11 @@ public class Annotation {
     public TypeDesc getType() {
         return TypeDesc.forDescriptor(mType.getValue());
     }
-    
+
     public void setTypeConstant(ConstantUTFInfo type) {
         mType = type;
     }
-    
+
     public void setType(TypeDesc type) {
         setTypeConstant(mCp.addConstantUTF(type.getDescriptor()));
     }
@@ -124,7 +133,7 @@ public class Annotation {
     public Map<String, MemberValue> getMemberValues() {
         return Collections.unmodifiableMap(mMemberValues);
     }
-    
+
     public void putMemberValue(String name, MemberValue mv) {
         mCp.addConstantUTF(name);
         mMemberValues.put(name, mv);
@@ -139,7 +148,7 @@ public class Annotation {
         mCp.addConstantUTF(name);
         mMemberValues.put(name, makeMemberValue(value));
     }
-    
+
     public void putMemberValue(String name, short value) {
         mCp.addConstantUTF(name);
         mMemberValues.put(name, makeMemberValue(value));
@@ -205,7 +214,7 @@ public class Annotation {
     public MemberValue makeMemberValue(byte value) {
         return new MemberValue(MEMBER_TAG_BYTE, mCp.addConstantInteger(value));
     }
-    
+
     public MemberValue makeMemberValue(short value) {
         return new MemberValue(MEMBER_TAG_SHORT, mCp.addConstantInteger(value));
     }
@@ -213,23 +222,23 @@ public class Annotation {
     public MemberValue makeMemberValue(char value) {
         return new MemberValue(MEMBER_TAG_CHAR, mCp.addConstantInteger(value));
     }
-    
+
     public MemberValue makeMemberValue(int value) {
         return new MemberValue(MEMBER_TAG_INT, mCp.addConstantInteger(value));
     }
-    
+
     public MemberValue makeMemberValue(long value) {
         return new MemberValue(MEMBER_TAG_LONG, mCp.addConstantLong(value));
     }
-    
+
     public MemberValue makeMemberValue(float value) {
         return new MemberValue(MEMBER_TAG_FLOAT, mCp.addConstantFloat(value));
     }
-    
+
     public MemberValue makeMemberValue(double value) {
         return new MemberValue(MEMBER_TAG_DOUBLE, mCp.addConstantDouble(value));
     }
-    
+
     public MemberValue makeMemberValue(String value) {
         return new MemberValue(MEMBER_TAG_STRING, mCp.addConstantUTF(value));
     }
@@ -237,7 +246,7 @@ public class Annotation {
     public MemberValue makeMemberValue(TypeDesc value) {
         return new MemberValue(MEMBER_TAG_CLASS, mCp.addConstantUTF(value.getDescriptor()));
     }
-    
+
     public MemberValue makeMemberValue(TypeDesc enumType, String enumName) {
         return new MemberValue(MEMBER_TAG_ENUM,
                                new EnumConstValue(mCp.addConstantUTF(enumType.getDescriptor()),
@@ -259,6 +268,14 @@ public class Annotation {
         return new Annotation(mCp);
     }
 
+    /**
+     * Returns a new instance of this Annotation, except stored in a different
+     * ConstantPool.
+     */
+    public Annotation copyTo(ConstantPool cp) {
+        return new Annotation(cp, this);
+    }
+
     public int getLength() {
         int length = 4;
         for (MemberValue mv : mMemberValues.values()) {
@@ -266,7 +283,7 @@ public class Annotation {
         }
         return length;
     }
-    
+
     public void writeTo(DataOutput dout) throws IOException {
         dout.writeShort(mType.getIndex());
         int memberCount = mMemberValues.size();
@@ -280,13 +297,13 @@ public class Annotation {
     public static class MemberValue {
         private final char mTag;
         private final Object mValue;
-        
+
         public MemberValue(char tag, Object value) {
             switch (mTag = tag) {
             default:
                 throw new IllegalArgumentException
                     ("Illegal annotation member value tag: " + mTag);
-                
+
             case MEMBER_TAG_BOOLEAN:
             case MEMBER_TAG_BYTE:
             case MEMBER_TAG_SHORT:
@@ -338,7 +355,7 @@ public class Annotation {
                     throw new IllegalArgumentException("Value must be ConstantUTFInfo");
                 }
                 break;
-                
+
             case MEMBER_TAG_ENUM:
                 if (value instanceof EnumConstValue) {
                     mValue = value;
@@ -354,7 +371,7 @@ public class Annotation {
                     throw new IllegalArgumentException("Value must be MemberValue[]");
                 }
                 break;
-                
+
             case MEMBER_TAG_ANNOTATION:
                 if (value instanceof Annotation) {
                     mValue = value;
@@ -364,13 +381,13 @@ public class Annotation {
                 break;
             }
         }
-        
+
         public MemberValue(ConstantPool cp, DataInput din) throws IOException {
             switch (mTag = (char)din.readUnsignedByte()) {
             default:
                 throw new IllegalStateException
                     ("Illegal annotation member value tag: " + mTag);
-                
+
             case MEMBER_TAG_BOOLEAN:
             case MEMBER_TAG_BYTE:
             case MEMBER_TAG_SHORT:
@@ -383,11 +400,11 @@ public class Annotation {
             case MEMBER_TAG_STRING:
                 mValue = cp.getConstant(din.readUnsignedShort());
                 break;
-                
+
             case MEMBER_TAG_ENUM:
                 mValue = new EnumConstValue(cp, din);
                 break;
-                
+
             case MEMBER_TAG_ARRAY:
                 int length = din.readUnsignedShort();
                 MemberValue[] values = new MemberValue[length];
@@ -396,21 +413,21 @@ public class Annotation {
                 }
                 mValue = values;
                 break;
-                
+
             case MEMBER_TAG_ANNOTATION:
                 mValue = new Annotation(cp, din);
                 break;
             }
         }
-        
+
         public char getTag() {
             return mTag;
         }
-        
+
         public Object getValue() {
             return mValue;
         }
-        
+
         public int getLength() {
             switch (mTag) {
             default:
@@ -427,10 +444,10 @@ public class Annotation {
             case MEMBER_TAG_CLASS:
             case MEMBER_TAG_STRING:
                 return 3;
-                
+
             case MEMBER_TAG_ENUM:
                 return 1 + ((EnumConstValue)mValue).getLength();
-                
+
             case MEMBER_TAG_ARRAY: {
                 MemberValue[] values = (MemberValue[])mValue;
                 int length = 3;
@@ -439,12 +456,52 @@ public class Annotation {
                 }
                 return length;
             }
-                
+
             case MEMBER_TAG_ANNOTATION:
                 return 1 + ((Annotation)mValue).getLength();
             }
         }
-        
+
+        public MemberValue copyTo(ConstantPool cp) {
+            Object value;
+            switch (mTag) {
+            default:
+                throw new IllegalStateException
+                    ("Illegal annotation member value tag: " + mTag);
+
+            case MEMBER_TAG_BOOLEAN:
+            case MEMBER_TAG_BYTE:
+            case MEMBER_TAG_SHORT:
+            case MEMBER_TAG_CHAR:
+            case MEMBER_TAG_INT:
+            case MEMBER_TAG_LONG:
+            case MEMBER_TAG_FLOAT:
+            case MEMBER_TAG_DOUBLE:
+            case MEMBER_TAG_CLASS:
+            case MEMBER_TAG_STRING:
+                value = ((ConstantInfo)mValue).copyTo(cp);
+                break;
+
+            case MEMBER_TAG_ENUM:
+                value = ((EnumConstValue)mValue).copyTo(cp);
+                break;
+
+            case MEMBER_TAG_ARRAY:
+                MemberValue[] values = ((MemberValue[])mValue).clone();
+                for (int i=0; i<values.length; i++) {
+                    values[i] = values[i].copyTo(cp);
+                }
+                value = values;
+                break;
+
+            case MEMBER_TAG_ANNOTATION:
+                value = ((Annotation)mValue).copyTo(cp);
+                break;
+            }
+
+            return new MemberValue(mTag, value);
+        }
+
         public void writeTo(DataOutput dout) throws IOException {
             dout.writeByte(mTag);
 
@@ -461,11 +518,11 @@ public class Annotation {
             case MEMBER_TAG_STRING:
                 dout.writeShort(((ConstantInfo)mValue).getIndex());
                 break;
-                
+
             case MEMBER_TAG_ENUM:
                 ((EnumConstValue)mValue).writeTo(dout);
                 break;
-                
+
             case MEMBER_TAG_ARRAY:
                 MemberValue[] values = (MemberValue[])mValue;
                 dout.writeShort(values.length);
@@ -473,14 +530,14 @@ public class Annotation {
                     values[i].writeTo(dout);
                 }
                 break;
-                
+
             case MEMBER_TAG_ANNOTATION:
                 ((Annotation)mValue).writeTo(dout);
                 break;
             }
         }
     }
-    
+
     public static class EnumConstValue {
         private final ConstantUTFInfo mTypeName;
         private final ConstantUTFInfo mConstName;
@@ -506,7 +563,11 @@ public class Annotation {
         public int getLength() {
             return 4;
         }
-        
+
+        public EnumConstValue copyTo(ConstantPool cp) {
+            return new EnumConstValue(mTypeName.copyTo(cp), mConstName.copyTo(cp));
+        }
+
         public void writeTo(DataOutput dout) throws IOException {
             dout.writeShort(mTypeName.getIndex());
             dout.writeShort(mConstName.getIndex());

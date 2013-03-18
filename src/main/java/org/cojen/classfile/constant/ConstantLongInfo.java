@@ -39,6 +39,10 @@ public class ConstantLongInfo extends ConstantInfo {
         return mValue;
     }
 
+    public ConstantLongInfo copyTo(ConstantPool cp) {
+        return cp.addConstantLong(mValue);
+    }
+
     public int hashCode() {
         return (int)(mValue ^ (mValue >>> 32));
     }

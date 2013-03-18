@@ -46,6 +46,11 @@ public class ConstantMethodInfo extends ConstantInfo {
         return mNameAndType;
     }
 
+    public ConstantMethodInfo copyTo(ConstantPool cp) {
+        return (ConstantMethodInfo)cp
+            .addConstant(new ConstantMethodInfo(mParentClass.copyTo(cp), mNameAndType.copyTo(cp)));
+    }
+
     public int hashCode() {
         return mNameAndType.hashCode();
     }

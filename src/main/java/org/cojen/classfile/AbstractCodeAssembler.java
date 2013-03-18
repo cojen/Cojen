@@ -36,6 +36,10 @@ public abstract class AbstractCodeAssembler implements CodeAssembler {
         return createLocalVariable(null, type);
     }
 
+    public LocalVariable createLocalVariable(String name, TypeDesc type, int num) {
+        return createLocalVariable(name, type);
+    }
+
     public void ifComparisonBranch(Location location, String choice, TypeDesc type) {
         boolean trueBranch = false;
         int length = choice.length();

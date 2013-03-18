@@ -85,6 +85,10 @@ public class ConstantClassInfo extends ConstantInfo {
         return mType;
     }
 
+    public ConstantClassInfo copyTo(ConstantPool cp) {
+        return cp.addConstantClass(mType);
+    }
+
     public int hashCode() {
         return mType.hashCode();
     }

@@ -39,6 +39,10 @@ public class ConstantDoubleInfo extends ConstantInfo {
         return mValue;
     }
 
+    public ConstantDoubleInfo copyTo(ConstantPool cp) {
+        return cp.addConstantDouble(mValue);
+    }
+
     public int hashCode() {
         long bits = Double.doubleToLongBits(mValue);
         return (int)(bits ^ (bits >>> 32));

@@ -31,4 +31,9 @@ public interface CodeBuffer {
     byte[] getByteCodes();
 
     ExceptionHandler[] getExceptionHandlers();
+
+    /**
+     * Returns optional verification information, in the correct order.
+     */
+    VerificationInfo[] getVerificationInfos();
 }

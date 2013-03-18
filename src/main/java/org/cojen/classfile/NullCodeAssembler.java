@@ -30,8 +30,11 @@ public class NullCodeAssembler extends AbstractCodeAssembler {
         mMethod = mi;
         TypeDesc[] paramTypes = mMethod.getMethodDescriptor().getParameterTypes();
         mParams = new LocalVariable[paramTypes.length];
+        int num = mi.getModifiers().isStatic() ? 0 : 1;
         for (int i=0; i<paramTypes.length; i++) {
-            mParams[i] = new Variable(null, paramTypes[i]);
+            TypeDesc type = paramTypes[i];
+            mParams[i] = new Variable(null, type, num);
+            num += type.isDoubleWord() ? 2 : 1;
         }
     }
 
@@ -47,8 +50,17 @@ public class NullCodeAssembler extends AbstractCodeAssembler {
         return mParams[index];
     }
 
+    public LocalVariable getThis() {
+        // FIXME
+        return null;
+    }
+
     public LocalVariable createLocalVariable(String name, TypeDesc type) {
-        return new Variable(name, type);
+        return createLocalVariable(name, type, -1);
+    }
+
+    public LocalVariable createLocalVariable(String name, TypeDesc type, int num) {
+        return new Variable(name, type, num);
     }
 
     public Label createLabel() {
@@ -429,10 +441,12 @@ public class NullCodeAssembler extends AbstractCodeAssembler {
     private static class Variable implements LocalVariable {
         private String mName;
         private final TypeDesc mType;
+        private final int mNumber;
 
-        Variable(String name, TypeDesc type) {
+        Variable(String name, TypeDesc type, int num) {
             mName = name;
             mType = type;
+            mNumber = num;
         }
 
         public String getName() {
@@ -452,7 +466,7 @@ public class NullCodeAssembler extends AbstractCodeAssembler {
         }
 
         public int getNumber() {
-            return -1;
+            return mNumber;
         }
 
         public java.util.Set<LocationRange> getLocationRangeSet() {

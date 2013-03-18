@@ -115,6 +115,14 @@ public class InnerClassesAttr extends Attribute {
         return mInnerClasses.toArray(new Info[mInnerClasses.size()]);
     }
 
+    public InnerClassesAttr copyTo(ConstantPool cp) {
+        InnerClassesAttr attr = new InnerClassesAttr(cp, getName());
+        for (Info info : mInnerClasses) {
+            attr.mInnerClasses.add(info.copyTo(cp));
+        }
+        return attr;
+    }
+
     public int getLength() {
         return 2 + 8 * mInnerClasses.size();
     }
@@ -136,8 +144,8 @@ public class InnerClassesAttr extends Attribute {
         Info(ConstantClassInfo inner,
              ConstantClassInfo outer,
              ConstantUTFInfo name,
-             Modifiers modifiers) {
-
+             Modifiers modifiers)
+        {
             mInner = inner;
             mOuter = outer;
             mName = name;
@@ -170,6 +178,13 @@ public class InnerClassesAttr extends Attribute {
          */
         public Modifiers getModifiers() {
             return mModifiers;
+        }
+
+        public Info copyTo(ConstantPool cp) {
+            return new Info(mInner == null ? null : mInner.copyTo(cp),
+                            mOuter == null ? null : mOuter.copyTo(cp),
+                            mName == null ? null : mName.copyTo(cp),
+                            mModifiers);
         }
 
         public void writeTo(DataOutput dout) throws IOException {

@@ -59,6 +59,10 @@ public class SourceFileAttr extends Attribute {
         return mSourcefile;
     }
     
+    public SourceFileAttr copyTo(ConstantPool cp) {
+        return new SourceFileAttr(cp, getName(), getFileName().getValue());
+    }
+
     /**
      * Returns the length of the source file attribute, which is 2 bytes.
      */

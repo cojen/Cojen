@@ -47,18 +47,18 @@ import org.cojen.classfile.constant.ConstantUTFInfo;
  * @see CodeBuilder
  */
 public class MethodInfo {
-    private ClassFile mParent;
-    private ConstantPool mCp;
+    private final ClassFile mParent;
+    private final ConstantPool mCp;
 
-    private String mName;
-    private MethodDesc mDesc;
+    private final String mName;
+    private final MethodDesc mDesc;
     
     private Modifiers mModifiers;
 
-    private ConstantUTFInfo mNameConstant;
-    private ConstantUTFInfo mDescriptorConstant;
+    private final ConstantUTFInfo mNameConstant;
+    private final ConstantUTFInfo mDescriptorConstant;
     
-    private List<Attribute> mAttributes = new ArrayList<Attribute>(2);
+    private final List<Attribute> mAttributes = new ArrayList<Attribute>(2);
 
     private CodeAttr mCode;
     private ExceptionsAttr mExceptions;
@@ -130,6 +130,20 @@ public class MethodInfo {
     }
 
     /**
+     * Returns true of this method is actually a constructor.
+     */
+    public boolean isConstructor() {
+        return mName.equals("<init>");
+    }
+
+    /**
+     * Returns true of this method is actually a static initializer.
+     */
+    public boolean isInitializer() {
+        return mName.equals("<clinit>");
+    }
+
+    /**
      * Returns the name of this method.
      */
     public String getName() {
@@ -154,14 +168,14 @@ public class MethodInfo {
     public void setModifiers(Modifiers modifiers) {
         mModifiers = modifiers;
     }
-    
+
     /**
      * Returns a constant from the constant pool with this method's name.
      */
     public ConstantUTFInfo getNameConstant() {
         return mNameConstant;
     }
-    
+
     /**
      * Returns a constant from the constant pool with this method's type 
      * descriptor string.
@@ -300,7 +314,7 @@ public class MethodInfo {
         }
         return null;
     }
-    
+
     /** 
      * Add a declared exception that this method may throw.
      */
@@ -372,6 +386,10 @@ public class MethodInfo {
     }
 
     public void addAttribute(Attribute attr) {
+        if (attr.getConstantPool() != mCp) {
+            attr = attr.copyTo(mCp);
+        }
+
         if (attr instanceof CodeAttr) {
             if (mCode != null) {
                 mAttributes.remove(mCode);
@@ -405,7 +423,38 @@ public class MethodInfo {
         
         return length;
     }
-    
+
+    /**
+     * Copies everything but the modifiers, name, descriptor and inner classes
+     * from the given method.
+     */
+    public void copyFrom(MethodInfo method) {
+        for (Attribute attr : method.mAttributes) {
+            addAttribute(attr);
+        }
+    }
+
+    /**
+     * Copies this method into another ClassFile, excluding inner classes.
+     *
+     * @return new method
+     */
+    public MethodInfo copyTo(ClassFile cf) {
+        MethodInfo mi = cf.addMethod(this);
+        mi.copyFrom(this);
+        return mi;
+    }
+
+    /**
+     * Perform final preparations before constant pool is written out.
+     */
+    public void prepare() {
+        int size = mAttributes.size();
+        for (int i=0; i<size; i++) {
+            mAttributes.get(i).prepare();
+        }
+    }
+
     public void writeTo(DataOutput dout) throws IOException {
         dout.writeShort(mModifiers.getBitmask());
         dout.writeShort(mNameConstant.getIndex());
@@ -414,9 +463,8 @@ public class MethodInfo {
         int size = mAttributes.size();
         dout.writeShort(size);
         for (int i=0; i<size; i++) {
-            Attribute attr = mAttributes.get(i);
             try {
-                attr.writeTo(dout);
+                mAttributes.get(i).writeTo(dout);
             } catch (IllegalStateException e) {
                 IllegalStateException e2 = 
                     new IllegalStateException(e.getMessage() + ": " + toString());

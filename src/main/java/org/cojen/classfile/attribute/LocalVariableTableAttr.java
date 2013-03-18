@@ -44,6 +44,7 @@ import org.cojen.classfile.constant.ConstantUTFInfo;
 public class LocalVariableTableAttr extends Attribute {
 
     private List<Entry> mEntries = new ArrayList<Entry>(10);
+    //private Vector<Entry[]> mEntryIndex;
     private List<Entry> mCleanEntries;
     private int mRangeCount;
     
@@ -161,11 +162,19 @@ public class LocalVariableTableAttr extends Attribute {
         mCleanEntries = null;
     }
     
+    public LocalVariableTableAttr copyTo(ConstantPool cp) {
+        LocalVariableTableAttr attr = new LocalVariableTableAttr(cp, getName());
+        for (Entry entry : mEntries) {
+            attr.mEntries.add(entry.copyTo(cp));
+        }
+        return attr;
+    }
+
     public int getLength() {
         clean();
         return 2 + 10 * mRangeCount;
     }
-    
+
     public void writeDataTo(DataOutput dout) throws IOException {
         dout.writeShort(mRangeCount);
 
@@ -254,9 +263,9 @@ public class LocalVariableTableAttr extends Attribute {
     }
 
     private static class Entry {
-        public LocalVariable mLocalVar;
-        public ConstantUTFInfo mName;
-        public ConstantUTFInfo mDescriptor;
+        public final LocalVariable mLocalVar;
+        public final ConstantUTFInfo mName;
+        public final ConstantUTFInfo mDescriptor;
 
         public Entry(LocalVariable localVar,
                      ConstantUTFInfo name, ConstantUTFInfo descriptor) {
@@ -268,6 +277,10 @@ public class LocalVariableTableAttr extends Attribute {
 
         public int getRangeCount() {
             return mLocalVar.getLocationRangeSet().size();
+        }
+
+        public Entry copyTo(ConstantPool cp) {
+            return new Entry(mLocalVar, mName.copyTo(cp), mDescriptor.copyTo(cp));
         }
     }
 }

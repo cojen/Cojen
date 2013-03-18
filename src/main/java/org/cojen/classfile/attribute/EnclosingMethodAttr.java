@@ -64,6 +64,10 @@ public class EnclosingMethodAttr extends Attribute {
         return mMethod;
     }
 
+    public EnclosingMethodAttr copyTo(ConstantPool cp) {
+        return new EnclosingMethodAttr(cp, getName(), mClass.copyTo(cp), mMethod.copyTo(cp));
+    }
+
     public int getLength() {
         return 4;
     }

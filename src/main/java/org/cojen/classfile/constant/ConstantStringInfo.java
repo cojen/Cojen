@@ -44,6 +44,10 @@ public class ConstantStringInfo extends ConstantInfo {
         return mStringConstant.getValue();
     }
 
+    public ConstantStringInfo copyTo(ConstantPool cp) {
+        return cp.addConstantString(mStringConstant.getValue());
+    }
+
     public int hashCode() {
         return mStringConstant.hashCode();
     }

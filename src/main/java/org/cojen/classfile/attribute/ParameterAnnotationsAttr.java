@@ -32,13 +32,13 @@ import org.cojen.classfile.ConstantPool;
 public abstract class ParameterAnnotationsAttr extends Attribute {
 
     /** Contains Vectors of annotations */
-    private Vector<Vector<Annotation>> mParameterAnnotations;
-    
+    private final Vector<Vector<Annotation>> mParameterAnnotations;
+
     public ParameterAnnotationsAttr(ConstantPool cp, String name) {
         super(cp, name);
         mParameterAnnotations = new Vector<Vector<Annotation>>(2);
     }
-    
+
     public ParameterAnnotationsAttr(ConstantPool cp, String name, int length, DataInput din)
         throws IOException
     {
@@ -57,6 +57,21 @@ public abstract class ParameterAnnotationsAttr extends Attribute {
 
             mParameterAnnotations.add(annotations);
         }
+    }
+
+    ParameterAnnotationsAttr(ConstantPool cp, String name, ParameterAnnotationsAttr source) {
+        super(cp, name);
+        Vector<Vector<Annotation>> sourceParamAnnotations = source.mParameterAnnotations;
+        Vector<Vector<Annotation>> paramAnnotations =
+            new Vector<Vector<Annotation>>(sourceParamAnnotations.size());
+        for (Vector<Annotation> sourceAnnotations : sourceParamAnnotations) {
+            Vector<Annotation> annotations = new Vector<Annotation>(sourceAnnotations.size());
+            paramAnnotations.add(annotations);
+            for (Annotation ann : sourceAnnotations) {
+                annotations.add(ann.copyTo(cp));
+            }
+        }
+        mParameterAnnotations = paramAnnotations;
     }
 
     /**
