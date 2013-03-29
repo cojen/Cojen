@@ -1491,7 +1491,7 @@ class AssemblyStylePrinter implements DisassemblyTool.Printer {
         println();
         print(indent);
         print("// locals: ");
-        print(frame.getLocalVariableInfos());
+        print(frame.getLocalInfos());
         println();
 
         return frame.getNext();
