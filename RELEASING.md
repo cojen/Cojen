@@ -35,8 +35,9 @@ Process
 
     mvn clean deploy -P release
 
-5. Push to GitHub
+5. Push commit and tag to GitHub
 
+    git push origin master
     git push origin v$VERSION
 
 
