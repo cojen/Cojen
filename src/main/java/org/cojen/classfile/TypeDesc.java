@@ -27,9 +27,9 @@ import java.lang.reflect.Array;
 import java.util.Collections;
 import java.util.Map;
 import org.cojen.util.Cache;
-import org.cojen.util.SoftValueCache;
 import org.cojen.util.WeakCanonicalSet;
 import org.cojen.util.WeakIdentityCache;
+import org.cojen.util.WeakValueCache;
 
 /**
  * This class is used to build field and return type descriptor strings as
@@ -95,8 +95,8 @@ public abstract class TypeDesc extends Descriptor implements Serializable {
         cInstances = new WeakCanonicalSet<Descriptor>();
 
         cClassesToInstances = new WeakIdentityCache<Class, TypeDesc>(17);
-        cNamesToInstances = new SoftValueCache<String, TypeDesc>(17);
-        cDescriptorsToInstances = new SoftValueCache<String, TypeDesc>(17);
+        cNamesToInstances = new WeakValueCache<String, TypeDesc>(17);
+        cDescriptorsToInstances = new WeakValueCache<String, TypeDesc>(17);
 
         VOID = intern(new PrimitiveType("V", VOID_CODE));
         BOOLEAN = intern(new PrimitiveType("Z", BOOLEAN_CODE));
