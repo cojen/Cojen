@@ -40,6 +40,31 @@ import org.cojen.classfile.constant.ConstantMethodInfo;
  */
 class InstructionList implements CodeBuffer {
     private static final boolean DEBUG = false;
+    private static final boolean DO_LIVENESS_ANALYSIS;
+
+    static {
+        boolean doLiveness = true;
+
+        String version = System.getProperty("java.vm.specification.version");
+
+        if (version != null && version.startsWith("1.")) {
+            version = version.substring(2);
+            int ix = version.indexOf('.');
+            if (ix > 0) {
+                version = version.substring(0, ix);
+            }
+            try {
+                // Java 8 appears to violate the Java Virtual Machine Specification and doesn't
+                // verify variable usage properly. As a workaround, disable liveness analysis.
+                // Newer versions HotSpot tend to do this analysis anyhow, and so disabling the
+                // optimization might not affect performance.
+                doLiveness = Integer.parseInt(version) < 8;
+            } catch (NumberFormatException e) {
+            }
+        }
+
+        DO_LIVENESS_ANALYSIS = doLiveness;
+    }
 
     private final boolean mSaveLocalVariableInfo;
 
@@ -189,13 +214,29 @@ class InstructionList implements CodeBuffer {
             }
         }
 
-        // Perform variable liveness flow analysis for each local variable, in
-        // order to determine which register it should be assigned. Takes
-        // advantage of the fact that instruction addresses are not yet
-        // resolved to true addresses, but are instead indexes. This means the
-        // liveness analysis operates on smaller BitLists, which makes some
-        // operations (i.e. intersection) a bit faster.
-        {
+        if (!DO_LIVENESS_ANALYSIS) {
+            // Assign variable numbers using the simplest technique.
+
+            int size = mLocalVariables.size();
+            for (int i=0; i<size; i++) {
+                LocalVariableImpl var = (LocalVariableImpl)mLocalVariables.get(i);
+                if (var.getNumber() < 0) {
+                    var.setNumber(mMaxLocals);
+                }
+            
+                int max = var.getNumber() + (var.isDoubleWord() ? 2 : 1);
+                if (max > mMaxLocals) {
+                    mMaxLocals = max;
+                }
+            }
+        } else {
+            // Perform variable liveness flow analysis for each local variable, in
+            // order to determine which register it should be assigned. Takes
+            // advantage of the fact that instruction addresses are not yet
+            // resolved to true addresses, but are instead indexes. This means the
+            // liveness analysis operates on smaller BitLists, which makes some
+            // operations (i.e. intersection) a bit faster.
+
             int size = mLocalVariables.size();
             BitList[] liveIn = new BitList[size];
             BitList[] liveOut = new BitList[size];
