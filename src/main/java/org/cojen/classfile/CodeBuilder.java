@@ -125,6 +125,14 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
         }
     }
 
+    /**
+     * Enable or disable local variable reduction, affecting affecting the number which need to
+     * be allocated. This feature is enabled by default when running Java 7 or lower.
+     */
+    public void reduceLocalVariables(boolean b) {
+        mInstructions.reduceLocalVariables(b);
+    }
+
     public int getMaxStackDepth() {
         return mInstructions.getMaxStackDepth();
     }

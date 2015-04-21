@@ -68,6 +68,8 @@ class InstructionList implements CodeBuffer {
 
     private final boolean mSaveLocalVariableInfo;
 
+    private Boolean mReduceLocalVariables;
+
     Instruction mFirst;
     Instruction mLast;
 
@@ -86,6 +88,10 @@ class InstructionList implements CodeBuffer {
 
     protected InstructionList(boolean saveLocalVariableInfo) {
         mSaveLocalVariableInfo = saveLocalVariableInfo;
+    }
+
+    public void reduceLocalVariables(boolean b) {
+        mReduceLocalVariables = b;
     }
 
     /**
@@ -214,7 +220,13 @@ class InstructionList implements CodeBuffer {
             }
         }
 
-        if (!DO_LIVENESS_ANALYSIS) {
+        boolean doLivenessAnalysis = DO_LIVENESS_ANALYSIS;
+
+        if (mReduceLocalVariables != null) {
+            doLivenessAnalysis = mReduceLocalVariables;
+        }
+
+        if (!doLivenessAnalysis) {
             // Assign variable numbers using the simplest technique.
 
             int size = mLocalVariables.size();
