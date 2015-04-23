@@ -3,13 +3,13 @@
 <html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
-<title>CodeAssembler (Cojen 2.2 API)</title>
+<title>CodeAssembler (Cojen 2.2.5 API)</title>
 <link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
 </head>
 <body>
 <script type="text/javascript"><!--
     if (location.href.indexOf('is-external=true') == -1) {
-        parent.document.title="CodeAssembler (Cojen 2.2 API)";
+        parent.document.title="CodeAssembler (Cojen 2.2.5 API)";
     }
 //-->
 </script>
@@ -174,7 +174,7 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#convert(org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc)">convert</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;fromType,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#convert(org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc)">convert</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;fromType,
        <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;toType)</code>
 <div class="block">Generates code that converts the value of a primitive type already
  on the stack.</div>
@@ -182,7 +182,7 @@
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#convert(org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc, int)">convert</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;fromType,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#convert(org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc,%20int)">convert</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;fromType,
        <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;toType,
        int&nbsp;fpConvertMode)</code>
 <div class="block">Generates code that converts the value of a primitive type already
@@ -197,7 +197,7 @@
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code><a href="../../../org/cojen/classfile/LocalVariable.html" title="interface in org.cojen.classfile">LocalVariable</a></code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#createLocalVariable(java.lang.String, org.cojen.classfile.TypeDesc)">createLocalVariable</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;name,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#createLocalVariable(java.lang.String,%20org.cojen.classfile.TypeDesc)">createLocalVariable</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;name,
                    <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</code>
 <div class="block">Creates a LocalVariable reference from a name and type.</div>
 </td>
@@ -252,7 +252,7 @@
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#exceptionHandler(org.cojen.classfile.Location, org.cojen.classfile.Location, java.lang.String)">exceptionHandler</a></strong>(<a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>&nbsp;startLocation,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#exceptionHandler(org.cojen.classfile.Location,%20org.cojen.classfile.Location,%20java.lang.String)">exceptionHandler</a></strong>(<a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>&nbsp;startLocation,
                 <a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>&nbsp;endLocation,
                 <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;catchClassName)</code>
 <div class="block">Sets up an exception handler located here, the location of the next
@@ -274,7 +274,7 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#ifComparisonBranch(org.cojen.classfile.Location, java.lang.String)">ifComparisonBranch</a></strong>(<a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>&nbsp;location,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#ifComparisonBranch(org.cojen.classfile.Location,%20java.lang.String)">ifComparisonBranch</a></strong>(<a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>&nbsp;location,
                   <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;choice)</code>
 <div class="block">Generates code the performs a conditional branch based on a comparison
  between two int values on the stack.</div>
@@ -282,7 +282,7 @@
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#ifComparisonBranch(org.cojen.classfile.Location, java.lang.String, org.cojen.classfile.TypeDesc)">ifComparisonBranch</a></strong>(<a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>&nbsp;location,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#ifComparisonBranch(org.cojen.classfile.Location,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">ifComparisonBranch</a></strong>(<a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>&nbsp;location,
                   <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;choice,
                   <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</code>
 <div class="block">Generates code the performs a conditional branch based on a comparison
@@ -291,7 +291,7 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#ifEqualBranch(org.cojen.classfile.Location, boolean)">ifEqualBranch</a></strong>(<a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>&nbsp;location,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#ifEqualBranch(org.cojen.classfile.Location,%20boolean)">ifEqualBranch</a></strong>(<a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>&nbsp;location,
              boolean&nbsp;choice)</code>
 <div class="block">Generates code that performs a conditional branch based on the value of
  two object references on the stack.</div>
@@ -299,7 +299,7 @@
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#ifNullBranch(org.cojen.classfile.Location, boolean)">ifNullBranch</a></strong>(<a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>&nbsp;location,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#ifNullBranch(org.cojen.classfile.Location,%20boolean)">ifNullBranch</a></strong>(<a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>&nbsp;location,
             boolean&nbsp;choice)</code>
 <div class="block">Generates code that performs a conditional branch based on the
  value of an object on the stack.</div>
@@ -307,7 +307,7 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#ifZeroComparisonBranch(org.cojen.classfile.Location, java.lang.String)">ifZeroComparisonBranch</a></strong>(<a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>&nbsp;location,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#ifZeroComparisonBranch(org.cojen.classfile.Location,%20java.lang.String)">ifZeroComparisonBranch</a></strong>(<a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>&nbsp;location,
                       <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;choice)</code>
 <div class="block">Generates code the performs a conditional branch based on a comparison
  between an int value on the stack and zero.</div>
@@ -327,7 +327,7 @@
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#integerIncrement(org.cojen.classfile.LocalVariable, int)">integerIncrement</a></strong>(<a href="../../../org/cojen/classfile/LocalVariable.html" title="interface in org.cojen.classfile">LocalVariable</a>&nbsp;local,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#integerIncrement(org.cojen.classfile.LocalVariable,%20int)">integerIncrement</a></strong>(<a href="../../../org/cojen/classfile/LocalVariable.html" title="interface in org.cojen.classfile">LocalVariable</a>&nbsp;local,
                 int&nbsp;amount)</code>
 <div class="block">Generates code that increments a local integer variable by a signed 
  constant amount.</div>
@@ -347,7 +347,7 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeConstructor(java.lang.String, org.cojen.classfile.TypeDesc[])">invokeConstructor</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeConstructor(java.lang.String,%20org.cojen.classfile.TypeDesc[])">invokeConstructor</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
                  <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</code>
 <div class="block">Generates code to invoke a class constructor in any class.</div>
 </td>
@@ -360,14 +360,14 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeConstructor(org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokeConstructor</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeConstructor(org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokeConstructor</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
                  <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</code>
 <div class="block">Generates code to invoke a class constructor in any class.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeInterface(java.lang.String, java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokeInterface</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeInterface(java.lang.String,%20java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokeInterface</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
                <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
                <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;ret,
                <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</code>
@@ -376,7 +376,7 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeInterface(org.cojen.classfile.TypeDesc, java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokeInterface</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeInterface(org.cojen.classfile.TypeDesc,%20java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokeInterface</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
                <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
                <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;ret,
                <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</code>
@@ -385,7 +385,7 @@
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#invokePrivate(java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokePrivate</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#invokePrivate(java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokePrivate</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
              <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;ret,
              <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</code>
 <div class="block">Generates code to invoke a private method in this class.</div>
@@ -393,7 +393,7 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeStatic(java.lang.String, java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokeStatic</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeStatic(java.lang.String,%20java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokeStatic</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
             <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
             <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;ret,
             <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</code>
@@ -402,7 +402,7 @@
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeStatic(java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokeStatic</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeStatic(java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokeStatic</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
             <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;ret,
             <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</code>
 <div class="block">Generates code to invoke a static method in this class.</div>
@@ -410,7 +410,7 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeStatic(org.cojen.classfile.TypeDesc, java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokeStatic</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeStatic(org.cojen.classfile.TypeDesc,%20java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokeStatic</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
             <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
             <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;ret,
             <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</code>
@@ -425,7 +425,7 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeSuper(java.lang.String, java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokeSuper</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;superClassName,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeSuper(java.lang.String,%20java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokeSuper</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;superClassName,
            <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
            <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;ret,
            <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</code>
@@ -434,7 +434,7 @@
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeSuper(org.cojen.classfile.TypeDesc, java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokeSuper</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;superClassDesc,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeSuper(org.cojen.classfile.TypeDesc,%20java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokeSuper</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;superClassDesc,
            <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
            <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;ret,
            <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</code>
@@ -449,7 +449,7 @@
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeVirtual(java.lang.String, java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokeVirtual</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeVirtual(java.lang.String,%20java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokeVirtual</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
              <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
              <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;ret,
              <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</code>
@@ -458,7 +458,7 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeVirtual(java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokeVirtual</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeVirtual(java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokeVirtual</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
              <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;ret,
              <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</code>
 <div class="block">Generates code to invoke a virtual method in this class.</div>
@@ -466,7 +466,7 @@
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeVirtual(org.cojen.classfile.TypeDesc, java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokeVirtual</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeVirtual(org.cojen.classfile.TypeDesc,%20java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokeVirtual</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
              <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
              <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;ret,
              <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</code>
@@ -525,7 +525,7 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#loadField(java.lang.String, java.lang.String, org.cojen.classfile.TypeDesc)">loadField</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#loadField(java.lang.String,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">loadField</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
          <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
          <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</code>
 <div class="block">Generates code that loads a value from a field from any class.</div>
@@ -533,14 +533,14 @@
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#loadField(java.lang.String, org.cojen.classfile.TypeDesc)">loadField</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#loadField(java.lang.String,%20org.cojen.classfile.TypeDesc)">loadField</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
          <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</code>
 <div class="block">Generates code that loads a value from a field from this class.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#loadField(org.cojen.classfile.TypeDesc, java.lang.String, org.cojen.classfile.TypeDesc)">loadField</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#loadField(org.cojen.classfile.TypeDesc,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">loadField</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
          <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
          <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</code>
 <div class="block">Generates code that loads a value from a field from any class.</div>
@@ -566,7 +566,7 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#loadStaticField(java.lang.String, java.lang.String, org.cojen.classfile.TypeDesc)">loadStaticField</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#loadStaticField(java.lang.String,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">loadStaticField</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
                <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
                <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</code>
 <div class="block">Generates code that loads a value from a static field from any class.</div>
@@ -574,14 +574,14 @@
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#loadStaticField(java.lang.String, org.cojen.classfile.TypeDesc)">loadStaticField</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#loadStaticField(java.lang.String,%20org.cojen.classfile.TypeDesc)">loadStaticField</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
                <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</code>
 <div class="block">Generates code that loads a value from a static field from this class.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#loadStaticField(org.cojen.classfile.TypeDesc, java.lang.String, org.cojen.classfile.TypeDesc)">loadStaticField</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#loadStaticField(org.cojen.classfile.TypeDesc,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">loadStaticField</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
                <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
                <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</code>
 <div class="block">Generates code that loads a value from a static field from any class.</div>
@@ -627,7 +627,7 @@
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#newObject(org.cojen.classfile.TypeDesc, int)">newObject</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#newObject(org.cojen.classfile.TypeDesc,%20int)">newObject</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type,
          int&nbsp;dimensions)</code>
 <div class="block">Generates code to create a new array.</div>
 </td>
@@ -672,7 +672,7 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#storeField(java.lang.String, java.lang.String, org.cojen.classfile.TypeDesc)">storeField</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#storeField(java.lang.String,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">storeField</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
           <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
           <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</code>
 <div class="block">Generates code that stores a value into a field from any class.</div>
@@ -680,14 +680,14 @@
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#storeField(java.lang.String, org.cojen.classfile.TypeDesc)">storeField</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#storeField(java.lang.String,%20org.cojen.classfile.TypeDesc)">storeField</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
           <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</code>
 <div class="block">Generates code that stores a value into a field from this class.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#storeField(org.cojen.classfile.TypeDesc, java.lang.String, org.cojen.classfile.TypeDesc)">storeField</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#storeField(org.cojen.classfile.TypeDesc,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">storeField</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
           <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
           <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</code>
 <div class="block">Generates code that stores a value into a field from any class.</div>
@@ -701,7 +701,7 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#storeStaticField(java.lang.String, java.lang.String, org.cojen.classfile.TypeDesc)">storeStaticField</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#storeStaticField(java.lang.String,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">storeStaticField</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
                 <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
                 <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</code>
 <div class="block">Generates code that stores a value into a field from any class.</div>
@@ -709,14 +709,14 @@
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#storeStaticField(java.lang.String, org.cojen.classfile.TypeDesc)">storeStaticField</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#storeStaticField(java.lang.String,%20org.cojen.classfile.TypeDesc)">storeStaticField</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
                 <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</code>
 <div class="block">Generates code that stores a value into a field from this class.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#storeStaticField(org.cojen.classfile.TypeDesc, java.lang.String, org.cojen.classfile.TypeDesc)">storeStaticField</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#storeStaticField(org.cojen.classfile.TypeDesc,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">storeStaticField</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
                 <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
                 <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</code>
 <div class="block">Generates code that stores a value into a field from any class.</div>
@@ -744,7 +744,7 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#switchBranch(int[], org.cojen.classfile.Location[], org.cojen.classfile.Location)">switchBranch</a></strong>(int[]&nbsp;cases,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssembler.html#switchBranch(int[],%20org.cojen.classfile.Location[],%20org.cojen.classfile.Location)">switchBranch</a></strong>(int[]&nbsp;cases,
             <a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>[]&nbsp;locations,
             <a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>&nbsp;defaultLocation)</code>
 <div class="block">Generates code for a switch statement.</div>
@@ -1060,7 +1060,7 @@
  Parameters passed to a method and the "this" reference are all 
  considered local variables, as well as any that were created.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>local</code> - The local variable reference</dd><dt><span class="strong">See Also:</span></dt><dd><a href="../../../org/cojen/classfile/CodeAssembler.html#getParameter(int)"><code>getParameter(int)</code></a>, 
-<a href="../../../org/cojen/classfile/CodeAssembler.html#createLocalVariable(java.lang.String, org.cojen.classfile.TypeDesc)"><code>createLocalVariable(java.lang.String, org.cojen.classfile.TypeDesc)</code></a></dd></dl>
+<a href="../../../org/cojen/classfile/CodeAssembler.html#createLocalVariable(java.lang.String,%20org.cojen.classfile.TypeDesc)"><code>createLocalVariable(java.lang.String, org.cojen.classfile.TypeDesc)</code></a></dd></dl>
 </li>
 </ul>
 <a name="loadFromArray(org.cojen.classfile.TypeDesc)">
@@ -2168,6 +2168,6 @@
 <!--   -->
 </a></div>
 <!-- ======== END OF BOTTOM NAVBAR ======= -->
-<p class="legalCopy"><small>Copyright &#169; 2004-2013 <a href="https://github.com/cojen">Cojen</a>. All Rights Reserved.</small></p>
+<p class="legalCopy"><small>Copyright &#169; 2004-2015 <a href="https://github.com/cojen">Cojen</a>. All Rights Reserved.</small></p>
 </body>
 </html>

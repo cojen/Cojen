@@ -3,13 +3,13 @@
 <html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
-<title>ClassFile (Cojen 2.2 API)</title>
+<title>ClassFile (Cojen 2.2.5 API)</title>
 <link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
 </head>
 <body>
 <script type="text/javascript"><!--
     if (location.href.indexOf('is-external=true') == -1) {
-        parent.document.title="ClassFile (Cojen 2.2 API)";
+        parent.document.title="ClassFile (Cojen 2.2.5 API)";
     }
 //-->
 </script>
@@ -131,13 +131,13 @@ extends <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?
 </td>
 </tr>
 <tr class="rowColor">
-<td class="colOne"><code><strong><a href="../../../org/cojen/classfile/ClassFile.html#ClassFile(java.lang.String, java.lang.Class)">ClassFile</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
+<td class="colOne"><code><strong><a href="../../../org/cojen/classfile/ClassFile.html#ClassFile(java.lang.String,%20java.lang.Class)">ClassFile</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
          <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Class.html?is-external=true" title="class or interface in java.lang">Class</a>&nbsp;superClass)</code>
 <div class="block">By default, the ClassFile defines public, non-final, concrete classes.</div>
 </td>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><strong><a href="../../../org/cojen/classfile/ClassFile.html#ClassFile(java.lang.String, java.lang.String)">ClassFile</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
+<td class="colOne"><code><strong><a href="../../../org/cojen/classfile/ClassFile.html#ClassFile(java.lang.String,%20java.lang.String)">ClassFile</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
          <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;superClassName)</code>
 <div class="block">By default, the ClassFile defines public, non-final, concrete classes.</div>
 </td>
@@ -165,7 +165,7 @@ extends <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code><a href="../../../org/cojen/classfile/MethodInfo.html" title="class in org.cojen.classfile">MethodInfo</a></code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/ClassFile.html#addConstructor(org.cojen.classfile.Modifiers, org.cojen.classfile.TypeDesc[])">addConstructor</a></strong>(<a href="../../../org/cojen/classfile/Modifiers.html" title="class in org.cojen.classfile">Modifiers</a>&nbsp;modifiers,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/ClassFile.html#addConstructor(org.cojen.classfile.Modifiers,%20org.cojen.classfile.TypeDesc[])">addConstructor</a></strong>(<a href="../../../org/cojen/classfile/Modifiers.html" title="class in org.cojen.classfile">Modifiers</a>&nbsp;modifiers,
               <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</code>
 <div class="block">Add a constructor to this class.</div>
 </td>
@@ -178,7 +178,7 @@ extends <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code><a href="../../../org/cojen/classfile/FieldInfo.html" title="class in org.cojen.classfile">FieldInfo</a></code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/ClassFile.html#addField(org.cojen.classfile.Modifiers, java.lang.String, org.cojen.classfile.TypeDesc)">addField</a></strong>(<a href="../../../org/cojen/classfile/Modifiers.html" title="class in org.cojen.classfile">Modifiers</a>&nbsp;modifiers,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/ClassFile.html#addField(org.cojen.classfile.Modifiers,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">addField</a></strong>(<a href="../../../org/cojen/classfile/Modifiers.html" title="class in org.cojen.classfile">Modifiers</a>&nbsp;modifiers,
         <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
         <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</code>
 <div class="block">Add a field to this class.</div>
@@ -192,14 +192,14 @@ extends <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code><a href="../../../org/cojen/classfile/ClassFile.html" title="class in org.cojen.classfile">ClassFile</a></code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/ClassFile.html#addInnerClass(java.lang.String, java.lang.String)">addInnerClass</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fullInnerClassName,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/ClassFile.html#addInnerClass(java.lang.String,%20java.lang.String)">addInnerClass</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fullInnerClassName,
              <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;innerClassName)</code>
 <div class="block">Add an inner class to this class.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code><a href="../../../org/cojen/classfile/ClassFile.html" title="class in org.cojen.classfile">ClassFile</a></code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/ClassFile.html#addInnerClass(java.lang.String, java.lang.String, java.lang.Class)">addInnerClass</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fullInnerClassName,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/ClassFile.html#addInnerClass(java.lang.String,%20java.lang.String,%20java.lang.Class)">addInnerClass</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fullInnerClassName,
              <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;innerClassName,
              <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Class.html?is-external=true" title="class or interface in java.lang">Class</a>&nbsp;superClass)</code>
 <div class="block">Add an inner class to this class.</div>
@@ -207,7 +207,7 @@ extends <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code><a href="../../../org/cojen/classfile/ClassFile.html" title="class in org.cojen.classfile">ClassFile</a></code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/ClassFile.html#addInnerClass(java.lang.String, java.lang.String, java.lang.String)">addInnerClass</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fullInnerClassName,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/ClassFile.html#addInnerClass(java.lang.String,%20java.lang.String,%20java.lang.String)">addInnerClass</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fullInnerClassName,
              <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;innerClassName,
              <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;superClassName)</code>
 <div class="block">Add an inner class to this class.</div>
@@ -233,7 +233,7 @@ extends <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code><a href="../../../org/cojen/classfile/MethodInfo.html" title="class in org.cojen.classfile">MethodInfo</a></code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/ClassFile.html#addMethod(org.cojen.classfile.Modifiers, java.lang.String, org.cojen.classfile.MethodDesc)">addMethod</a></strong>(<a href="../../../org/cojen/classfile/Modifiers.html" title="class in org.cojen.classfile">Modifiers</a>&nbsp;modifiers,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/ClassFile.html#addMethod(org.cojen.classfile.Modifiers,%20java.lang.String,%20org.cojen.classfile.MethodDesc)">addMethod</a></strong>(<a href="../../../org/cojen/classfile/Modifiers.html" title="class in org.cojen.classfile">Modifiers</a>&nbsp;modifiers,
          <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
          <a href="../../../org/cojen/classfile/MethodDesc.html" title="class in org.cojen.classfile">MethodDesc</a>&nbsp;md)</code>
 <div class="block">Add a method to this class.</div>
@@ -241,7 +241,7 @@ extends <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code><a href="../../../org/cojen/classfile/MethodInfo.html" title="class in org.cojen.classfile">MethodInfo</a></code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/ClassFile.html#addMethod(org.cojen.classfile.Modifiers, java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">addMethod</a></strong>(<a href="../../../org/cojen/classfile/Modifiers.html" title="class in org.cojen.classfile">Modifiers</a>&nbsp;modifiers,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/ClassFile.html#addMethod(org.cojen.classfile.Modifiers,%20java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">addMethod</a></strong>(<a href="../../../org/cojen/classfile/Modifiers.html" title="class in org.cojen.classfile">Modifiers</a>&nbsp;modifiers,
          <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
          <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;ret,
          <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</code>
@@ -431,7 +431,7 @@ extends <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static <a href="../../../org/cojen/classfile/ClassFile.html" title="class in org.cojen.classfile">ClassFile</a></code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/ClassFile.html#readFrom(java.io.DataInput, org.cojen.classfile.ClassFileDataLoader, org.cojen.classfile.AttributeFactory)">readFrom</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/io/DataInput.html?is-external=true" title="class or interface in java.io">DataInput</a>&nbsp;din,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/ClassFile.html#readFrom(java.io.DataInput,%20org.cojen.classfile.ClassFileDataLoader,%20org.cojen.classfile.AttributeFactory)">readFrom</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/io/DataInput.html?is-external=true" title="class or interface in java.io">DataInput</a>&nbsp;din,
         <a href="../../../org/cojen/classfile/ClassFileDataLoader.html" title="interface in org.cojen.classfile">ClassFileDataLoader</a>&nbsp;loader,
         <a href="../../../org/cojen/classfile/AttributeFactory.html" title="interface in org.cojen.classfile">AttributeFactory</a>&nbsp;attrFactory)</code>
 <div class="block">Reads a ClassFile from the given DataInput.</div>
@@ -445,7 +445,7 @@ extends <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static <a href="../../../org/cojen/classfile/ClassFile.html" title="class in org.cojen.classfile">ClassFile</a></code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/ClassFile.html#readFrom(java.io.InputStream, org.cojen.classfile.ClassFileDataLoader, org.cojen.classfile.AttributeFactory)">readFrom</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/io/InputStream.html?is-external=true" title="class or interface in java.io">InputStream</a>&nbsp;in,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/ClassFile.html#readFrom(java.io.InputStream,%20org.cojen.classfile.ClassFileDataLoader,%20org.cojen.classfile.AttributeFactory)">readFrom</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/io/InputStream.html?is-external=true" title="class or interface in java.io">InputStream</a>&nbsp;in,
         <a href="../../../org/cojen/classfile/ClassFileDataLoader.html" title="interface in org.cojen.classfile">ClassFileDataLoader</a>&nbsp;loader,
         <a href="../../../org/cojen/classfile/AttributeFactory.html" title="interface in org.cojen.classfile">AttributeFactory</a>&nbsp;attrFactory)</code>
 <div class="block">Reads a ClassFile from the given InputStream.</div>
@@ -471,7 +471,7 @@ extends <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/ClassFile.html#setVersion(int, int)">setVersion</a></strong>(int&nbsp;major,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/ClassFile.html#setVersion(int,%20int)">setVersion</a></strong>(int&nbsp;major,
           int&nbsp;minor)</code>
 <div class="block">Sets the version to use when writing the generated classfile, overriding
  the target.</div>
@@ -499,7 +499,7 @@ extends <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;java.lang.<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</a></h3>
-<code><a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#clone()" title="class or interface in java.lang">clone</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#equals(java.lang.Object)" title="class or interface in java.lang">equals</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#finalize()" title="class or interface in java.lang">finalize</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#getClass()" title="class or interface in java.lang">getClass</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#hashCode()" title="class or interface in java.lang">hashCode</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#notify()" title="class or interface in java.lang">notify</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#notifyAll()" title="class or interface in java.lang">notifyAll</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#wait()" title="class or interface in java.lang">wait</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#wait(long)" title="class or interface in java.lang">wait</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#wait(long, int)" title="class or interface in java.lang">wait</a></code></li>
+<code><a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#clone()" title="class or interface in java.lang">clone</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#equals(java.lang.Object)" title="class or interface in java.lang">equals</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#finalize()" title="class or interface in java.lang">finalize</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#getClass()" title="class or interface in java.lang">getClass</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#hashCode()" title="class or interface in java.lang">hashCode</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#notify()" title="class or interface in java.lang">notify</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#notifyAll()" title="class or interface in java.lang">notifyAll</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#wait()" title="class or interface in java.lang">wait</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#wait(long)" title="class or interface in java.lang">wait</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#wait(long,%20int)" title="class or interface in java.lang">wait</a></code></li>
 </ul>
 </li>
 </ul>
@@ -1270,6 +1270,6 @@ extends <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?
 <!--   -->
 </a></div>
 <!-- ======== END OF BOTTOM NAVBAR ======= -->
-<p class="legalCopy"><small>Copyright &#169; 2004-2013 <a href="https://github.com/cojen">Cojen</a>. All Rights Reserved.</small></p>
+<p class="legalCopy"><small>Copyright &#169; 2004-2015 <a href="https://github.com/cojen">Cojen</a>. All Rights Reserved.</small></p>
 </body>
 </html>

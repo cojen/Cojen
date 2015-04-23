@@ -3,13 +3,13 @@
 <html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
-<title>CodeAssemblerPrinter (Cojen 2.2 API)</title>
+<title>CodeAssemblerPrinter (Cojen 2.2.5 API)</title>
 <link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
 </head>
 <body>
 <script type="text/javascript"><!--
     if (location.href.indexOf('is-external=true') == -1) {
-        parent.document.title="CodeAssemblerPrinter (Cojen 2.2 API)";
+        parent.document.title="CodeAssemblerPrinter (Cojen 2.2.5 API)";
     }
 //-->
 </script>
@@ -146,12 +146,12 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#CodeAssemblerPrinter(org.cojen.classfile.TypeDesc[], boolean, java.io.PrintWriter)">CodeAssemblerPrinter</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;paramTypes,
+<td class="colOne"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#CodeAssemblerPrinter(org.cojen.classfile.TypeDesc[],%20boolean,%20java.io.PrintWriter)">CodeAssemblerPrinter</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;paramTypes,
                     boolean&nbsp;isStatic,
                     <a href="http://docs.oracle.com/javase/7/docs/api/java/io/PrintWriter.html?is-external=true" title="class or interface in java.io">PrintWriter</a>&nbsp;writer)</code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
-<td class="colOne"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#CodeAssemblerPrinter(org.cojen.classfile.TypeDesc[], boolean, java.io.PrintWriter, java.lang.String, java.lang.String, java.lang.String)">CodeAssemblerPrinter</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;paramTypes,
+<td class="colOne"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#CodeAssemblerPrinter(org.cojen.classfile.TypeDesc[],%20boolean,%20java.io.PrintWriter,%20java.lang.String,%20java.lang.String,%20java.lang.String)">CodeAssemblerPrinter</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;paramTypes,
                     boolean&nbsp;isStatic,
                     <a href="http://docs.oracle.com/javase/7/docs/api/java/io/PrintWriter.html?is-external=true" title="class or interface in java.io">PrintWriter</a>&nbsp;writer,
                     <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;linePrefix,
@@ -200,7 +200,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#convert(org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc)">convert</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;fromType,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#convert(org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc)">convert</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;fromType,
        <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;toType)</code>
 <div class="block">Generates code that converts the value of a primitive type already
  on the stack.</div>
@@ -208,7 +208,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#convert(org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc, int)">convert</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;fromType,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#convert(org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc,%20int)">convert</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;fromType,
        <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;toType,
        int&nbsp;fpConvertMode)</code>
 <div class="block">Generates code that converts the value of a primitive type already
@@ -223,7 +223,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code><a href="../../../org/cojen/classfile/LocalVariable.html" title="interface in org.cojen.classfile">LocalVariable</a></code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#createLocalVariable(java.lang.String, org.cojen.classfile.TypeDesc)">createLocalVariable</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;name,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#createLocalVariable(java.lang.String,%20org.cojen.classfile.TypeDesc)">createLocalVariable</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;name,
                    <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</code>
 <div class="block">Creates a LocalVariable reference from a name and type.</div>
 </td>
@@ -272,7 +272,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#exceptionHandler(org.cojen.classfile.Location, org.cojen.classfile.Location, java.lang.String)">exceptionHandler</a></strong>(<a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>&nbsp;startLocation,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#exceptionHandler(org.cojen.classfile.Location,%20org.cojen.classfile.Location,%20java.lang.String)">exceptionHandler</a></strong>(<a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>&nbsp;startLocation,
                 <a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>&nbsp;endLocation,
                 <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;catchClassName)</code>
 <div class="block">Sets up an exception handler located here, the location of the next
@@ -294,7 +294,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#ifComparisonBranch(org.cojen.classfile.Location, java.lang.String)">ifComparisonBranch</a></strong>(<a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>&nbsp;location,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#ifComparisonBranch(org.cojen.classfile.Location,%20java.lang.String)">ifComparisonBranch</a></strong>(<a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>&nbsp;location,
                   <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;choice)</code>
 <div class="block">Generates code the performs a conditional branch based on a comparison
  between two int values on the stack.</div>
@@ -302,7 +302,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#ifEqualBranch(org.cojen.classfile.Location, boolean)">ifEqualBranch</a></strong>(<a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>&nbsp;location,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#ifEqualBranch(org.cojen.classfile.Location,%20boolean)">ifEqualBranch</a></strong>(<a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>&nbsp;location,
              boolean&nbsp;choice)</code>
 <div class="block">Generates code that performs a conditional branch based on the value of
  two object references on the stack.</div>
@@ -310,7 +310,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#ifNullBranch(org.cojen.classfile.Location, boolean)">ifNullBranch</a></strong>(<a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>&nbsp;location,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#ifNullBranch(org.cojen.classfile.Location,%20boolean)">ifNullBranch</a></strong>(<a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>&nbsp;location,
             boolean&nbsp;choice)</code>
 <div class="block">Generates code that performs a conditional branch based on the
  value of an object on the stack.</div>
@@ -318,7 +318,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#ifZeroComparisonBranch(org.cojen.classfile.Location, java.lang.String)">ifZeroComparisonBranch</a></strong>(<a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>&nbsp;location,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#ifZeroComparisonBranch(org.cojen.classfile.Location,%20java.lang.String)">ifZeroComparisonBranch</a></strong>(<a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>&nbsp;location,
                       <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;choice)</code>
 <div class="block">Generates code the performs a conditional branch based on a comparison
  between an int value on the stack and zero.</div>
@@ -332,7 +332,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#integerIncrement(org.cojen.classfile.LocalVariable, int)">integerIncrement</a></strong>(<a href="../../../org/cojen/classfile/LocalVariable.html" title="interface in org.cojen.classfile">LocalVariable</a>&nbsp;local,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#integerIncrement(org.cojen.classfile.LocalVariable,%20int)">integerIncrement</a></strong>(<a href="../../../org/cojen/classfile/LocalVariable.html" title="interface in org.cojen.classfile">LocalVariable</a>&nbsp;local,
                 int&nbsp;amount)</code>
 <div class="block">Generates code that increments a local integer variable by a signed 
  constant amount.</div>
@@ -340,7 +340,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#invokeConstructor(java.lang.String, org.cojen.classfile.TypeDesc[])">invokeConstructor</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#invokeConstructor(java.lang.String,%20org.cojen.classfile.TypeDesc[])">invokeConstructor</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
                  <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</code>
 <div class="block">Generates code to invoke a class constructor in any class.</div>
 </td>
@@ -353,14 +353,14 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#invokeConstructor(org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokeConstructor</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#invokeConstructor(org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokeConstructor</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
                  <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</code>
 <div class="block">Generates code to invoke a class constructor in any class.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#invokeInterface(java.lang.String, java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokeInterface</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#invokeInterface(java.lang.String,%20java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokeInterface</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
                <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
                <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;ret,
                <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</code>
@@ -369,7 +369,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#invokeInterface(org.cojen.classfile.TypeDesc, java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokeInterface</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#invokeInterface(org.cojen.classfile.TypeDesc,%20java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokeInterface</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
                <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
                <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;ret,
                <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</code>
@@ -378,7 +378,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#invokePrivate(java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokePrivate</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#invokePrivate(java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokePrivate</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
              <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;ret,
              <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</code>
 <div class="block">Generates code to invoke a private method in this class.</div>
@@ -386,7 +386,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#invokeStatic(java.lang.String, java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokeStatic</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#invokeStatic(java.lang.String,%20java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokeStatic</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
             <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
             <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;ret,
             <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</code>
@@ -395,7 +395,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#invokeStatic(java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokeStatic</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#invokeStatic(java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokeStatic</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
             <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;ret,
             <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</code>
 <div class="block">Generates code to invoke a static method in this class.</div>
@@ -403,7 +403,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#invokeStatic(org.cojen.classfile.TypeDesc, java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokeStatic</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#invokeStatic(org.cojen.classfile.TypeDesc,%20java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokeStatic</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
             <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
             <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;ret,
             <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</code>
@@ -412,7 +412,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#invokeSuper(java.lang.String, java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokeSuper</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;superClassName,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#invokeSuper(java.lang.String,%20java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokeSuper</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;superClassName,
            <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
            <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;ret,
            <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</code>
@@ -421,7 +421,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#invokeSuper(org.cojen.classfile.TypeDesc, java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokeSuper</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;superClassDesc,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#invokeSuper(org.cojen.classfile.TypeDesc,%20java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokeSuper</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;superClassDesc,
            <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
            <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;ret,
            <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</code>
@@ -436,7 +436,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#invokeVirtual(java.lang.String, java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokeVirtual</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#invokeVirtual(java.lang.String,%20java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokeVirtual</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
              <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
              <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;ret,
              <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</code>
@@ -445,7 +445,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#invokeVirtual(java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokeVirtual</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#invokeVirtual(java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokeVirtual</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
              <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;ret,
              <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</code>
 <div class="block">Generates code to invoke a virtual method in this class.</div>
@@ -453,7 +453,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#invokeVirtual(org.cojen.classfile.TypeDesc, java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokeVirtual</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#invokeVirtual(org.cojen.classfile.TypeDesc,%20java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokeVirtual</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
              <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
              <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;ret,
              <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</code>
@@ -512,7 +512,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#loadField(java.lang.String, java.lang.String, org.cojen.classfile.TypeDesc)">loadField</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#loadField(java.lang.String,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">loadField</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
          <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
          <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</code>
 <div class="block">Generates code that loads a value from a field from any class.</div>
@@ -520,14 +520,14 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#loadField(java.lang.String, org.cojen.classfile.TypeDesc)">loadField</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#loadField(java.lang.String,%20org.cojen.classfile.TypeDesc)">loadField</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
          <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</code>
 <div class="block">Generates code that loads a value from a field from this class.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#loadField(org.cojen.classfile.TypeDesc, java.lang.String, org.cojen.classfile.TypeDesc)">loadField</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#loadField(org.cojen.classfile.TypeDesc,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">loadField</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
          <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
          <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</code>
 <div class="block">Generates code that loads a value from a field from any class.</div>
@@ -553,7 +553,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#loadStaticField(java.lang.String, java.lang.String, org.cojen.classfile.TypeDesc)">loadStaticField</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#loadStaticField(java.lang.String,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">loadStaticField</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
                <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
                <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</code>
 <div class="block">Generates code that loads a value from a static field from any class.</div>
@@ -561,14 +561,14 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#loadStaticField(java.lang.String, org.cojen.classfile.TypeDesc)">loadStaticField</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#loadStaticField(java.lang.String,%20org.cojen.classfile.TypeDesc)">loadStaticField</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
                <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</code>
 <div class="block">Generates code that loads a value from a static field from this class.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#loadStaticField(org.cojen.classfile.TypeDesc, java.lang.String, org.cojen.classfile.TypeDesc)">loadStaticField</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#loadStaticField(org.cojen.classfile.TypeDesc,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">loadStaticField</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
                <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
                <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</code>
 <div class="block">Generates code that loads a value from a static field from any class.</div>
@@ -614,7 +614,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#newObject(org.cojen.classfile.TypeDesc, int)">newObject</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#newObject(org.cojen.classfile.TypeDesc,%20int)">newObject</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type,
          int&nbsp;dimensions)</code>
 <div class="block">Generates code to create a new array.</div>
 </td>
@@ -659,7 +659,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#storeField(java.lang.String, java.lang.String, org.cojen.classfile.TypeDesc)">storeField</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#storeField(java.lang.String,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">storeField</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
           <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
           <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</code>
 <div class="block">Generates code that stores a value into a field from any class.</div>
@@ -667,14 +667,14 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#storeField(java.lang.String, org.cojen.classfile.TypeDesc)">storeField</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#storeField(java.lang.String,%20org.cojen.classfile.TypeDesc)">storeField</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
           <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</code>
 <div class="block">Generates code that stores a value into a field from this class.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#storeField(org.cojen.classfile.TypeDesc, java.lang.String, org.cojen.classfile.TypeDesc)">storeField</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#storeField(org.cojen.classfile.TypeDesc,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">storeField</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
           <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
           <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</code>
 <div class="block">Generates code that stores a value into a field from any class.</div>
@@ -688,7 +688,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#storeStaticField(java.lang.String, java.lang.String, org.cojen.classfile.TypeDesc)">storeStaticField</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#storeStaticField(java.lang.String,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">storeStaticField</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
                 <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
                 <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</code>
 <div class="block">Generates code that stores a value into a field from any class.</div>
@@ -696,14 +696,14 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#storeStaticField(java.lang.String, org.cojen.classfile.TypeDesc)">storeStaticField</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#storeStaticField(java.lang.String,%20org.cojen.classfile.TypeDesc)">storeStaticField</a></strong>(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
                 <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</code>
 <div class="block">Generates code that stores a value into a field from this class.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#storeStaticField(org.cojen.classfile.TypeDesc, java.lang.String, org.cojen.classfile.TypeDesc)">storeStaticField</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#storeStaticField(org.cojen.classfile.TypeDesc,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">storeStaticField</a></strong>(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
                 <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
                 <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</code>
 <div class="block">Generates code that stores a value into a field from any class.</div>
@@ -731,7 +731,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#switchBranch(int[], org.cojen.classfile.Location[], org.cojen.classfile.Location)">switchBranch</a></strong>(int[]&nbsp;cases,
+<td class="colLast"><code><strong><a href="../../../org/cojen/classfile/CodeAssemblerPrinter.html#switchBranch(int[],%20org.cojen.classfile.Location[],%20org.cojen.classfile.Location)">switchBranch</a></strong>(int[]&nbsp;cases,
             <a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>[]&nbsp;locations,
             <a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>&nbsp;defaultLocation)</code>
 <div class="block">Generates code for a switch statement.</div>
@@ -749,21 +749,21 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;org.cojen.classfile.<a href="../../../org/cojen/classfile/AbstractCodeAssembler.html" title="class in org.cojen.classfile">AbstractCodeAssembler</a></h3>
-<code><a href="../../../org/cojen/classfile/AbstractCodeAssembler.html#createLocalVariable(org.cojen.classfile.TypeDesc)">createLocalVariable</a>, <a href="../../../org/cojen/classfile/AbstractCodeAssembler.html#ifComparisonBranch(org.cojen.classfile.Location, java.lang.String, org.cojen.classfile.TypeDesc)">ifComparisonBranch</a>, <a href="../../../org/cojen/classfile/AbstractCodeAssembler.html#inline(java.lang.Object)">inline</a>, <a href="../../../org/cojen/classfile/AbstractCodeAssembler.html#invoke(java.lang.reflect.Constructor)">invoke</a>, <a href="../../../org/cojen/classfile/AbstractCodeAssembler.html#invoke(java.lang.reflect.Method)">invoke</a>, <a href="../../../org/cojen/classfile/AbstractCodeAssembler.html#invokeSuper(java.lang.reflect.Method)">invokeSuper</a></code></li>
+<code><a href="../../../org/cojen/classfile/AbstractCodeAssembler.html#createLocalVariable(org.cojen.classfile.TypeDesc)">createLocalVariable</a>, <a href="../../../org/cojen/classfile/AbstractCodeAssembler.html#ifComparisonBranch(org.cojen.classfile.Location,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">ifComparisonBranch</a>, <a href="../../../org/cojen/classfile/AbstractCodeAssembler.html#inline(java.lang.Object)">inline</a>, <a href="../../../org/cojen/classfile/AbstractCodeAssembler.html#invoke(java.lang.reflect.Constructor)">invoke</a>, <a href="../../../org/cojen/classfile/AbstractCodeAssembler.html#invoke(java.lang.reflect.Method)">invoke</a>, <a href="../../../org/cojen/classfile/AbstractCodeAssembler.html#invokeSuper(java.lang.reflect.Method)">invokeSuper</a></code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods_inherited_from_class_java.lang.Object">
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;java.lang.<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</a></h3>
-<code><a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#clone()" title="class or interface in java.lang">clone</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#equals(java.lang.Object)" title="class or interface in java.lang">equals</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#finalize()" title="class or interface in java.lang">finalize</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#getClass()" title="class or interface in java.lang">getClass</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#hashCode()" title="class or interface in java.lang">hashCode</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#notify()" title="class or interface in java.lang">notify</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#notifyAll()" title="class or interface in java.lang">notifyAll</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#toString()" title="class or interface in java.lang">toString</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#wait()" title="class or interface in java.lang">wait</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#wait(long)" title="class or interface in java.lang">wait</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#wait(long, int)" title="class or interface in java.lang">wait</a></code></li>
+<code><a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#clone()" title="class or interface in java.lang">clone</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#equals(java.lang.Object)" title="class or interface in java.lang">equals</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#finalize()" title="class or interface in java.lang">finalize</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#getClass()" title="class or interface in java.lang">getClass</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#hashCode()" title="class or interface in java.lang">hashCode</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#notify()" title="class or interface in java.lang">notify</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#notifyAll()" title="class or interface in java.lang">notifyAll</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#toString()" title="class or interface in java.lang">toString</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#wait()" title="class or interface in java.lang">wait</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#wait(long)" title="class or interface in java.lang">wait</a>, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Object.html?is-external=true#wait(long,%20int)" title="class or interface in java.lang">wait</a></code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods_inherited_from_class_org.cojen.classfile.CodeAssembler">
 <!--   -->
 </a>
 <h3>Methods inherited from interface&nbsp;org.cojen.classfile.<a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></h3>
-<code><a href="../../../org/cojen/classfile/CodeAssembler.html#createLocalVariable(org.cojen.classfile.TypeDesc)">createLocalVariable</a>, <a href="../../../org/cojen/classfile/CodeAssembler.html#ifComparisonBranch(org.cojen.classfile.Location, java.lang.String, org.cojen.classfile.TypeDesc)">ifComparisonBranch</a>, <a href="../../../org/cojen/classfile/CodeAssembler.html#inline(java.lang.Object)">inline</a>, <a href="../../../org/cojen/classfile/CodeAssembler.html#invoke(java.lang.reflect.Constructor)">invoke</a>, <a href="../../../org/cojen/classfile/CodeAssembler.html#invoke(java.lang.reflect.Method)">invoke</a>, <a href="../../../org/cojen/classfile/CodeAssembler.html#invokeSuper(java.lang.reflect.Method)">invokeSuper</a></code></li>
+<code><a href="../../../org/cojen/classfile/CodeAssembler.html#createLocalVariable(org.cojen.classfile.TypeDesc)">createLocalVariable</a>, <a href="../../../org/cojen/classfile/CodeAssembler.html#ifComparisonBranch(org.cojen.classfile.Location,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">ifComparisonBranch</a>, <a href="../../../org/cojen/classfile/CodeAssembler.html#inline(java.lang.Object)">inline</a>, <a href="../../../org/cojen/classfile/CodeAssembler.html#invoke(java.lang.reflect.Constructor)">invoke</a>, <a href="../../../org/cojen/classfile/CodeAssembler.html#invoke(java.lang.reflect.Method)">invoke</a>, <a href="../../../org/cojen/classfile/CodeAssembler.html#invokeSuper(java.lang.reflect.Method)">invokeSuper</a></code></li>
 </ul>
 </li>
 </ul>
@@ -856,13 +856,13 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 <h4>createLocalVariable</h4>
 <pre>public&nbsp;<a href="../../../org/cojen/classfile/LocalVariable.html" title="interface in org.cojen.classfile">LocalVariable</a>&nbsp;createLocalVariable(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;name,
                                 <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#createLocalVariable(java.lang.String, org.cojen.classfile.TypeDesc)">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#createLocalVariable(java.lang.String,%20org.cojen.classfile.TypeDesc)">CodeAssembler</a></code></strong></div>
 <div class="block">Creates a LocalVariable reference from a name and type. Although name
  is optional, it is encouraged that a name be provided. Names do not 
  need to be unique.</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#createLocalVariable(java.lang.String, org.cojen.classfile.TypeDesc)">createLocalVariable</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#createLocalVariable(java.lang.String,%20org.cojen.classfile.TypeDesc)">createLocalVariable</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 <dt><span class="strong">Parameters:</span></dt><dd><code>name</code> - Optional name for the LocalVariable.</dd><dd><code>type</code> - The type of data that the requested LocalVariable can 
  store.</dd></dl>
 </li>
@@ -899,12 +899,12 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 <pre>public&nbsp;void&nbsp;exceptionHandler(<a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>&nbsp;startLocation,
                     <a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>&nbsp;endLocation,
                     <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;catchClassName)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#exceptionHandler(org.cojen.classfile.Location, org.cojen.classfile.Location, java.lang.String)">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#exceptionHandler(org.cojen.classfile.Location,%20org.cojen.classfile.Location,%20java.lang.String)">CodeAssembler</a></code></strong></div>
 <div class="block">Sets up an exception handler located here, the location of the next
  code to be generated.</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#exceptionHandler(org.cojen.classfile.Location, org.cojen.classfile.Location, java.lang.String)">exceptionHandler</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#exceptionHandler(org.cojen.classfile.Location,%20org.cojen.classfile.Location,%20java.lang.String)">exceptionHandler</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 <dt><span class="strong">Parameters:</span></dt><dd><code>startLocation</code> - Location at the start of the section of
  code to be wrapped by an exception handler.</dd><dd><code>endLocation</code> - Location directly after the end of the
  section of code.</dd><dd><code>catchClassName</code> - The class name of exception to be caught; 
@@ -1103,7 +1103,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 <dt><strong>Specified by:</strong></dt>
 <dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#storeLocal(org.cojen.classfile.LocalVariable)">storeLocal</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 <dt><span class="strong">Parameters:</span></dt><dd><code>local</code> - The local variable reference</dd><dt><span class="strong">See Also:</span></dt><dd><a href="../../../org/cojen/classfile/CodeAssembler.html#getParameter(int)"><code>CodeAssembler.getParameter(int)</code></a>, 
-<a href="../../../org/cojen/classfile/CodeAssembler.html#createLocalVariable(java.lang.String, org.cojen.classfile.TypeDesc)"><code>CodeAssembler.createLocalVariable(java.lang.String, org.cojen.classfile.TypeDesc)</code></a></dd></dl>
+<a href="../../../org/cojen/classfile/CodeAssembler.html#createLocalVariable(java.lang.String,%20org.cojen.classfile.TypeDesc)"><code>CodeAssembler.createLocalVariable(java.lang.String, org.cojen.classfile.TypeDesc)</code></a></dd></dl>
 </li>
 </ul>
 <a name="loadFromArray(org.cojen.classfile.TypeDesc)">
@@ -1158,14 +1158,14 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 <h4>loadField</h4>
 <pre>public&nbsp;void&nbsp;loadField(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
              <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#loadField(java.lang.String, org.cojen.classfile.TypeDesc)">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#loadField(java.lang.String,%20org.cojen.classfile.TypeDesc)">CodeAssembler</a></code></strong></div>
 <div class="block">Generates code that loads a value from a field from this class. 
  An object reference must be on the stack. After the generated code 
  has executed, the object reference is replaced by the value retrieved 
  from the field.</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#loadField(java.lang.String, org.cojen.classfile.TypeDesc)">loadField</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#loadField(java.lang.String,%20org.cojen.classfile.TypeDesc)">loadField</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 </dl>
 </li>
 </ul>
@@ -1178,14 +1178,14 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 <pre>public&nbsp;void&nbsp;loadField(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
              <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
              <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#loadField(java.lang.String, java.lang.String, org.cojen.classfile.TypeDesc)">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#loadField(java.lang.String,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">CodeAssembler</a></code></strong></div>
 <div class="block">Generates code that loads a value from a field from any class. 
  An object reference must be on the stack. After the generated code 
  has executed, the object reference is replaced by the value retrieved 
  from the field.</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#loadField(java.lang.String, java.lang.String, org.cojen.classfile.TypeDesc)">loadField</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#loadField(java.lang.String,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">loadField</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 </dl>
 </li>
 </ul>
@@ -1198,14 +1198,14 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 <pre>public&nbsp;void&nbsp;loadField(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
              <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
              <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#loadField(org.cojen.classfile.TypeDesc, java.lang.String, org.cojen.classfile.TypeDesc)">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#loadField(org.cojen.classfile.TypeDesc,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">CodeAssembler</a></code></strong></div>
 <div class="block">Generates code that loads a value from a field from any class. 
  An object reference must be on the stack. After the generated code 
  has executed, the object reference is replaced by the value retrieved 
  from the field.</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#loadField(org.cojen.classfile.TypeDesc, java.lang.String, org.cojen.classfile.TypeDesc)">loadField</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#loadField(org.cojen.classfile.TypeDesc,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">loadField</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 </dl>
 </li>
 </ul>
@@ -1217,13 +1217,13 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 <h4>loadStaticField</h4>
 <pre>public&nbsp;void&nbsp;loadStaticField(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
                    <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#loadStaticField(java.lang.String, org.cojen.classfile.TypeDesc)">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#loadStaticField(java.lang.String,%20org.cojen.classfile.TypeDesc)">CodeAssembler</a></code></strong></div>
 <div class="block">Generates code that loads a value from a static field from this class. 
  After the generated code has executed, the value retrieved is placed
  on the stack.</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#loadStaticField(java.lang.String, org.cojen.classfile.TypeDesc)">loadStaticField</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#loadStaticField(java.lang.String,%20org.cojen.classfile.TypeDesc)">loadStaticField</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 </dl>
 </li>
 </ul>
@@ -1236,13 +1236,13 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 <pre>public&nbsp;void&nbsp;loadStaticField(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
                    <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
                    <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#loadStaticField(java.lang.String, java.lang.String, org.cojen.classfile.TypeDesc)">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#loadStaticField(java.lang.String,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">CodeAssembler</a></code></strong></div>
 <div class="block">Generates code that loads a value from a static field from any class. 
  After the generated code has executed, the value retrieved is placed
  on the stack.</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#loadStaticField(java.lang.String, java.lang.String, org.cojen.classfile.TypeDesc)">loadStaticField</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#loadStaticField(java.lang.String,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">loadStaticField</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 </dl>
 </li>
 </ul>
@@ -1255,13 +1255,13 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 <pre>public&nbsp;void&nbsp;loadStaticField(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
                    <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
                    <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#loadStaticField(org.cojen.classfile.TypeDesc, java.lang.String, org.cojen.classfile.TypeDesc)">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#loadStaticField(org.cojen.classfile.TypeDesc,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">CodeAssembler</a></code></strong></div>
 <div class="block">Generates code that loads a value from a static field from any class. 
  After the generated code has executed, the value retrieved is placed
  on the stack.</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#loadStaticField(org.cojen.classfile.TypeDesc, java.lang.String, org.cojen.classfile.TypeDesc)">loadStaticField</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#loadStaticField(org.cojen.classfile.TypeDesc,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">loadStaticField</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 </dl>
 </li>
 </ul>
@@ -1273,14 +1273,14 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 <h4>storeField</h4>
 <pre>public&nbsp;void&nbsp;storeField(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
               <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#storeField(java.lang.String, org.cojen.classfile.TypeDesc)">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#storeField(java.lang.String,%20org.cojen.classfile.TypeDesc)">CodeAssembler</a></code></strong></div>
 <div class="block">Generates code that stores a value into a field from this class. 
  An object reference and value must be on the stack. After the generated 
  code has executed, the object reference and value are gone from
  the stack.</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#storeField(java.lang.String, org.cojen.classfile.TypeDesc)">storeField</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#storeField(java.lang.String,%20org.cojen.classfile.TypeDesc)">storeField</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 </dl>
 </li>
 </ul>
@@ -1293,14 +1293,14 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 <pre>public&nbsp;void&nbsp;storeField(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
               <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
               <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#storeField(java.lang.String, java.lang.String, org.cojen.classfile.TypeDesc)">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#storeField(java.lang.String,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">CodeAssembler</a></code></strong></div>
 <div class="block">Generates code that stores a value into a field from any class. 
  An object reference and value must be on the stack. After the generated 
  code has executed, the object reference and value are gone from
  the stack.</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#storeField(java.lang.String, java.lang.String, org.cojen.classfile.TypeDesc)">storeField</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#storeField(java.lang.String,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">storeField</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 </dl>
 </li>
 </ul>
@@ -1313,14 +1313,14 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 <pre>public&nbsp;void&nbsp;storeField(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
               <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
               <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#storeField(org.cojen.classfile.TypeDesc, java.lang.String, org.cojen.classfile.TypeDesc)">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#storeField(org.cojen.classfile.TypeDesc,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">CodeAssembler</a></code></strong></div>
 <div class="block">Generates code that stores a value into a field from any class. 
  An object reference and value must be on the stack. After the generated 
  code has executed, the object reference and value are gone from
  the stack.</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#storeField(org.cojen.classfile.TypeDesc, java.lang.String, org.cojen.classfile.TypeDesc)">storeField</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#storeField(org.cojen.classfile.TypeDesc,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">storeField</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 </dl>
 </li>
 </ul>
@@ -1332,13 +1332,13 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 <h4>storeStaticField</h4>
 <pre>public&nbsp;void&nbsp;storeStaticField(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
                     <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#storeStaticField(java.lang.String, org.cojen.classfile.TypeDesc)">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#storeStaticField(java.lang.String,%20org.cojen.classfile.TypeDesc)">CodeAssembler</a></code></strong></div>
 <div class="block">Generates code that stores a value into a field from this class. 
  A value must be on the stack. After the generated 
  code has executed, the value is gone from the stack.</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#storeStaticField(java.lang.String, org.cojen.classfile.TypeDesc)">storeStaticField</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#storeStaticField(java.lang.String,%20org.cojen.classfile.TypeDesc)">storeStaticField</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 </dl>
 </li>
 </ul>
@@ -1351,13 +1351,13 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 <pre>public&nbsp;void&nbsp;storeStaticField(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
                     <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
                     <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#storeStaticField(java.lang.String, java.lang.String, org.cojen.classfile.TypeDesc)">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#storeStaticField(java.lang.String,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">CodeAssembler</a></code></strong></div>
 <div class="block">Generates code that stores a value into a field from any class. 
  A value must be on the stack. After the generated 
  code has executed, the value is gone from the stack.</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#storeStaticField(java.lang.String, java.lang.String, org.cojen.classfile.TypeDesc)">storeStaticField</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#storeStaticField(java.lang.String,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">storeStaticField</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 </dl>
 </li>
 </ul>
@@ -1370,13 +1370,13 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 <pre>public&nbsp;void&nbsp;storeStaticField(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
                     <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;fieldName,
                     <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#storeStaticField(org.cojen.classfile.TypeDesc, java.lang.String, org.cojen.classfile.TypeDesc)">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#storeStaticField(org.cojen.classfile.TypeDesc,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">CodeAssembler</a></code></strong></div>
 <div class="block">Generates code that stores a value into a field from any class. 
  A value must be on the stack. After the generated 
  code has executed, the value is gone from the stack.</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#storeStaticField(org.cojen.classfile.TypeDesc, java.lang.String, org.cojen.classfile.TypeDesc)">storeStaticField</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#storeStaticField(org.cojen.classfile.TypeDesc,%20java.lang.String,%20org.cojen.classfile.TypeDesc)">storeStaticField</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 </dl>
 </li>
 </ul>
@@ -1423,7 +1423,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 <h4>convert</h4>
 <pre>public&nbsp;void&nbsp;convert(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;fromType,
            <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;toType)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#convert(org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc)">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#convert(org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc)">CodeAssembler</a></code></strong></div>
 <div class="block">Generates code that converts the value of a primitive type already
  on the stack. Conversions between all primitive types are supported as
  well as boxing and unboxing conversions. Some example conversions:
@@ -1440,7 +1440,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
  In all, 240 conversions are supported.</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#convert(org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc)">convert</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#convert(org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc)">convert</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 </dl>
 </li>
 </ul>
@@ -1453,7 +1453,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 <pre>public&nbsp;void&nbsp;convert(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;fromType,
            <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;toType,
            int&nbsp;fpConvertMode)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#convert(org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc, int)">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#convert(org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc,%20int)">CodeAssembler</a></code></strong></div>
 <div class="block">Generates code that converts the value of a primitive type already
  on the stack. Conversions between all primitive types are supported as
  well as boxing and unboxing conversions. Some example conversions:
@@ -1470,7 +1470,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
  In all, 240 conversions are supported.</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#convert(org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc, int)">convert</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#convert(org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc,%20int)">convert</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 <dd><code>fpConvertMode</code> - controls floating point conversion if converting
  float &lt;--&gt; int or double &lt;--&gt; long</dd></dl>
 </li>
@@ -1484,12 +1484,12 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 <pre>public&nbsp;void&nbsp;invokeVirtual(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
                  <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;ret,
                  <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeVirtual(java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeVirtual(java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">CodeAssembler</a></code></strong></div>
 <div class="block">Generates code to invoke a virtual method in this class. The object
  reference and the method's argument(s) must be on the stack.</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeVirtual(java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokeVirtual</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeVirtual(java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokeVirtual</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 <dd><code>ret</code> - May be null if method returns void.</dd><dd><code>params</code> - May be null if method takes no parameters.</dd></dl>
 </li>
 </ul>
@@ -1503,12 +1503,12 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
                  <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
                  <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;ret,
                  <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeVirtual(java.lang.String, java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeVirtual(java.lang.String,%20java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">CodeAssembler</a></code></strong></div>
 <div class="block">Generates code to invoke a virtual method in any class. The object
  reference and the method's argument(s) must be on the stack.</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeVirtual(java.lang.String, java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokeVirtual</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeVirtual(java.lang.String,%20java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokeVirtual</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 <dd><code>ret</code> - May be null if method returns void.</dd><dd><code>params</code> - May be null if method takes no parameters.</dd></dl>
 </li>
 </ul>
@@ -1522,12 +1522,12 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
                  <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
                  <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;ret,
                  <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeVirtual(org.cojen.classfile.TypeDesc, java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeVirtual(org.cojen.classfile.TypeDesc,%20java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">CodeAssembler</a></code></strong></div>
 <div class="block">Generates code to invoke a virtual method in any class. The object
  reference and the method's argument(s) must be on the stack.</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeVirtual(org.cojen.classfile.TypeDesc, java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokeVirtual</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeVirtual(org.cojen.classfile.TypeDesc,%20java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokeVirtual</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 <dd><code>ret</code> - May be null if method returns void.</dd><dd><code>params</code> - May be null if method takes no parameters.</dd></dl>
 </li>
 </ul>
@@ -1540,12 +1540,12 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 <pre>public&nbsp;void&nbsp;invokeStatic(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
                 <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;ret,
                 <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeStatic(java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeStatic(java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">CodeAssembler</a></code></strong></div>
 <div class="block">Generates code to invoke a static method in this class. The method's
  argument(s) must be on the stack.</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeStatic(java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokeStatic</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeStatic(java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokeStatic</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 <dd><code>ret</code> - May be null if method returns void.</dd><dd><code>params</code> - May be null if method takes no parameters.</dd></dl>
 </li>
 </ul>
@@ -1559,12 +1559,12 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
                 <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
                 <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;ret,
                 <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeStatic(java.lang.String, java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeStatic(java.lang.String,%20java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">CodeAssembler</a></code></strong></div>
 <div class="block">Generates code to invoke a static method in any class. The method's
  argument(s) must be on the stack.</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeStatic(java.lang.String, java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokeStatic</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeStatic(java.lang.String,%20java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokeStatic</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 <dd><code>ret</code> - May be null if method returns void.</dd><dd><code>params</code> - May be null if method takes no parameters.</dd></dl>
 </li>
 </ul>
@@ -1578,12 +1578,12 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
                 <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
                 <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;ret,
                 <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeStatic(org.cojen.classfile.TypeDesc, java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeStatic(org.cojen.classfile.TypeDesc,%20java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">CodeAssembler</a></code></strong></div>
 <div class="block">Generates code to invoke a static method in any class. The method's
  argument(s) must be on the stack.</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeStatic(org.cojen.classfile.TypeDesc, java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokeStatic</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeStatic(org.cojen.classfile.TypeDesc,%20java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokeStatic</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 <dd><code>ret</code> - May be null if method returns void.</dd><dd><code>params</code> - May be null if method takes no parameters.</dd></dl>
 </li>
 </ul>
@@ -1597,12 +1597,12 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
                    <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
                    <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;ret,
                    <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeInterface(java.lang.String, java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeInterface(java.lang.String,%20java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">CodeAssembler</a></code></strong></div>
 <div class="block">Generates code to invoke an interface method in any class. The object
  reference and the method's argument(s) must be on the stack.</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeInterface(java.lang.String, java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokeInterface</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeInterface(java.lang.String,%20java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokeInterface</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 <dd><code>ret</code> - May be null if method returns void.</dd><dd><code>params</code> - May be null if method takes no parameters.</dd></dl>
 </li>
 </ul>
@@ -1616,12 +1616,12 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
                    <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
                    <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;ret,
                    <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeInterface(org.cojen.classfile.TypeDesc, java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeInterface(org.cojen.classfile.TypeDesc,%20java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">CodeAssembler</a></code></strong></div>
 <div class="block">Generates code to invoke an interface method in any class. The object
  reference and the method's argument(s) must be on the stack.</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeInterface(org.cojen.classfile.TypeDesc, java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokeInterface</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeInterface(org.cojen.classfile.TypeDesc,%20java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokeInterface</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 <dd><code>ret</code> - May be null if method returns void.</dd><dd><code>params</code> - May be null if method takes no parameters.</dd></dl>
 </li>
 </ul>
@@ -1634,12 +1634,12 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 <pre>public&nbsp;void&nbsp;invokePrivate(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
                  <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;ret,
                  <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokePrivate(java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokePrivate(java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">CodeAssembler</a></code></strong></div>
 <div class="block">Generates code to invoke a private method in this class.
  The object reference and the method's argument(s) must be on the stack.</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokePrivate(java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokePrivate</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokePrivate(java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokePrivate</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 <dd><code>ret</code> - May be null if method returns void.</dd><dd><code>params</code> - May be null if method takes no parameters.</dd></dl>
 </li>
 </ul>
@@ -1653,12 +1653,12 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
                <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
                <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;ret,
                <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeSuper(java.lang.String, java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeSuper(java.lang.String,%20java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">CodeAssembler</a></code></strong></div>
 <div class="block">Generates code to invoke a method in the super class.
  The object reference and the method's argument(s) must be on the stack.</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeSuper(java.lang.String, java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokeSuper</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeSuper(java.lang.String,%20java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokeSuper</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 <dd><code>ret</code> - May be null if method returns void.</dd><dd><code>params</code> - May be null if method takes no parameters.</dd></dl>
 </li>
 </ul>
@@ -1672,12 +1672,12 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
                <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;methodName,
                <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;ret,
                <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeSuper(org.cojen.classfile.TypeDesc, java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeSuper(org.cojen.classfile.TypeDesc,%20java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">CodeAssembler</a></code></strong></div>
 <div class="block">Generates code to invoke a method in the super class.
  The object reference and the method's argument(s) must be on the stack.</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeSuper(org.cojen.classfile.TypeDesc, java.lang.String, org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokeSuper</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeSuper(org.cojen.classfile.TypeDesc,%20java.lang.String,%20org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokeSuper</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 <dd><code>ret</code> - May be null if method returns void.</dd><dd><code>params</code> - May be null if method takes no parameters.</dd></dl>
 </li>
 </ul>
@@ -1705,12 +1705,12 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 <h4>invokeConstructor</h4>
 <pre>public&nbsp;void&nbsp;invokeConstructor(<a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;className,
                      <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeConstructor(java.lang.String, org.cojen.classfile.TypeDesc[])">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeConstructor(java.lang.String,%20org.cojen.classfile.TypeDesc[])">CodeAssembler</a></code></strong></div>
 <div class="block">Generates code to invoke a class constructor in any class. The object 
  reference and the constructor's argument(s) must be on the stack.</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeConstructor(java.lang.String, org.cojen.classfile.TypeDesc[])">invokeConstructor</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeConstructor(java.lang.String,%20org.cojen.classfile.TypeDesc[])">invokeConstructor</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 <dd><code>params</code> - May be null if constructor takes no parameters.</dd></dl>
 </li>
 </ul>
@@ -1722,12 +1722,12 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 <h4>invokeConstructor</h4>
 <pre>public&nbsp;void&nbsp;invokeConstructor(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;classDesc,
                      <a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>[]&nbsp;params)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeConstructor(org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeConstructor(org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">CodeAssembler</a></code></strong></div>
 <div class="block">Generates code to invoke a class constructor in any class. The object 
  reference and the constructor's argument(s) must be on the stack.</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeConstructor(org.cojen.classfile.TypeDesc, org.cojen.classfile.TypeDesc[])">invokeConstructor</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#invokeConstructor(org.cojen.classfile.TypeDesc,%20org.cojen.classfile.TypeDesc[])">invokeConstructor</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 <dd><code>params</code> - May be null if constructor takes no parameters.</dd></dl>
 </li>
 </ul>
@@ -1776,7 +1776,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 <h4>newObject</h4>
 <pre>public&nbsp;void&nbsp;newObject(<a href="../../../org/cojen/classfile/TypeDesc.html" title="class in org.cojen.classfile">TypeDesc</a>&nbsp;type,
              int&nbsp;dimensions)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#newObject(org.cojen.classfile.TypeDesc, int)">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#newObject(org.cojen.classfile.TypeDesc,%20int)">CodeAssembler</a></code></strong></div>
 <div class="block">Generates code to create a new array. The type descriptor specifies
  the type of array to create. The dimensions parameter specifies the
  amount of dimensions that will initialized, which may not be larger than
@@ -1787,7 +1787,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
  is equivalent to newObject(type).</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#newObject(org.cojen.classfile.TypeDesc, int)">newObject</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#newObject(org.cojen.classfile.TypeDesc,%20int)">newObject</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 </dl>
 </li>
 </ul>
@@ -1987,7 +1987,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 <h4>ifNullBranch</h4>
 <pre>public&nbsp;void&nbsp;ifNullBranch(<a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>&nbsp;location,
                 boolean&nbsp;choice)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#ifNullBranch(org.cojen.classfile.Location, boolean)">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#ifNullBranch(org.cojen.classfile.Location,%20boolean)">CodeAssembler</a></code></strong></div>
 <div class="block">Generates code that performs a conditional branch based on the
  value of an object on the stack. A branch is performed based on whether
  the object reference on the stack is null or not.
@@ -1995,7 +1995,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
  <p>The generated instruction consumes the value on the stack.</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#ifNullBranch(org.cojen.classfile.Location, boolean)">ifNullBranch</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#ifNullBranch(org.cojen.classfile.Location,%20boolean)">ifNullBranch</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 <dt><span class="strong">Parameters:</span></dt><dd><code>location</code> - The location to branch to</dd><dd><code>choice</code> - If true, do branch when null, else branch when not null</dd></dl>
 </li>
 </ul>
@@ -2007,7 +2007,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 <h4>ifEqualBranch</h4>
 <pre>public&nbsp;void&nbsp;ifEqualBranch(<a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>&nbsp;location,
                  boolean&nbsp;choice)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#ifEqualBranch(org.cojen.classfile.Location, boolean)">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#ifEqualBranch(org.cojen.classfile.Location,%20boolean)">CodeAssembler</a></code></strong></div>
 <div class="block">Generates code that performs a conditional branch based on the value of
  two object references on the stack. A branch is performed based on
  whether the two objects are exactly the same.
@@ -2015,7 +2015,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
  <p>The generated instruction consumes the two values on the stack.</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#ifEqualBranch(org.cojen.classfile.Location, boolean)">ifEqualBranch</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#ifEqualBranch(org.cojen.classfile.Location,%20boolean)">ifEqualBranch</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 <dt><span class="strong">Parameters:</span></dt><dd><code>location</code> - The location to branch to</dd><dd><code>choice</code> - If true, branch when equal, else branch when not equal</dd></dl>
 </li>
 </ul>
@@ -2027,7 +2027,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 <h4>ifZeroComparisonBranch</h4>
 <pre>public&nbsp;void&nbsp;ifZeroComparisonBranch(<a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>&nbsp;location,
                           <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;choice)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#ifZeroComparisonBranch(org.cojen.classfile.Location, java.lang.String)">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#ifZeroComparisonBranch(org.cojen.classfile.Location,%20java.lang.String)">CodeAssembler</a></code></strong></div>
 <div class="block">Generates code the performs a conditional branch based on a comparison
  between an int value on the stack and zero. The int value on the
  stack is on the left side of the comparison expression.
@@ -2035,7 +2035,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
  <p>The generated instruction consumes the value on the stack.</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#ifZeroComparisonBranch(org.cojen.classfile.Location, java.lang.String)">ifZeroComparisonBranch</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#ifZeroComparisonBranch(org.cojen.classfile.Location,%20java.lang.String)">ifZeroComparisonBranch</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 <dt><span class="strong">Parameters:</span></dt><dd><code>location</code> - The location to branch to</dd><dd><code>choice</code> - One of "==", "!=", "<", ">=", ">" or "<="</dd></dl>
 </li>
 </ul>
@@ -2047,7 +2047,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 <h4>ifComparisonBranch</h4>
 <pre>public&nbsp;void&nbsp;ifComparisonBranch(<a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>&nbsp;location,
                       <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</a>&nbsp;choice)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#ifComparisonBranch(org.cojen.classfile.Location, java.lang.String)">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#ifComparisonBranch(org.cojen.classfile.Location,%20java.lang.String)">CodeAssembler</a></code></strong></div>
 <div class="block">Generates code the performs a conditional branch based on a comparison
  between two int values on the stack. The first int value on the stack
  is on the left side of the comparison expression.
@@ -2055,7 +2055,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
  <p>The generated instruction consumes the two values on the stack.</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#ifComparisonBranch(org.cojen.classfile.Location, java.lang.String)">ifComparisonBranch</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#ifComparisonBranch(org.cojen.classfile.Location,%20java.lang.String)">ifComparisonBranch</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 <dt><span class="strong">Parameters:</span></dt><dd><code>location</code> - The location to branch to</dd><dd><code>choice</code> - One of "==", "!=", "<", ">=", ">" or "<="</dd></dl>
 </li>
 </ul>
@@ -2068,7 +2068,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 <pre>public&nbsp;void&nbsp;switchBranch(int[]&nbsp;cases,
                 <a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>[]&nbsp;locations,
                 <a href="../../../org/cojen/classfile/Location.html" title="interface in org.cojen.classfile">Location</a>&nbsp;defaultLocation)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#switchBranch(int[], org.cojen.classfile.Location[], org.cojen.classfile.Location)">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#switchBranch(int[],%20org.cojen.classfile.Location[],%20org.cojen.classfile.Location)">CodeAssembler</a></code></strong></div>
 <div class="block">Generates code for a switch statement. The generated code is either a
  lookupswitch or tableswitch. The choice of which switch type to generate
  is made based on the amount of bytes to be generated. A tableswitch
@@ -2078,7 +2078,7 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
  instruction executes. It is consumed by the instruction.</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#switchBranch(int[], org.cojen.classfile.Location[], org.cojen.classfile.Location)">switchBranch</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#switchBranch(int[],%20org.cojen.classfile.Location[],%20org.cojen.classfile.Location)">switchBranch</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 <dt><span class="strong">Parameters:</span></dt><dd><code>cases</code> - The values to match on. The array length must be the same
  as for locations.</dd><dd><code>locations</code> - The locations to branch to for each case.
  The array length must be the same as for cases.</dd><dd><code>defaultLocation</code> - The location to branch to if the key on
@@ -2257,12 +2257,12 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 <h4>integerIncrement</h4>
 <pre>public&nbsp;void&nbsp;integerIncrement(<a href="../../../org/cojen/classfile/LocalVariable.html" title="interface in org.cojen.classfile">LocalVariable</a>&nbsp;local,
                     int&nbsp;amount)</pre>
-<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#integerIncrement(org.cojen.classfile.LocalVariable, int)">CodeAssembler</a></code></strong></div>
+<div class="block"><strong>Description copied from interface:&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html#integerIncrement(org.cojen.classfile.LocalVariable,%20int)">CodeAssembler</a></code></strong></div>
 <div class="block">Generates code that increments a local integer variable by a signed 
  constant amount.</div>
 <dl>
 <dt><strong>Specified by:</strong></dt>
-<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#integerIncrement(org.cojen.classfile.LocalVariable, int)">integerIncrement</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
+<dd><code><a href="../../../org/cojen/classfile/CodeAssembler.html#integerIncrement(org.cojen.classfile.LocalVariable,%20int)">integerIncrement</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/cojen/classfile/CodeAssembler.html" title="interface in org.cojen.classfile">CodeAssembler</a></code></dd>
 </dl>
 </li>
 </ul>
@@ -2393,6 +2393,6 @@ implements <a href="../../../org/cojen/classfile/CodeAssembler.html" title="inte
 <!--   -->
 </a></div>
 <!-- ======== END OF BOTTOM NAVBAR ======= -->
-<p class="legalCopy"><small>Copyright &#169; 2004-2013 <a href="https://github.com/cojen">Cojen</a>. All Rights Reserved.</small></p>
+<p class="legalCopy"><small>Copyright &#169; 2004-2015 <a href="https://github.com/cojen">Cojen</a>. All Rights Reserved.</small></p>
 </body>
 </html>
