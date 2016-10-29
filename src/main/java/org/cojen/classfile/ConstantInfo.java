@@ -40,11 +40,14 @@ public abstract class ConstantInfo {
     public static final int TAG_METHOD = 10;
     public static final int TAG_INTERFACE_METHOD = 11;
     public static final int TAG_NAME_AND_TYPE = 12;
+    public static final int TAG_METHOD_HANDLE = 15;
+    public static final int TAG_METHOD_TYPE = 16;
+    public static final int TAG_METHOD_INVOKE_DYNAMIC = 18;
 
     // mIndex is manipulated by ConstantPool
     int mIndex = -1;
-    private int mTag;
-    
+    private final int mTag;
+
     protected ConstantInfo(int tag) {
         mTag = tag;
     }

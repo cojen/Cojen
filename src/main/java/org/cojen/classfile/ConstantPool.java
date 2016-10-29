@@ -372,6 +372,25 @@ public class ConstantPool {
                     (tag, (din.readShort() << 16) | (din.readUnsignedShort()));
                 break;
 
+            case ConstantInfo.TAG_METHOD_HANDLE:
+                // FIXME: testing
+                din.skipBytes(3);
+                constant = new ConstantUTFInfo("method_handle");
+                break;
+
+            case ConstantInfo.TAG_METHOD_TYPE:
+                // FIXME: testing
+                din.skipBytes(2);
+                constant = new ConstantUTFInfo("method_type");
+                break;
+
+            case ConstantInfo.TAG_METHOD_INVOKE_DYNAMIC:
+                // FIXME: testing
+                din.skipBytes(4);
+                constant = new ConstantNameAndTypeInfo
+                    (new ConstantUTFInfo("invoke_dynamic"), new ConstantUTFInfo("L_FIXME;"));
+                break;
+
             default:
                 throw new IOException("Invalid constant pool tag: " + tag);
             }
