@@ -1,6 +1,3 @@
-Cojen
-=====
-
 **No longer maintained. Instead, use [Cojen/Maker](https://github.com/cojen/Maker) for bytecode generation.**
 
 Java bytecode generation and disassembly tools
