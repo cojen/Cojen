@@ -253,7 +253,8 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
 
         mInstructions.addExceptionHandler(handler);
     }
-    
+
+    @Override
     public void mapLineNumber(int lineNumber) {
         if (mSaveLineNumberInfo) {
             mCodeAttr.mapLineNumber(createLabel().setLocation(), lineNumber);
@@ -1639,5 +1640,16 @@ public class CodeBuilder extends AbstractCodeAssembler implements CodeBuffer, Co
 
     public void breakpoint() {
         addInstruction(0, TypeDesc.VOID, Opcode.BREAKPOINT);
+    }
+
+    public static void updateProperty(CodeBuilder codeBuilder, LocalVariable propertyVar, int[] cases, int caseCount, Label[] switchLabels, Label noMatch) {
+        codeBuilder.loadLocal(propertyVar);
+        codeBuilder.invokeVirtual(String.class.getName(), "hashCode", TypeDesc.INT, null);
+        codeBuilder.loadConstant(0x7fffffff);
+        codeBuilder.math(Opcode.IAND);
+        codeBuilder.loadConstant(caseCount);
+        codeBuilder.math(Opcode.IREM);
+
+        codeBuilder.switchBranch(cases, switchLabels, noMatch);
     }
 }

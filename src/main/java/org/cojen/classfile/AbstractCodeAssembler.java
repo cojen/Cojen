@@ -23,6 +23,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.MissingResourceException;
 
+import static java.sql.DriverManager.println;
+
 /**
  * 
  *
@@ -202,4 +204,9 @@ public abstract class AbstractCodeAssembler implements CodeAssembler {
 
         invokeConstructor(constructor.getDeclaringClass().getName().toString(), params);
     }
+
+    public void mapLineNumber(int lineNumber) {
+        println("mapLineNumber");
+    }
+
 }

@@ -163,47 +163,37 @@ public class WeakIdentityMap<K, V> extends AbstractMap<K, V> implements Map<K, V
 
     public boolean containsValue(Object value) {
         Entry[] tab = this.table;
-
         if (value == null) {
-            for (int i = tab.length ; i-- > 0 ;) {
-                for (Entry e = tab[i], prev = null; e != null; e = e.next) {
-                    if (e.get() == null) {
-                        // Clean up after a cleared Reference.
-                        this.modCount++;
-                        if (prev != null) {
-                            prev.next = e.next;
-                        } else {
-                            tab[i] = e.next;
-                        }
-                        this.count--;
-                    } else if (e.value == null) {
-                        return true;
-                    } else {
-                        prev = e;
-                    }
-                }
-            }
+            checkEntry(tab, null);
         } else {
-            for (int i = tab.length ; i-- > 0 ;) {
-                for (Entry e = tab[i], prev = null; e != null; e = e.next) {
-                    if (e.get() == null) {
-                        // Clean up after a cleared Reference.
-                        this.modCount++;
-                        if (prev != null) {
-                            prev.next = e.next;
-                        } else {
-                            tab[i] = e.next;
-                        }
-                        this.count--;
-                    } else if (value.equals(e.value)) {
-                        return true;
+            checkEntry(tab, value);
+        }
+        return false;
+    }
+
+    private boolean checkEntry(Entry[] tab , Object value) {
+        for (int i = tab.length; i-- > 0 ;) {
+            for (Entry e = tab[i], prev = null; e != null; e = e.next) {
+                if (e.get() == null) {
+                    // Clean up after a cleared Reference.
+                    this.modCount++;
+                    if (prev != null) {
+                        prev.next = e.next;
                     } else {
-                        prev = e;
+                        tab[i] = e.next;
                     }
+                    this.count--;
+                } else if (value == null) {
+                    return true;
+                }
+                else if (value.equals(e.value)) {
+                    return true;
+                }
+                else {
+                    prev = e;
                 }
             }
         }
-
         return false;
     }
 

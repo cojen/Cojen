@@ -130,7 +130,8 @@ public class CodeAssemblerPrinter extends AbstractCodeAssembler implements CodeA
                 (catchClassName == null ? "null" : ('"' + catchClassName + '"')) +
                 ')');
     }
-    
+
+    @Override
     public void mapLineNumber(int lineNumber) {
         separatorLine();
         println(mBulder + "mapLineNumber(" + lineNumber + ')');
